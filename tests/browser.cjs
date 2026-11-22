@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
+const http = require('node:http');
 const { setTimeout: delay } = require('node:timers/promises');
 const playwright = require('playwright');
 
@@ -17,7 +18,13 @@ async function run() {
   try {
     for (let retry=0; ; retry++) {
       try {
-        if ((await fetch(home)).ok) break;
+        const available = await new Promise((resolve,reject) => {
+          http.get(home,response => {
+            response.resume();
+            response.on('end',() => resolve(response.statusCode === 200));
+          }).on('error',reject);
+        });
+        if (available) break;
       } catch {}
       if (retry === 49) throw Error('Static server did not start.');
       await delay(100);
