@@ -130,3 +130,18 @@ test('knee DESS and both masks retain their aligned RAS grid after decimation', 
     assert.ok(image.p[i] > 0);
   }
 });
+
+require('../planner-geometry.js');
+test('physical prescription geometry handles gaps, FOV and oblique intersections', () => {
+  const {stack,views,intersection,dot}=PlannerGeometry;
+  const frame=stack('axial',0,3,4,1);
+  assert.deepEqual(frame.positions,[-5,0,5]);
+  assert.equal(frame.coverage,14);
+  assert.deepEqual(intersection(views.sagittal,0,[0,0,0],frame,5,100),[[-50,5],[50,5]]);
+  assert.deepEqual(intersection(views.sagittal,60,[0,0,0],frame,5,100),[]);
+  assert.equal(intersection(views.axial,5,[0,0,0],frame,5,100).length,5);
+  const oblique=stack('axial',30,5,3,1);
+  assert.ok(Math.abs(dot(oblique.normal,oblique.along))<1e-10);
+  const [[x,z]]=intersection(views.coronal,15,[0,0,0],oblique,8,100);
+  assert.ok(Math.abs(dot(oblique.normal,[x,15,z])-8)<1e-9);
+});

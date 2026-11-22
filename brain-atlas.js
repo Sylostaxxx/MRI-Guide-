@@ -159,7 +159,7 @@ function tap(view, event) {
   }
   if (target) {
     const correct = id === target;
-    el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + '.' : 'Try again. Find ' + labels[target].name + '.';
+    el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + (hintUsed ? ' with a hint.' : ' independently.') : 'Try again. Find ' + labels[target].name + '.';
     recordPractice(target, correct, hintUsed);
     if (correct) { target = 0;hintOn = false;el('cancelPractice').hidden = true;select(id);updateResults(); }
   } else {
@@ -343,6 +343,7 @@ el('practiceHint').onclick = () => {
   if (!target) return;
   hintOn = !hintOn;
   if (hintOn) { hintUsed = true; if (anchors[target]) cursor = [...anchors[target]]; }
+  el('feedback').textContent = 'Find ' + labels[target].name + '. This attempt counts as assisted recall.';
   render();
 };
 el('ink').onclick = () => {

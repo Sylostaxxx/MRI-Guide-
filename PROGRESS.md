@@ -43,3 +43,7 @@ The current milestone reuses the scalar NIfTI-1 parser shared with the existing 
 - Expand identification practice into the memory arcade and spaced repetition. Replace the eight-question pre-study bank with original, cited ARRT and ARMRIT-aligned coverage, timed exams, review, and adaptive difficulty.
 - Add notebook tags, bookmarks, recall exercises, and persistent volume management. Current study backups exclude image downloads and the saved IndexedDB reference snapshot.
 - Extend browser automation to backup import and multi-tab use. Verify physical iPad Safari, Home Screen installation, and real Apple Pencil input.
+
+## Real MRI planning
+
+The Slice Planner loads brain, cervical spine and knee localizers from the original bundled MRI volumes. Orthogonal views share a cursor. The prescription uses millimetres from the affine for stack translation, gap, thickness, FOV and saturation slab placement. Angulation is single-axis. Lumbar spine and shoulder use the labeled schematic fallback. The Protocol Builder remains a separate exercise.
