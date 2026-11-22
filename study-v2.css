@@ -1,0 +1,36 @@
+.study-tabs{border-bottom:1px solid var(--edge);padding-bottom:12px}
+.study-tabs a,.study-tabs button[aria-current]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;padding:7px 12px;border:1px solid var(--edge);border-radius:8px}
+.study-tabs button[aria-current]{background:#264c44;border-color:var(--accent)}
+.study-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,195px),1fr));gap:12px}
+.study-filters label{display:grid;gap:4px;min-width:0}
+.study-filters input,.study-filters select{color:inherit;background:#243950;border:1px solid #67829a;border-radius:8px;min-height:44px;padding:4px 8px;box-sizing:border-box;width:100%}
+#practiceCard{max-width:860px}
+#practiceNumber,.practice-eyebrow{color:var(--accent);font-weight:750}
+.feedback{padding:12px 16px;margin-top:12px;border:2px solid;border-radius:10px}
+.feedback h3{margin:.15em 0 .35em;font-size:clamp(1.3rem,4vw,1.8rem)}
+.feedback.good{background:#15382b;color:#9efabd}
+.feedback.bad{background:#3d202a;color:#ffb3bf}
+.feedback p{color:#eff5fb;margin:.4em 0}
+.answer.choice-good{border:2px solid #8cf4ac;background:#183f32}
+.answer.choice-bad{border:2px solid #ff99ac;background:#472634}
+.choice-mark{font-weight:800;font-size:.88rem}
+#studyStatus:empty{display:none}
+#studyStatus{color:#ffe1a0}
+.study-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:12px 0}
+.study-metrics div{padding:12px;background:#23354a;border:1px solid var(--edge);border-radius:8px}
+.study-metrics strong{display:block;font-size:1.4rem;color:var(--accent)}
+.study-table{border-collapse:collapse;width:100%;text-align:left}
+.study-table td,.study-table th{padding:8px;border-bottom:1px solid var(--edge)}
+#troubleRows article{border-top:1px solid var(--edge);padding:14px 0}
+.study-note{display:block;width:min(100%,500px);box-sizing:border-box;background:#0d1926;color:inherit;border:1px solid var(--edge);border-radius:8px;font:inherit;padding:9px;margin:8px 0}
+.lesson-layout{display:grid;grid-template-columns:minmax(225px,280px) minmax(0,1fr);gap:14px}
+.lesson-menu nav{display:grid;gap:4px;max-height:55vh;overflow:auto}
+.lesson-menu nav a{display:flex;align-items:center;min-height:44px;padding:4px 8px}
+.lesson-menu nav a[aria-current]{background:#274b44;border-radius:6px;color:#d3fff1}
+.lesson-explain{padding:14px;border:1px solid var(--edge);border-radius:9px;margin:12px 0}
+.lesson-explain.simple{background:#19352f}
+.lesson-plot{width:100%;height:auto;max-width:650px;display:block;margin:auto;background:#0e1927;border-radius:8px}
+.lesson-example,.lesson-formula{padding:10px 12px;background:#22364a;border-radius:8px}
+.lesson-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.lesson-toolbar a,.controls a{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:760px){.lesson-layout{grid-template-columns:1fr}.lesson-menu nav{max-height:28vh}}

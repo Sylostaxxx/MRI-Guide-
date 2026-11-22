@@ -86,3 +86,14 @@ The [CHAOS training release](https://doi.org/10.5281/zenodo.3431873) is a candid
 | Study and review | Daily warm-up, subject and custom quizzes, image and calculation practice, missed and spaced review, weak-topic practice, per-item timing, session history, and assisted-answer tracking. |
 | Sources and review | Every item has a public reference. Visual files include source attribution, licenses, voxel coordinates, and checksums. Independent clinical review and difficulty calibration are outstanding. |
 | Offline and storage | Registry questions and reference images are part of the offline shell. Active sessions, answers, flags, and history are stored locally and included in Settings backups. |
+
+## Study Center V2 and Physics Academy
+
+| Milestone | Delivered |
+| --- | --- |
+| Continuous practice | Optional open-ended practice with eight subjects, four difficulty labels, pause, resume, saved drafts, cumulative session statistics, immediate feedback and linked explanations. The bank cycles once eligible items have been seen. |
+| Trouble Questions | IndexedDB attempt log, retained misses, search and filters, focused retries, explanation and MRI links, bookmarks, and notebook integration. Completed legacy registry tutor answers import idempotently. Timed results remain in the registry system. |
+| Bank expansion and review | 47 original practice-only items added to the 232-item registry bank, for 279 authored items including 30 pilots. Continuous mode serves 249 eligible items. The 500-item milestone needs 221 additional authored items. Four optional, table-checked Larmor variants are separate from authored counts. No additional full mock forms. Editorial and automated checks are complete for this release. Independent clinical review and difficulty calibration remain open. |
+| Physics Academy | First ten chapters plus a K-space chapter. Each has dual explanations, interactive visual, clinical example, pitfalls, glossary terms, authoritative references, external video links, and a five-item quiz drawn from the shared practice bank. Each lesson can be bookmarked, marked complete, and linked to a note. |
+| Remaining curriculum | 30 additional assigned chapters, broader visual coverage, and further video curation remain. Current links open the verified publisher pages. Playback is external and requires an internet connection. |
+| Analytics and storage | Separate study dashboard with subject accuracy, weak topics, due counts, recent daily performance, streak and independently mastered concepts. Mastery reset leaves the attempt log in place. Version 3 Settings backups include version 1 Study Center data and still import older backups. |

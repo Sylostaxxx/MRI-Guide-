@@ -3,7 +3,7 @@
     ['anatomy','Anatomy','./'],
     ['clinical','Clinical','./?section=clinical'],
     ['physics','Physics','./?section=physics'],
-    ['practice','Practice','./?section=practice'],
+    ['practice','Practice','./practice.html'],
     ['study','My Study Space','./?section=study']
   ];
   const nav=document.querySelector('[data-app-nav]');
