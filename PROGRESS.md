@@ -47,3 +47,9 @@ The current milestone reuses the scalar NIfTI-1 parser shared with the existing 
 ## Real MRI planning
 
 The Slice Planner loads brain, cervical spine and knee localizers from the original bundled MRI volumes. Orthogonal views share a cursor. The prescription uses millimetres from the affine for stack translation, gap, thickness, FOV and saturation slab placement. Angulation is single-axis. Lumbar spine and shoulder use the labeled schematic fallback. The Protocol Builder remains a separate exercise.
+
+## Study Center
+
+- Organ systems covers all 11 with one representative structure per system, original schematic illustrations, educational descriptions and personal notes. Brain and knee link to real MRI. Broader structure coverage and more body-region images remain open.
+- The Artifact Simulator displays synthetic teaching examples for motion ghosts, phase wrap and chemical shift. The positioning, recognition, pathology, safety and clinical rotation modules are educational decision exercises. Sequence recognition currently uses text cues, and the virtual rotation guides one brain exam with feedback and a link to hands-on planning.
+- The mastery dashboard reports independent accuracy and assisted attempts separately. Training results and organ notes use the existing study-backup format.

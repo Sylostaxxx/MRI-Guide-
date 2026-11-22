@@ -159,6 +159,26 @@ async function run() {
       await page.locator('#region').selectOption(region);
       await page.getByText('Available offline',{exact:false}).waitFor({timeout:60000});
     }
+    await page.getByRole('link',{name:'Study Center'}).click();
+    assert.equal(await page.locator('#system option').count(),11);
+    await page.locator('#system').selectOption({label:'Urinary'});
+    await page.getByRole('heading',{name:'Kidney',exact:true}).waitFor();
+    await page.locator('#organNote').fill('Kidney study note');
+    await page.locator('#organSave').click();
+    await page.getByRole('button',{name:'Artifact Simulator'}).click();
+    const phantom=page.locator('#phantom');
+    const baseline=await phantom.evaluate(canvas=>canvas.toDataURL());
+    await page.locator('#severity').fill('90');
+    assert.notEqual(await phantom.evaluate(canvas=>canvas.toDataURL()),baseline);
+    await page.getByRole('button',{name:'Virtual Clinical Rotation'}).click();
+    for (const choice of [1,0,2,0,1]) {
+      await page.locator('#choices button').nth(choice).click();
+      await page.locator('#next').click();
+    }
+    assert.match(await page.locator('#stem').textContent(),/5 of 5/);
+    await page.getByRole('button',{name:'My Mastery'}).click();
+    assert.match(await page.locator('#masteryRows').textContent(),/Virtual Clinical Rotation5 \/ 50/);
+    await page.getByRole('link',{name:'MRI Study Lab',exact:true}).click();
     await page.getByRole('button',{name:'Backup & Help'}).click();
     const downloaded = page.waitForEvent('download');
     await page.locator('#export').click();
@@ -167,6 +187,8 @@ async function run() {
     assert.equal(backup.notes[0].body,'Existing notebook entry');
     assert.equal(backup.scanNotes['mri.scan.note.cerebra1.91'],'Atlas observation');
     assert.equal(Object.keys(backup.drawings).length,1);
+    assert.equal(backup.scanNotes['mri.scan.note.system.9'],'Kidney study note');
+    assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');
   } finally {
