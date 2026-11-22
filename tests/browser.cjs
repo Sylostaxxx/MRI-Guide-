@@ -77,7 +77,16 @@ async function run() {
     assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
     await page.locator('#sTR').fill('3000');
     assert.match(await page.locator('#relaxationSummary').textContent(), /TR 3000 ms/);
+    const tinyPNG='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL5sAAAAASUVORK5CYII=';
     await page.getByRole('button',{name:'Protocol Builder'}).click();
+    await page.locator('#protoImageFile').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:Buffer.from(tinyPNG,'base64')});
+    await page.waitForFunction(()=>new Promise(resolve=>{
+      const request=indexedDB.open('mri-study-lab-images',1);
+      request.onsuccess=()=>{
+        const db=request.result, get=db.transaction('refs').objectStore('refs').get('protocol-ref');
+        get.onsuccess=()=>{db.close();resolve(get.result?.size>0);};
+      };
+    }));
     assert.match(await page.locator('#protoCoverage').textContent(), /60.0 mm/);
     await page.locator('#protoNew').click();
     assert.match(await page.locator('#protoInstruction').textContent(),/axial brain stack/);
@@ -193,6 +202,15 @@ async function run() {
     await page.locator('#export').click();
     const download = await downloaded;
     const backup = JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+    assert.equal(backup.referenceImage?.base64,tinyPNG);
+    await page.getByRole('button',{name:'Protocol Builder'}).click();
+    await page.locator('#protoClearImage').click();
+    await page.getByRole('button',{name:'Backup & Help'}).click();
+    page.once('dialog',dialog=>dialog.accept());
+    await page.locator('#importFile').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
+    await page.getByText('Reference image restored.',{exact:false}).waitFor();
+    await page.getByRole('button',{name:'Protocol Builder'}).click();
+    assert.match(await page.locator('#protoImg').getAttribute('src'),/^blob:/);
     assert.equal(backup.notes[0].body,'Existing notebook entry');
     assert.equal(backup.scanNotes['mri.scan.note.cerebra1.91'],'Atlas observation');
     assert.equal(Object.keys(backup.drawings).length,1);

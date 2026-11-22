@@ -113,7 +113,7 @@
 <p class="small" id="protoCoverage"></p><div class="row"><button class="primary" id="protoCheck">Check this plan</button><button id="protoSave">Save plan + note</button></div><div id="protoFeedback" class="qresult">Adjust a stack and check your work.</div><label for="protoNote">My protocol notes</label><textarea id="protoNote" placeholder="Write why you selected this plane, coverage, and slice placement..." rows="3"></textarea></div></div></div></section>
 <section id="review" class="page hidden"><div class="panel"><div class="split"><h2>Pre-study Recall Quiz</h2><span class="pill">Spaced review starter</span></div><p class="small">Before studying new content, answer a short question from anatomy and MRI physics. Previously visited note topics receive extra priority. Missed questions are stored locally to be reviewed again; this is a lightweight practice mode, not a complete adaptive learning system.</p><div class="row"><button class="primary" id="quizBegin">Start / Next question</button><span id="quizScore" class="small">0 attempted</span></div><h3 id="quizQuestion">Tap Start to review what you know.</h3><div id="quizOptions"></div><div id="quizFeedback" class="qresult hidden" aria-live="polite"></div><hr class="hr"><h3>Review from your own notes</h3><p class="small">Your latest saved note becomes a recall prompt. Your notes are not automatically treated as medically verified answers.</p><div id="recallPrompt" class="qresult">Add a note in the Anatomy Explorer or Physics Lab to create a recall prompt.</div><button id="quizReveal">Reveal source note</button><div id="recallAnswer" class="qresult hidden"></div></div></section>
 <section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div></section>
-<section id="backup" class="page hidden"><div class="panel"><h2>Keep your notes safe</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">This is a single HTML file. Once downloaded to Files, you can reopen it without internet using a compatible browser or HTML viewer. On iPad, opening local HTML through the Files preview may limit JavaScript or persistent storage. For the most reliable installed-app experience, this project can be hosted as a PWA and installed using Safari's Add to Home Screen. Downloaded local pages and Safari website installs do not share the same notes database.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
+<section id="backup" class="page hidden"><div class="panel"><h2>Keep your notes safe</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. The backup includes the saved protocol reference image. Atlas image packs are downloaded separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">This is a single HTML file. Once downloaded to Files, you can reopen it without internet using a compatible browser or HTML viewer. On iPad, opening local HTML through the Files preview may limit JavaScript or persistent storage. For the most reliable installed-app experience, this project can be hosted as a PWA and installed using Safari's Add to Home Screen. Downloaded local pages and Safari website installs do not share the same notes database.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
 <div class="footer">MRI Study Lab • Version 4 • Offline-first beta • Educational use only • No patient data should be entered. Your notes are not uploaded to a server by this file.</div></main>
 <script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
 (()=>{'use strict';
@@ -140,26 +140,40 @@ document.querySelectorAll('button.tab').forEach(b=>b.onclick=()=>tab(b.dataset.t
 document.addEventListener('click',e=>{let edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit){let n=notes.find(n=>n.id===edit.dataset.edit);if(!n)return;const replacement=prompt('Edit your note:',n.body);if(replacement!==null&&replacement.trim()){n.body=replacement.trim();store();showRecent();showAll();showStructureRecent()}}if(del){let n=notes.find(n=>n.id===del.dataset.delete);if(n&&confirm('Delete this note permanently?')){notes=notes.filter(x=>x.id!==n.id);store();showRecent();showAll();showStructureRecent()}}});
 // Dragging adjusts the illustrative prescription offset.
 let drag=false;const screen=el('screen');function move(e){if(!drag)return;const b=screen.getBoundingClientRect();offset=Math.max(-1,Math.min(1,((e.clientX-b.left)/b.width-.5)*2));render()}screen.addEventListener('pointerdown',e=>{drag=true;screen.setPointerCapture(e.pointerId);move(e)});screen.addEventListener('pointermove',move);screen.addEventListener('pointerup',()=>drag=false);screen.addEventListener('pointercancel',()=>drag=false);
-el('export').onclick=()=>{
+el('export').onclick=async()=>{
   try {
     const data=StudyBackup.validate(StudyBackup.read(localStorage));
-    const blob=new Blob([JSON.stringify({app:'MRI Study Lab',version:2,exported:new Date().toISOString(),...data},null,2)],{type:'application/json'});
+    let referenceImage, referenceUnavailable=false;
+    try {
+      const reference=await readRef();
+      if(reference) referenceImage=await encodeReference(reference);
+    } catch {referenceUnavailable=true;}
+    const blob=new Blob([JSON.stringify({app:'MRI Study Lab',version:3,exported:new Date().toISOString(),...data,referenceImage},null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='mri-study-lab-backup-'+new Date().toISOString().slice(0,10)+'.json';
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
-    el('backupStatus').textContent='Study backup generated. Save it in Files.';
+    el('backupStatus').textContent=referenceUnavailable?'Study backup generated. The reference image could not be read.':'Study backup generated. Save it in Files.';
   } catch(error) {el('backupStatus').textContent='Backup unavailable. Browser storage could not be read or contains invalid records.';}
 };
 el('importBtn').onclick=()=>el('importFile').click();
 el('importFile').onchange=async e=>{
   try {
     const file=e.target.files[0];if(!file)return;
-    const data=StudyBackup.validate(JSON.parse(await file.text()));
+    const payload=JSON.parse(await file.text());
+    const data=StudyBackup.validate(payload);
+    const image=payload.referenceImage===undefined?null:decodeReference(payload.referenceImage);
     if(!confirm('Merge this backup with your current study data?'))return;
     const restored=StudyBackup.restore(localStorage,data);
     notes=restored.notes;qHistory=restored.history;
     showRecent();showAll();showStructureRecent();
-    el('backupStatus').textContent='Backup merged into your current study data.';
+    let message='Backup merged into your current study data.';
+    if(image){
+      try {
+        if(await restoreRefIfEmpty(image)){await loadRef();message+=' Reference image restored.';}
+        else message+=' The current reference image was kept.';
+      } catch {message+=' The reference image could not be restored.';}
+    }
+    el('backupStatus').textContent=message;
   } catch(error) {el('backupStatus').textContent='Restore failed. Check the backup file format and available browser storage.';}
   finally {e.target.value='';}
 };
@@ -265,8 +279,62 @@ el('protoSave').onclick=()=>{pRead();const body=`Protocol: ${names[el('protoRegi
 let draggingP=false;const pv=el('protoViewer');pv.addEventListener('pointerdown',e=>{draggingP=true;pv.setPointerCapture(e.pointerId)});pv.addEventListener('pointermove',e=>{if(!draggingP)return;const b=pv.getBoundingClientRect();el('protoOffset').value=Math.round(Math.max(-100,Math.min(100,((e.clientX-b.left)/b.width-.5)*250)));pDraw()});pv.addEventListener('pointerup',()=>draggingP=false);pv.addEventListener('pointercancel',()=>draggingP=false);
 function openImageDB(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window))return reject(Error('Unavailable'));const r=indexedDB.open('mri-study-lab-images',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('refs'))r.result.createObjectStore('refs')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function saveRef(blob){const db=await openImageDB();await new Promise((res,rej)=>{const tx=db.transaction('refs','readwrite');tx.objectStore('refs').put(blob,'protocol-ref');tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close()}
-async function loadRef(){try{const db=await openImageDB(),blob=await new Promise((res,rej)=>{const tx=db.transaction('refs');const req=tx.objectStore('refs').get('protocol-ref');req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});db.close();if(blob){el('protoImg').src=URL.createObjectURL(blob);el('protoImg').classList.remove('hidden');el('protoViewer').classList.add('has-mri')}}catch(e){console.warn('Image persistence unavailable',e)}}
-el('protoImageFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>15*1024*1024){alert('Use a JPG, PNG or WebP image under 15 MB.');return}el('protoImg').src=URL.createObjectURL(f);el('protoImg').classList.remove('hidden');el('protoViewer').classList.add('has-mri');try{await saveRef(f)}catch(err){alert('Image displays this session but could not be stored. Use HTTPS in a normal browser for better storage support.')}};
+async function readRef(){
+  const db=await openImageDB();
+  try {
+    return await new Promise((resolve,reject)=>{
+      const request=db.transaction('refs').objectStore('refs').get('protocol-ref');
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error);
+    });
+  } finally {db.close();}
+}
+async function restoreRefIfEmpty(blob){
+  const db=await openImageDB();
+  try {
+    return await new Promise((resolve,reject)=>{
+      const tx=db.transaction('refs','readwrite'), refs=tx.objectStore('refs');
+      const current=refs.get('protocol-ref');
+      let restored=false;
+      current.onsuccess=()=>{
+        if(current.result)return;
+        refs.add(blob,'protocol-ref');restored=true;
+      };
+      tx.oncomplete=()=>resolve(restored);
+      tx.onabort=()=>reject(tx.error);
+    });
+  } finally {db.close();}
+}
+const referenceTypes=['image/jpeg','image/png','image/webp'];
+const maxReferenceBytes=15*1024*1024;
+async function encodeReference(blob){
+  if(!referenceTypes.includes(blob.type)||blob.size>maxReferenceBytes)throw Error('Invalid reference image');
+  const data=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+  return {type:blob.type,base64:data.slice(data.indexOf(',')+1)};
+}
+function decodeReference(image){
+  if(!image||!referenceTypes.includes(image.type)||typeof image.base64!=='string'||
+      image.base64.length>Math.ceil(maxReferenceBytes/3)*4)throw Error('Invalid reference image');
+  const bytes=Uint8Array.from(atob(image.base64),character=>character.charCodeAt(0));
+  if(!bytes.length||bytes.length>maxReferenceBytes)throw Error('Invalid reference image');
+  return new Blob([bytes],{type:image.type});
+}
+async function loadRef(){
+  try {
+    const blob=await readRef();
+    if(!blob)return;
+    const img=el('protoImg');
+    if(img.src.startsWith('blob:'))URL.revokeObjectURL(img.src);
+    img.src=URL.createObjectURL(blob);
+    img.classList.remove('hidden');el('protoViewer').classList.add('has-mri');
+  } catch(error){console.warn('Image persistence unavailable',error);}
+}
+el('protoImageFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!referenceTypes.includes(f.type)||f.size>maxReferenceBytes){alert('Use a JPG, PNG or WebP image under 15 MB.');return}el('protoImg').src=URL.createObjectURL(f);el('protoImg').classList.remove('hidden');el('protoViewer').classList.add('has-mri');try{await saveRef(f)}catch(err){alert('Image displays this session but could not be stored. Use HTTPS in a normal browser for better storage support.')}};
 el('protoClearImage').onclick=async()=>{el('protoImg').removeAttribute('src');el('protoImg').classList.add('hidden');el('protoViewer').classList.remove('has-mri');try{const db=await openImageDB();const tx=db.transaction('refs','readwrite');tx.objectStore('refs').delete('protocol-ref');db.close()}catch(e){}};
 const reviewQs=[
 {topic:'structure:pons',q:'Where is the pons located?',a:['Between midbrain and medulla','Between thalamus and cerebrum','Within the lateral ventricle','Behind the occipital lobe'],correct:0,why:'The pons lies between the midbrain and medulla in the brainstem.'},
