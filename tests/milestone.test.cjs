@@ -78,3 +78,16 @@ test('offline shell includes existing and new study navigation without precachin
     assert.match(fs.readFileSync(page,'utf8'), /href="\.\/brain-atlas\.html"/);
   }
 });
+
+require('../mri-physics.js');
+
+test('relaxation, ideal spin-echo signal and proton frequency obey expected limits', () => {
+  const {longitudinalRecovery, transverseDecay, spinEchoSignal, larmorMHz} = MRIPhysics;
+  assert.equal(longitudinalRecovery(0,850),0);
+  assert.ok(Math.abs(longitudinalRecovery(850,850) - (1 - 1/Math.E)) < 1e-12);
+  assert.equal(transverseDecay(75,75),1/Math.E);
+  assert.ok(transverseDecay(20,45) < transverseDecay(20,75));
+  assert.ok(spinEchoSignal(3000,25,850,75) > spinEchoSignal(500,25,850,75));
+  assert.ok(spinEchoSignal(3000,100,850,75) < spinEchoSignal(3000,25,850,75));
+  assert.ok(Math.abs(larmorMHz(3) - 127.73244) < 1e-10);
+});

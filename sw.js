@@ -1,8 +1,8 @@
-const CACHE = 'mri-study-lab-shell-2';
+const CACHE = 'mri-study-lab-shell-3';
 const ROOT = new URL(self.registration.scope);
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon.png', './real-scans.html',
-  './brain-atlas.html', './brain-atlas.js', './brain-reference.js', './nifti.js', './study-backup.js'
+  './brain-atlas.html', './brain-atlas.js', './brain-reference.js', './nifti.js', './study-backup.js', './mri-physics.js'
 ];
 const shellURLs = new Set(FILES.map(file => new URL(file, ROOT).href));
 

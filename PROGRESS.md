@@ -7,6 +7,8 @@
 - Combined study backup reads the original browser storage keys. Restore merges notebook entries, quiz history, scan notes, and atlas drawings. It accepts legacy notebook and scan-note JSON files. Tests cover repeated imports, conflicts, and rollback after a failed write.
 - The versioned offline shell includes the main app, sequence library, and atlas interface. The selected atlas pack is stored separately. Browser-level offline and Safari behavior need confirmation.
 
+- The Physics Sandbox includes live T1 recovery, T2 and T2* decay plots, an idealized spin-echo signal estimate, and proton Larmor frequency. Automated checks verify the mathematical relationships.
+
 ## Coverage
 
 | Region | Image coverage |
