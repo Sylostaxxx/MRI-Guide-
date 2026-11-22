@@ -278,8 +278,32 @@ el('protoCheck').onclick=()=>{pRead();const t=pTargets[pChallenge];if(el('protoR
 el('protoSave').onclick=()=>{pRead();const body=`Protocol: ${names[el('protoRegion').value]}, ${el('protoPlane').value}. Angle ${pState.angle}°, offset ${pState.offset} schematic mm, ${pState.count} slices, thickness ${pState.thickness} mm, gap ${pState.gap}%, slice ${pState.selected}. ${el('protoNote').value}`;if(customNote('protocol',el('protoRegion').value,body)){el('protoFeedback').textContent='✓ Plan and notes saved to notebook.';el('protoNote').value=''}};
 let draggingP=false;const pv=el('protoViewer');pv.addEventListener('pointerdown',e=>{draggingP=true;pv.setPointerCapture(e.pointerId)});pv.addEventListener('pointermove',e=>{if(!draggingP)return;const b=pv.getBoundingClientRect();el('protoOffset').value=Math.round(Math.max(-100,Math.min(100,((e.clientX-b.left)/b.width-.5)*250)));pDraw()});pv.addEventListener('pointerup',()=>draggingP=false);pv.addEventListener('pointercancel',()=>draggingP=false);
 function openImageDB(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window))return reject(Error('Unavailable'));const r=indexedDB.open('mri-study-lab-images',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('refs'))r.result.createObjectStore('refs')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function saveRef(blob){const durable=new Blob([await blob.arrayBuffer()],{type:blob.type});const db=await openImageDB();await new Promise((res,rej)=>{const tx=db.transaction('refs','readwrite');tx.objectStore('refs').put(durable,'protocol-ref');tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close()}
+const referenceCache='mri-user-reference-1';
+const referenceURL='./.study-data/protocol-reference';
+async function mirrorRef(blob){
+  const cache=await caches.open(referenceCache);
+  await cache.put(referenceURL,new Response(blob,{headers:{'Content-Type':blob.type}}));
+}
+async function saveRef(blob){
+  const durable=new Blob([await blob.arrayBuffer()],{type:blob.type});
+  const db=await openImageDB();
+  try {
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction('refs','readwrite');
+      tx.objectStore('refs').put(durable,'protocol-ref');
+      tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);
+    });
+  } finally {db.close();}
+  await mirrorRef(durable).catch(()=>{});
+}
 async function readRef(){
+  let image;
+  try {
+    const cache=await caches.open(referenceCache);
+    const saved=await cache.match(referenceURL);
+    if(saved)image=await saved.blob();
+  } catch {}
+  if(image?.size)return image;
   const db=await openImageDB();
   try {
     return await new Promise((resolve,reject)=>{
@@ -290,20 +314,24 @@ async function readRef(){
   } finally {db.close();}
 }
 async function restoreRefIfEmpty(blob){
+  if(await readRef())return false;
   const db=await openImageDB();
+  let restored=false;
   try {
-    return await new Promise((resolve,reject)=>{
+    restored=await new Promise((resolve,reject)=>{
       const tx=db.transaction('refs','readwrite'), refs=tx.objectStore('refs');
       const current=refs.get('protocol-ref');
-      let restored=false;
+      let inserted=false;
       current.onsuccess=()=>{
         if(current.result)return;
-        refs.add(blob,'protocol-ref');restored=true;
+        refs.add(blob,'protocol-ref');inserted=true;
       };
-      tx.oncomplete=()=>resolve(restored);
+      tx.oncomplete=()=>resolve(inserted);
       tx.onabort=()=>reject(tx.error);
     });
   } finally {db.close();}
+  if(restored)await mirrorRef(blob).catch(()=>{});
+  return restored;
 }
 const referenceTypes=['image/jpeg','image/png','image/webp'];
 const maxReferenceBytes=15*1024*1024;
@@ -339,7 +367,28 @@ async function loadRef(){
   } catch(error){console.warn('Image persistence unavailable',error);}
 }
 el('protoImageFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!referenceTypes.includes(f.type)||f.size>maxReferenceBytes){alert('Use a JPG, PNG or WebP image under 15 MB.');return}el('protoImg').src=URL.createObjectURL(f);el('protoImg').classList.remove('hidden');el('protoViewer').classList.add('has-mri');try{await saveRef(f)}catch(err){alert('Image displays this session but could not be stored. Use HTTPS in a normal browser for better storage support.')}};
-el('protoClearImage').onclick=async()=>{el('protoImg').removeAttribute('src');el('protoImg').classList.add('hidden');el('protoViewer').classList.remove('has-mri');try{const db=await openImageDB();const tx=db.transaction('refs','readwrite');tx.objectStore('refs').delete('protocol-ref');db.close()}catch(e){}};
+el('protoClearImage').onclick=async()=>{
+  const button=el('protoClearImage');button.disabled=true;
+  try {
+    const db=await openImageDB();
+    try {
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('refs','readwrite');
+        tx.objectStore('refs').delete('protocol-ref');
+        tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);
+      });
+    } finally {db.close();}
+    if('caches' in window){
+      const cache=await caches.open(referenceCache);
+      await cache.delete(referenceURL);
+    }
+    const img=el('protoImg');
+    if(img.src.startsWith('blob:'))URL.revokeObjectURL(img.src);
+    img.removeAttribute('src');img.classList.add('hidden');
+    el('protoViewer').classList.remove('has-mri');
+  } catch {el('protoFeedback').textContent='The saved reference image could not be cleared.';}
+  finally {button.disabled=false;}
+};
 const reviewQs=[
 {topic:'structure:pons',q:'Where is the pons located?',a:['Between midbrain and medulla','Between thalamus and cerebrum','Within the lateral ventricle','Behind the occipital lobe'],correct:0,why:'The pons lies between the midbrain and medulla in the brainstem.'},
 {topic:'physics:TR',q:'In conventional spin-echo imaging, which change generally increases T1 weighting?',a:['Shorten TR','Lengthen TR','Lengthen TE','Increase NEX'],correct:0,why:'Short TR accentuates differences in longitudinal recovery; a short TE helps preserve T1 weighting.'},

@@ -87,6 +87,7 @@ async function run() {
         get.onsuccess=()=>{db.close();resolve(get.result?.size>0);};
       };
     }));
+    await page.waitForFunction(async()=>Boolean(await (await caches.open('mri-user-reference-1')).match('./.study-data/protocol-reference')));
     assert.match(await page.locator('#protoCoverage').textContent(), /60.0 mm/);
     await page.locator('#protoNew').click();
     assert.match(await page.locator('#protoInstruction').textContent(),/axial brain stack/);
@@ -205,6 +206,7 @@ async function run() {
     assert.equal(backup.referenceImage?.base64,tinyPNG,await page.locator('#backupStatus').textContent());
     await page.getByRole('button',{name:'Protocol Builder'}).click();
     await page.locator('#protoClearImage').click();
+    await page.locator('#protoImg').waitFor({state:'hidden'});
     await page.getByRole('button',{name:'Backup & Help'}).click();
     page.once('dialog',dialog=>dialog.accept());
     await page.locator('#importFile').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
