@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Registry Preparation | MRI Study Lab</title>
+<link rel="stylesheet" href="./app-navigation.css"><link rel="stylesheet" href="./registry.css">
+<link rel="manifest" href="./manifest.webmanifest"></head><body><main>
+<nav data-app-nav="practice" aria-label="Primary navigation"></nav>
+<p id="storageMessage" role="status" hidden></p>
+<section id="setup">
+<header><h1>MRI Registry Preparation</h1><p id="bankSummary"></p></header>
+<div class="setup-grid">
+<section class="card"><h2>Tutor and daily practice</h2>
+<div class="form-grid">
+<label>Profile <select id="profile"><option value="arrt">ARRT MRI</option><option value="armrit">ARMRIT MRI</option></select></label>
+<label>Practice plan <select id="kind"><option value="daily">Daily warm-up · 10 questions</option><option value="mixed">Custom / subject quiz</option><option value="image">Real MRI image questions</option><option value="calc">Physics calculations</option><option value="missed">Missed or assisted only</option><option value="due">Spaced review · due</option><option value="weak">Weak topics first</option></select></label>
+<label>Topic <select id="category"><option value="">All topics</option></select></label>
+<label>Question count <select id="count"><option>10</option><option selected>25</option><option>50</option><option>100</option></select></label>
+</div><p id="profileInfo"></p><button id="startTutor" class="primary">Start tutor session</button>
+</section>
+<section class="card"><h2>Timed simulations</h2>
+<p><strong>ARRT MRI · February 2025 blueprint</strong><br>230 questions · 230-minute countdown</p>
+<label>Exam form <select id="form"></select></label>
+<p id="formStatus"></p>
+<label class="check"><input id="tutorial" type="checkbox"> Include an eight-minute practice tutorial</label>
+<button id="startExam" class="primary">Start timed simulation</button>
+<p>Timed exams reveal answers after submission. If this page closes, the countdown keeps running.</p>
+<details><summary>Official specifications and format</summary><div id="blueprintSummary"></div></details>
+</section>
+</div>
+<section class="card"><h2>Study history</h2><div id="history"></div></section>
+</section>
+<section id="session" hidden>
+<header class="session-bar"><div><strong id="sessionTitle"></strong><p id="questionCount"></p></div><output id="countdown"></output><button id="review">Review / submit</button></header>
+<div class="session-grid">
+<section class="card question-card">
+<p id="itemType"></p><h1 id="stem" tabindex="-1"></h1>
+<div id="imagePanel" hidden><label>Image zoom <input id="imageZoom" type="range" min="1" max="3" step=".25" value="1"></label><div class="image-scroll"><img id="questionImage" alt="MR image for this question"></div></div>
+<fieldset id="answers"><legend class="sr-only">Answer choices</legend><div id="choices"></div></fieldset>
+<p id="message" role="status"></p><div id="explanation" hidden></div>
+<div class="controls"><button id="prev">Previous</button><button id="flag" aria-pressed="false">Flag</button><button id="hint" hidden>Hint</button><button id="check" hidden>Check answer</button><button id="next" class="primary">Next</button></div>
+</section>
+<aside class="card"><details id="navigation" open><summary>Question grid</summary><p id="unanswered"></p><div id="grid"></div></details>
+<details><summary>Calculator</summary>
+<div class="calculator"><label>First value <input id="first" type="number" step="any" inputmode="decimal"></label><label>Operation
+<select id="operator"><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option><option value="sqrt">Square root of first value</option></select></label>
+<label>Second value <input id="second" type="number" step="any" inputmode="decimal"></label><button id="calculate">Calculate</button><output id="calculation"></output></div>
+</details></aside>
+</div>
+</section>
+<section id="reviewPage" class="card" hidden><h1>Final review</h1><p id="reviewText"></p><div id="reviewItems"></div>
+<div class="controls"><button id="back">Back to questions</button><button id="submit" class="primary">Submit answers</button></div></section>
+<section id="tutorialDone" class="card" hidden><h1>Tutorial complete</h1><p>The simulation timer starts when you choose Begin exam.</p><div class="controls"><button id="cancelTutorial">Back to setup</button><button id="beginActual" class="primary">Begin exam</button></div></section>
+<section id="result" hidden><header><h1 id="resultTitle"></h1><p id="resultScore"></p></header>
+<div class="controls"><button id="resultHome">Registry home</button><button id="followUp" class="primary">Practice weak topics</button></div>
+<section class="card"><h2>Performance</h2><div id="categoryResults"></div><details><summary>Subtopic results</summary><div id="topicResults"></div></details></section>
+<section class="card"><h2>Missed and skipped questions</h2><div id="missedResults"></div><details><summary>All items and time spent</summary><div id="allResults"></div></details></section>
+</section>
+</main>
+<script src="./app-navigation.js"></script><script src="./registry-blueprints.js"></script>
+<script src="./registry-core.js"></script><script src="./registry-content.js"></script><script src="./registry-images.js"></script>
+<script src="./registry-bank-physics.js"></script><script src="./registry-calculations.js"></script>
+<script src="./registry-bank-acquisition.js"></script><script src="./registry-bank-procedures.js"></script>
+<script src="./registry-bank-safety.js"></script><script src="./registry-bank-pilot.js"></script>
+<script src="./registry.js"></script></body></html>

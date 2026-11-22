@@ -1,4 +1,5 @@
 (() => {
+  const registryKey = 'mri.registry.v1';
   const notebook = 'mri-study-lab-v1';
   const review = 'mri-study-lab-review-v1';
   const scanPrefix = 'mri.scan.note.';
@@ -24,7 +25,8 @@
       scanNotes,
       drawings,
       layers,
-      bookmarks
+      bookmarks,
+      registry: JSON.parse(storage.getItem(registryKey) ?? 'null')
     };
   }
 
@@ -40,7 +42,7 @@
     if (Object.keys(data).length && Object.keys(data).every(key => key.startsWith(scanPrefix))) {
       data = { notes: [], scanNotes: data };
     }
-    const { notes, history = [], scanNotes = {}, drawings = {}, layers = {}, bookmarks = {} } = data;
+    const { notes, history = [], scanNotes = {}, drawings = {}, layers = {}, bookmarks = {}, registry = null } = data;
     if (!Array.isArray(notes) || notes.some(note => !note ||
         !['id', 'region', 'body'].every(field => typeof note[field] === 'string') ||
         !note.id || !note.region)) throw Error('Invalid notebook entries.');
@@ -57,7 +59,15 @@
       entry.enabled.every(id=>typeof id==='string') && Number.isFinite(entry.opacity) &&
       entry.opacity>=0 && entry.opacity<=85 && typeof entry.overlay==='boolean');
     validateMap(bookmarks,bookmarkPrefix,value=>typeof value==='string'&&value.length>0);
-    return { notes, history, scanNotes, drawings, layers, bookmarks };
+    if (registry !== null && (!registry || !Array.isArray(registry.history) ||
+        !('active' in registry) || registry.history.some(entry => !entry || !entry.id ||
+          !Number.isFinite(Date.parse(entry.date)) || !Array.isArray(entry.items) || !entry.groups) ||
+        (registry.active !== null && (!registry.active || !Array.isArray(registry.active.items) ||
+          !registry.active.items.length || !Number.isInteger(registry.active.index) ||
+          registry.active.items.some(item => !Array.isArray(item?.question?.options)))))) {
+      throw Error('Invalid registry progress.');
+    }
+    return { notes, history, scanNotes, drawings, layers, bookmarks, registry };
   }
 
   function merge(local, imported) {
@@ -93,7 +103,20 @@
       drawings[key] = [...new Map([...(drawings[key] ?? []), ...strokes].map(stroke =>
         [JSON.stringify(stroke), stroke])).values()];
     }
+    let registry = null;
+    if (local.registry || imported.registry) {
+      const prior = local.registry ?? { active: null, history: [] };
+      const incoming = imported.registry ?? { active: null, history: [] };
+      const sessions = new Map([...incoming.history, ...prior.history].map(entry => [entry.id, entry]));
+      const active = prior.active ?? incoming.active;
+      registry = {
+        active: active && !sessions.has(active.id) ? active : null,
+        history: [...sessions.values()].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
+        archive: { ...incoming.archive, ...prior.archive }
+      };
+    }
     return {
+      registry,
       notes: [...notes.values()].sort((a, b) => String(b.created ?? '').localeCompare(String(a.created ?? ''))),
       history: [...attempts.values()].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
       scanNotes,
@@ -113,6 +136,7 @@
       ...Object.fromEntries(Object.entries(result.layers).map(([key, value]) => [key, JSON.stringify(value)])),
       ...Object.fromEntries(Object.entries(result.drawings).map(([key, strokes]) => [key, JSON.stringify(strokes)]))
     };
+    if (result.registry) records[registryKey] = JSON.stringify(result.registry);
     const applied = [];
     try {
       for (const [key, value] of Object.entries(records)) {

@@ -1,7 +1,11 @@
-const CACHE = 'mri-study-lab-shell-11';
+const CACHE = 'mri-study-lab-shell-12';
 const ROOT = new URL(self.registration.scope);
-importScripts('./anatomy-plates.js','./quiz-assets.js');
+importScripts('./anatomy-plates.js','./quiz-assets.js','./registry-images.js');
 const FILES = [
+  './registry.html', './registry.css', './registry.js', './registry-blueprints.js', './registry-core.js',
+  './registry-content.js', './registry-images.js', './registry-bank-physics.js', './registry-calculations.js',
+  './registry-bank-acquisition.js', './registry-bank-procedures.js', './registry-bank-safety.js', './registry-bank-pilot.js',
+  ...Object.values(self.RegistryImages).map(asset=>asset.path),
   './app-navigation.js', './app-navigation.css', './anatomy-quiz-ui.js', './atlas-study.js',
   './quiz-assets.js', './atlas/quiz/LICENSE-BY-SA.txt', './atlas/cerebra-preview.webp',
   ...Object.values(self.QuizAssets).map(asset=>asset.asset),
