@@ -27,6 +27,7 @@ const views = [
   { name: 'Sagittal', axis: 0, u: 1, v: 2, edges: 'SIPA' }
 ];
 let image, mask, labels, anchors, cursor;
+let hintOn = false, hintUsed = false;
 let selected = 0, target = 0, activeView = views[0], drawing = false;
 
 const drawingKey = view => 'mri.atlas.drawing.' + packId + '.' + view.axis + '.' + cursor[view.axis];
@@ -58,7 +59,9 @@ function drawView(view) {
       frame.data[offset+1] = gray;
       frame.data[offset+2] = gray;
       frame.data[offset+3] = 255;
-      if (id && alpha) {
+      if (target && hintOn && id === target && !spine) {
+        frame.data[offset]=gray*.35+255*.65;frame.data[offset+1]=gray*.35+210*.65;frame.data[offset+2]=gray*.35+65*.65;
+      } else if (id && alpha) {
         const mix = id === selected ? Math.max(alpha, .65) : alpha;
         const tint = id === selected ? [255,210,95] : [70+(id*31)%144,115+(id*17)%115,105+(id*41)%150];
         for (let c = 0; c < 3; c++) frame.data[offset+c] = gray*(1-mix)+tint[c]*mix;
@@ -77,6 +80,9 @@ function drawView(view) {
       ctx.globalAlpha = 1;
     }
   }
+  if (target && hintOn && spine && anchors[target]?.[axis] === cursor[axis]) {
+    const pt=anchors[target];ctx.strokeStyle='#ffd15f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pt[u]+.5,h-pt[v]-.5,5,0,2*Math.PI);ctx.stroke();
+  }
   ctx.strokeStyle = '#72e5ce';
   ctx.lineWidth = .55;
   const x = cursor[u]+.5, y = h-cursor[v]-.5;
@@ -94,6 +100,9 @@ function drawView(view) {
 }
 
 function render() {
+  el('practiceHint').hidden = !target;
+  el('practiceHint').setAttribute('aria-pressed',String(hintOn && !!target));
+  el('practiceHint').textContent = hintOn && target ? 'Hide location hint' : 'Show location hint';
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
   el('position').textContent = (spine ? 'Scanner RAS (mm) ' : knee ? 'Standardized RAS (mm) ' : 'MNI RAS (mm) ') + cursor.map((voxel, axis) =>
@@ -151,8 +160,8 @@ function tap(view, event) {
   if (target) {
     const correct = id === target;
     el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + '.' : 'Try again. Find ' + labels[target].name + '.';
-    recordPractice(target, correct);
-    if (correct) { target = 0;el('cancelPractice').hidden = true;select(id);updateResults(); }
+    recordPractice(target, correct, hintUsed);
+    if (correct) { target = 0;hintOn = false;el('cancelPractice').hidden = true;select(id);updateResults(); }
   } else {
     el('feedback').textContent = '';
     if (id !== selected) select(id);
@@ -160,11 +169,11 @@ function tap(view, event) {
   render();
 }
 
-function recordPractice(id, correct) {
+function recordPractice(id, correct, assisted = false) {
   try {
     const key = 'mri-study-lab-review-v1';
     const history = JSON.parse(localStorage.getItem(key) ?? '[]');
-    history.unshift({ topic:packId + ':' + id, ok:correct, date:new Date().toISOString() });
+    history.unshift({ topic:packId + ':' + id, ok:correct && !assisted, assisted, correct, date:new Date().toISOString() });
     localStorage.setItem(key,JSON.stringify(history));
   } catch { status('This practice response could not be saved.'); }
 }
@@ -319,6 +328,7 @@ el('practice').onclick = () => {
   if (!visible.size) {el('feedback').textContent='Scroll to a slice containing brain anatomy first.';return;}
   const candidates = [...visible];
   el('cancelPractice').hidden = false;
+  hintOn = false;hintUsed = false;
   target = candidates[Math.floor(Math.random()*candidates.length)];
   selected = 0;el('notesPanel').hidden = true;el('reference').replaceChildren();el('structure').textContent = 'Identification practice';
   el('details').textContent = 'Find the named structure on one of the current views.';
@@ -326,8 +336,14 @@ el('practice').onclick = () => {
   updateResults();render();
 };
 el('cancelPractice').onclick = () => {
-  target = 0;el('cancelPractice').hidden = true;el('feedback').textContent = '';
+  target = 0;hintOn = false;el('cancelPractice').hidden = true;el('feedback').textContent = '';
   select(mask.p[index(cursor)]);updateResults();render();
+};
+el('practiceHint').onclick = () => {
+  if (!target) return;
+  hintOn = !hintOn;
+  if (hintOn) { hintUsed = true; if (anchors[target]) cursor = [...anchors[target]]; }
+  render();
 };
 el('ink').onclick = () => {
   drawing = !drawing;el('ink').setAttribute('aria-pressed',drawing);
