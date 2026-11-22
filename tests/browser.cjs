@@ -42,6 +42,10 @@ async function run() {
     await page.getByRole('button',{name:'Physics Sandbox'}).click();
     await page.locator('#sField').selectOption('3');
     assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
+    await page.getByRole('button',{name:'Protocol Builder'}).click();
+    assert.match(await page.locator('#protoCoverage').textContent(), /60.0 mm/);
+    await page.locator('#protoNew').click();
+    assert.match(await page.locator('#protoInstruction').textContent(),/axial brain stack/);
     await page.getByRole('button',{name:'Slice Planner'}).click();
     await page.locator('#quicknote').fill('Existing notebook entry');
     await page.locator('#quickSave').click();
