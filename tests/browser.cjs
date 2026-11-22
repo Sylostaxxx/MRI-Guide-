@@ -117,6 +117,13 @@ async function run() {
     assert.equal(await page.locator('.plate-point.hinted').count(),1);
     await page.locator('.plate-point.hinted').click();
     assert.match(await page.locator('#plateFeedback').textContent(),/with a hint/);
+    await page.getByRole('button',{name:'Mixed anatomy exam'}).click();
+    for(let question=0;question<6;question++){
+      await page.getByRole('button',{name:'Plate location hint'}).click();
+      await page.locator('.plate-point.hinted').click();
+      await page.getByRole('button',{name:'Next question'}).click();
+    }
+    assert.match(await page.locator('#plateFeedback').textContent(),/Exam complete.*6 assisted/);
     await page.getByRole('button',{name:'Side-by-Side Comparison'}).click();
     assert.equal(await page.locator('#views').isVisible(),true);
     assert.equal(await page.locator('#atlasPlate').isVisible(),true);

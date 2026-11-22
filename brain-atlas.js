@@ -43,8 +43,8 @@ let selected = 0, target = 0, activeView = views[0], drawing = false;
 let layers, enabled = new Set(), isolated = 0, mode = 'mri', panning = false, timeout;
 const preferenceKey = 'mri.atlas.layers.' + packId;
 const tones = Object.create(null);
-const setPracticePlate=platePractice(el);
-const plates = {brain:['brainstem','brain-cross'],spine:['cervical',null],knee:['knee',null],cardiac:['heart','heart-cross']};
+const setPracticePlate=platePractice(el,drawPlate);
+const plates = {brain:['brainstem','brain-cross'],spine:['cervical',null],knee:['knee','knee-cross'],cardiac:['heart','heart-cross']};
 
 function updatePlate() {
   const [illustrated,cross] = plates[region];
@@ -52,7 +52,10 @@ function updatePlate() {
   const sectionMatch=region==='brain'&&/Caudate|Putamen|Pallidum|Lateral Ventricle/.test(name??'');
   const match=region==='brain'&&name?.endsWith('Thalamus')?'diencephalon':sectionMatch?cross:illustrated;
   const key=mode==='cross'?cross:mode==='compare'?match:illustrated;
-  setPracticePlate(key);
+  setPracticePlate(key);drawPlate(key);
+}
+
+function drawPlate(key) {
   const plate = AnatomyPlates[key];
   const picture=el('plateImage'), caption=el('plateCaption');
   picture.hidden=!plate;
@@ -68,6 +71,7 @@ function updatePlate() {
   const license=document.createElement('a');
   license.href=plate.licenseUrl;license.textContent=plate.license;
   caption.append(source,' · '+plate.author+' · ',license);
+  if(plate.changes)caption.append('. '+plate.changes);
 }
 
 function setMode(next) {

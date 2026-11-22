@@ -61,7 +61,7 @@ aside{margin-block:16px}dt{font-weight:700;margin-top:.5rem}dd{margin-left:0}.re
 </div>
 <figure class="plate" id="atlasPlate" hidden>
 <div class="plate-surface"><img id="plateImage" alt=""><div id="platePoints"></div></div>
-<div class="controls"><button id="platePractice" hidden>Practice on this plate</button><button id="plateHint" hidden>Plate location hint</button><button id="plateFinish" hidden>End plate practice</button><span class="plate-token" id="plateToken" hidden></span></div>
+<div class="controls"><button id="plateMixed">Mixed anatomy exam</button><button id="platePractice" hidden>Practice on this plate</button><button id="plateHint" hidden>Plate location hint</button><button id="plateNext" hidden>Next question</button><button id="plateFinish" hidden>End plate practice</button><span class="plate-token" id="plateToken" hidden></span></div>
 <p id="plateFeedback" role="status"></p>
 <figcaption id="plateCaption"></figcaption>
 <p>Textbook reference. The illustration and MRI use independent coordinates. MRI overlays come from the downloaded dataset.</p>
@@ -71,7 +71,7 @@ aside{margin-block:16px}dt{font-weight:700;margin-top:.5rem}dd{margin-left:0}.re
 <aside aria-labelledby="structure">
 <h2 id="structure">Find a structure</h2>
 <p id="details">Tap a labeled voxel or search by anatomical name.</p>
-<dl id="reference"></dl><div class="controls"><label>Practice scope <select id="scope"><option value="visible">Current slices</option><option value="layers">Enabled layers · all slices</option></select></label><label>Time limit <select id="timer"><option value="0">Untimed</option><option value="20">20 seconds</option><option value="45">45 seconds</option></select></label><label>Search structures <input id="search" type="search"></label><button id="practice">Practice identification</button><button id="practiceSelected" hidden>Practice this structure</button><output id="timeLeft"></output><button id="practiceHint" hidden aria-pressed="false">Show location hint</button><button id="cancelPractice" hidden>End practice</button></div>
+<dl id="reference"></dl><div class="controls"><label>Difficulty / scope <select id="scope"><option value="visible">Current slices</option><option value="layers">Enabled layers · all slices</option></select></label><label>Time limit <select id="timer"><option value="0">Untimed</option><option value="20">20 seconds</option><option value="45">45 seconds</option></select></label><label>Search structures <input id="search" type="search"></label><button id="practice">Practice identification</button><button id="practiceSelected" hidden>Practice this structure</button><output id="timeLeft"></output><button id="practiceHint" hidden aria-pressed="false">Show location hint</button><button id="cancelPractice" hidden>End practice</button></div>
 <div id="results" class="results"></div><p id="feedback" role="status"></p>
 <div id="notesPanel" hidden><label for="notes">My structure notes</label><textarea id="notes"></textarea><button id="save">Save structure notes</button></div>
 </aside>

@@ -142,5 +142,15 @@ globalThis.AnatomyPlates = {
     "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
     "author": "OpenStax, Rice University",
     "sha256": "4eaa095d57c9607cc14889450cbeeb0cc440dcbc6b6f12b8ebdce3c59c2aebff"
+  },
+  "knee-cross": {
+    "asset": "./atlas/plates/knee-cross.webp",
+    "title": "Knee Joint · sagittal section and superior view",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/9-6-anatomy-of-selected-synovial-joints#fig-ch09_06_06",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "ec1dd63f7f3a3c808b845350d050e1d2d5d6b5d7535c403760e02ebbacbb21f4",
+    "changes": "Cropped to panels a and b; original callouts retained."
   }
 };
