@@ -1,5 +1,5 @@
 (() => {
-  const el=id=>document.getElementById(id), {systems,cases}=StudyContent;
+  const el=id=>document.getElementById(id), {cases}=StudyContent;
   const sections={systems:'Organ systems',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
     positioning:'Patient Positioning',pathology:'Pathology Explorer',safety:'MRI Safety',
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
@@ -21,27 +21,59 @@
     const control=button(name,()=>show(key));control.dataset.section=key;el('sections').append(control);
   }
 
-  for (const [index,[name]] of systems.entries()) el('system').add(new Option(name,index));
+  const regions=[...new Set(OrganCatalog.flatMap(system=>system.entries.map(entry=>entry.region)))].sort();
+  for(const name of regions)el('bodyRegion').add(new Option(name,name));
+  const match=entry=>!el('bodyRegion').value||entry.region===el('bodyRegion').value;
+  let activeOrgan;
+
+  function updateSystems() {
+    const previous=el('system').value;
+    el('system').replaceChildren();
+    OrganCatalog.forEach(({system,entries},index)=>{
+      if(entries.some(match))el('system').add(new Option(system,index));
+    });
+    if([...el('system').options].some(option=>option.value===previous))el('system').value=previous;
+    updateOrganChoices();
+  }
+  function updateOrganChoices() {
+    const entries=OrganCatalog[Number(el('system').value)].entries.filter(match);
+    el('organChoice').replaceChildren(...entries.map(entry=>new Option(entry.name,entry.id)));
+    organ();
+  }
   function organ() {
-    const [,name,location,role,pathology,diagram,mri]=systems[Number(el('system').value)];
+    const entry=activeOrgan=OrganCatalog[Number(el('system').value)].entries.find(item=>item.id===el('organChoice').value);
+    const {name,location,role,pathology,plate:plateId,mri,target,facts}=entry;
+    const plate=AnatomyPlates[plateId];
     el('structure').textContent=name;el('location').textContent=location;
     el('function').textContent=role;el('pathologyText').textContent=pathology;
-    el('organ').setAttribute('d',diagram);el('diagram').setAttribute('aria-label',name+' schematic');
+    el('diagram').src=plate.asset;el('diagram').alt=plate.title;
+    const source=document.createElement('a');source.href=plate.source;source.textContent=plate.title;
+    const license=document.createElement('a');license.href=plate.licenseUrl;license.textContent=plate.license;
+    el('diagramCredit').replaceChildren(source,' · '+plate.author+' · ',license);
+    el('organDetails').replaceChildren();
+    facts?.forEach((value,i)=>{
+      const term=document.createElement('dt'),text=document.createElement('dd');
+      term.textContent=['Neighbors','MRI appearance','Relevant sequences','Clinical significance'][i];
+      text.textContent=value;el('organDetails').append(term,text);
+    });
     el('mri').replaceChildren();
     if (mri) {
       const link=document.createElement('a');
-      link.href='./brain-atlas.html'+(mri==='brain'?'':'?region='+mri);
-      link.textContent='Explore the real '+mri+' MRI atlas';
+      const params=new URLSearchParams({region:mri,structure:target});
+      link.href='./brain-atlas.html?'+params;
+      link.textContent='Open the corresponding real MRI structure';
       el('mri').append(link);
-    } else el('mri').textContent='This structure has a schematic illustration.';
+    } else el('mri').textContent='A corresponding labeled MRI is unavailable in this collection.';
     el('organStatus').textContent='';
-    try { el('organNote').value=localStorage.getItem('mri.scan.note.system.'+el('system').value)??''; }
+    try { el('organNote').value=localStorage.getItem('mri.scan.note.system.'+entry.id)??''; }
     catch { el('organNote').value='';el('organStatus').textContent='Browser storage unavailable.'; }
   }
-  el('system').onchange=organ;
+  el('bodyRegion').onchange=updateSystems;
+  el('system').onchange=updateOrganChoices;
+  el('organChoice').onchange=organ;
   el('organSave').onclick=()=>{
     try {
-      localStorage.setItem('mri.scan.note.system.'+el('system').value,el('organNote').value);
+      localStorage.setItem('mri.scan.note.system.'+activeOrgan.id,el('organNote').value);
       el('organStatus').textContent='Structure note saved.';
     } catch { el('organStatus').textContent='Structure note could not be saved.'; }
   };
@@ -87,7 +119,7 @@
     try {
       for (const attempt of read()) {
         const [family,id]=attempt.topic.split(':');
-        const name=family==='training'?(sections[id]??'Training'):({
+        const name=family==='training'?(sections[id]??'Training'):family==='illustrated'?'Illustrated anatomy':({
           cerebra:'Brain atlas',cerebra1:'Brain atlas',spine1:'Spine atlas',knee1:'Knee atlas',cardiac1:'Cardiac atlas'
         }[family]??'Pre-study quiz');
         const row=totals.get(name)??{independent:0,correct:0,assisted:0};
@@ -139,6 +171,6 @@
     }[type];
   }
   for (const id of ['severity','artifactType','artifactAxis']) el(id).oninput=artifact;
-  organ();const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');
+  updateSystems();const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
 })();

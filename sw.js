@@ -1,6 +1,10 @@
-const CACHE = 'mri-study-lab-shell-8';
+const CACHE = 'mri-study-lab-shell-10';
 const ROOT = new URL(self.registration.scope);
+importScripts('./anatomy-plates.js');
 const FILES = [
+  './anatomy-plates.js', './organ-catalog.js', './atlas-layers.js', './atlas-plate-practice.js',
+  './atlas/plates/LICENSE-BY.txt', './atlas/plates/LICENSE-BY-NC-SA.txt',
+  ...Object.values(self.AnatomyPlates).map(plate=>plate.asset),
   './', './index.html', './manifest.webmanifest', './icon.png', './real-scans.html',
   './study-center.html', './study-center.js', './study-content.js', './planner-geometry.js', './real-planner.js', './brain-atlas.html', './brain-atlas.js', './brain-reference.js', './nifti.js', './study-backup.js', './mri-physics.js', './physics-view.js'
 ];

@@ -33,7 +33,7 @@ The brain pack documents file provenance in [atlas/manifest.json](atlas/manifest
 | OHIF | Full viewer platform suited to DICOMweb workflows. A broader integration than the current static app needs for local learning packs. |
 | Papaya | A possible NIfTI viewer fallback. Compare its touch controls, segmentation picking, and offline distribution with NiiVue. |
 
-The current milestone reuses the scalar NIfTI-1 parser shared with the existing library. The atlas explicitly checks for its supported axis-aligned RAS+ grid. The existing DICOM preview supports a subset of uncompressed monochrome inputs. Compressed DICOM, general affine orientation and segmentation imports, persistent imported volumes, measurements, and pan and zoom remain open.
+The current milestone reuses the scalar NIfTI-1 parser shared with the existing library. The atlas explicitly checks for its supported axis-aligned RAS+ grid. The existing DICOM preview supports a subset of uncompressed monochrome inputs. Compressed DICOM, general affine orientation and segmentation imports, persistent imported volumes and measurements remain open. Zoom and pan are available in the atlas.
 
 ## Remaining development
 
@@ -56,3 +56,11 @@ The Slice Planner loads brain, cervical spine and knee localizers from the origi
 - The mastery dashboard reports independent accuracy and assisted attempts separately. Training results and organ notes use the existing study-backup format.
 
 The [CHAOS training release](https://doi.org/10.5281/zenodo.3431873) is a candidate for abdominal MRI. Its T1 dual-echo and T2 SPIR DICOM series have liver, kidney and spleen masks. A deployable example still needs an individual series and mask alignment check.
+
+## Advanced Anatomy Explorer
+
+- Added OpenStax textbook plates for all 11 systems and 22 selectable structures with region and system filters. Source links, licenses and file hashes are in [anatomy-plates.js](anatomy-plates.js). Most plates are from Anatomy and Physiology 2e under CC BY-NC-SA 4.0. The reproductive plate is from the first edition under CC BY 4.0. The bundle retains original callouts and uses WebP delivery.
+- The four viewing modes use MRI, textbook plates, licensed brain, knee and cardiac sectional plates, and a side-by-side layout. Curated links open corresponding MRI structures. The MRI volumes and textbook plates use independent coordinate spaces. Illustration points are checked landmarks on specific figures. Aligned illustration layers and registered overlays remain unavailable.
+- MRI layer controls use existing pack labels, with color, combined visibility, opacity, isolation and per-pack preferences included in study backup. Cervical labels are point landmarks. Unsupported categories are marked unavailable. Linked slice viewing, window/level, zoom, pan and slice drawings are available.
+- MRI practice supports current slices, enabled-layer coverage, individual structures, and optional time limits. Guided illustration exercises support taps and drag-and-drop on three labeled plates. A six-question mixed exam covers the brain, heart and knee and reports assisted answers separately. Broader exam coverage remains open.
+- Full-resolution MRI volumes still use the existing downloadable packs and storage keys. Textbook plates are cached with the application shell. Physical iPad and Apple Pencil validation and protocol reference image export remain open.

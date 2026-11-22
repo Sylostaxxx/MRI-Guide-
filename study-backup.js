@@ -3,20 +3,24 @@
   const review = 'mri-study-lab-review-v1';
   const scanPrefix = 'mri.scan.note.';
   const drawingPrefix = 'mri.atlas.drawing.';
+  const layerPrefix = 'mri.atlas.layers.';
 
   function read(storage) {
     const scanNotes = Object.create(null);
     const drawings = Object.create(null);
+    const layers = Object.create(null);
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
       if (key.startsWith(scanPrefix)) scanNotes[key] = storage.getItem(key);
       if (key.startsWith(drawingPrefix)) drawings[key] = JSON.parse(storage.getItem(key));
+      if (key.startsWith(layerPrefix)) layers[key] = JSON.parse(storage.getItem(key));
     }
     return {
       notes: JSON.parse(storage.getItem(notebook) ?? '{"notes":[]}').notes,
       history: JSON.parse(storage.getItem(review) ?? '[]'),
       scanNotes,
-      drawings
+      drawings,
+      layers
     };
   }
 
@@ -32,7 +36,7 @@
     if (Object.keys(data).length && Object.keys(data).every(key => key.startsWith(scanPrefix))) {
       data = { notes: [], scanNotes: data };
     }
-    const { notes, history = [], scanNotes = {}, drawings = {} } = data;
+    const { notes, history = [], scanNotes = {}, drawings = {}, layers = {} } = data;
     if (!Array.isArray(notes) || notes.some(note => !note ||
         !['id', 'region', 'body'].every(field => typeof note[field] === 'string') ||
         !note.id || !note.region)) throw Error('Invalid notebook entries.');
@@ -45,7 +49,10 @@
       strokes.every(stroke => Array.isArray(stroke) && stroke.length &&
         stroke.every(point => Array.isArray(point) && point.length === 2 &&
           point.every(coordinate => Number.isFinite(coordinate) && coordinate >= 0 && coordinate <= 1))));
-    return { notes, history, scanNotes, drawings };
+    validateMap(layers, layerPrefix, entry => entry && Array.isArray(entry.enabled) &&
+      entry.enabled.every(id=>typeof id==='string') && Number.isFinite(entry.opacity) &&
+      entry.opacity>=0 && entry.opacity<=85 && typeof entry.overlay==='boolean');
+    return { notes, history, scanNotes, drawings, layers };
   }
 
   function merge(local, imported) {
@@ -85,7 +92,8 @@
       notes: [...notes.values()].sort((a, b) => String(b.created ?? '').localeCompare(String(a.created ?? ''))),
       history: [...attempts.values()].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
       scanNotes,
-      drawings
+      drawings,
+      layers: { ...imported.layers, ...local.layers }
     };
   }
 
@@ -95,6 +103,7 @@
       [notebook]: JSON.stringify({ version: 1, notes: result.notes }),
       [review]: JSON.stringify(result.history),
       ...result.scanNotes,
+      ...Object.fromEntries(Object.entries(result.layers).map(([key, value]) => [key, JSON.stringify(value)])),
       ...Object.fromEntries(Object.entries(result.drawings).map(([key, strokes]) => [key, JSON.stringify(strokes)]))
     };
     const applied = [];

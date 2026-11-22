@@ -2,15 +2,14 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Study Center | MRI Study Lab</title>
 <style>
-:root{color-scheme:dark;background:#101826;color:#eef5ff;font:16px/1.55 system-ui}main{max-width:920px;padding:22px;margin:auto}a{color:#79e3cc}button,textarea,select,input{font:inherit}button,textarea,select{color:inherit;background:#23344a;border:1px solid #638399;border-radius:8px;padding:9px 12px;min-height:44px}button:enabled{cursor:pointer}button[aria-current=true]{border-color:#79e3cc;color:#79e3cc}.nav,.options{display:flex;gap:8px;flex-wrap:wrap}.options{flex-direction:column;align-items:flex-start}.panel{background:#182538;border-radius:12px;padding:18px;margin:18px 0}.figure{display:block;width:min(100%,260px);height:auto;background:#0b1320;border-radius:10px}textarea{width:100%;box-sizing:border-box}.dashboard{width:100%;text-align:left;border-collapse:collapse}.dashboard td,.dashboard th{padding:8px 6px;border-bottom:1px solid #495b72}canvas{display:block;width:min(100%,384px);height:auto;background:#080c13}.small{color:#beccda}[hidden]{display:none!important}
+:root{color-scheme:dark;background:#101826;color:#eef5ff;font:16px/1.55 system-ui}main{max-width:920px;padding:22px;margin:auto}a{color:#79e3cc}button,textarea,select,input{font:inherit}button,textarea,select{color:inherit;background:#23344a;border:1px solid #638399;border-radius:8px;padding:9px 12px;min-height:44px}button:enabled{cursor:pointer}button[aria-current=true]{border-color:#79e3cc;color:#79e3cc}.nav,.options{display:flex;gap:8px;flex-wrap:wrap}.options{flex-direction:column;align-items:flex-start}.panel{background:#182538;border-radius:12px;padding:18px;margin:18px 0}.figure{display:block;width:100%;max-height:720px;object-fit:contain;background:#fff;border-radius:10px}figure{margin:18px 0}.organ-filters{display:flex;gap:12px;flex-wrap:wrap}.organ-filters label{display:grid;gap:3px}textarea{width:100%;box-sizing:border-box}.dashboard{width:100%;text-align:left;border-collapse:collapse}.dashboard td,.dashboard th{padding:8px 6px;border-bottom:1px solid #495b72}canvas{display:block;width:min(100%,384px);height:auto;background:#080c13}.small{color:#beccda}[hidden]{display:none!important}
 </style></head><body><main>
 <a href="./">MRI Study Lab</a><h1>Study Center</h1><nav id="sections" class="nav" aria-label="Study activities"></nav>
-<section id="systems" class="panel"><h2>Organ systems</h2><label>System <select id="system"></select></label><h3 id="structure"></h3>
-<svg class="figure" viewBox="0 0 180 105" role="img" id="diagram"><path id="organ" fill="#285765" stroke="#8de5d4" stroke-width="2.5" stroke-linejoin="round"/></svg>
-<p class="small">Original schematic illustration</p>
-<dl><dt>Location</dt><dd id="location"></dd><dt>Function</dt><dd id="function"></dd><dt>Common pathology</dt><dd id="pathologyText"></dd></dl>
+<section id="systems" class="panel"><h2>Anatomy Explorer</h2>
+<div class="organ-filters"><label>Body region <select id="bodyRegion"><option value="">All regions</option></select></label><label>System <select id="system"></select></label><label>Structure <select id="organChoice"></select></label></div>
+<h3 id="structure"></h3><figure><img class="figure" id="diagram" alt=""><figcaption id="diagramCredit"></figcaption></figure>
+<dl><dt>Location</dt><dd id="location"></dd><dt>Function</dt><dd id="function"></dd><dt>Common pathology</dt><dd id="pathologyText"></dd></dl><dl id="organDetails"></dl>
 <p id="mri"></p><label for="organNote">My structure notes</label><textarea id="organNote"></textarea><button id="organSave">Save note</button><p id="organStatus" role="status"></p>
-<p class="small"><a href="https://openstax.org/details/books/anatomy-and-physiology-2e">Anatomy reference · OpenStax Anatomy and Physiology 2e</a></p>
 </section>
 <section id="artifact" class="panel" hidden><h2>Artifact Simulator</h2><p>Synthetic two-tissue phantom. Compare idealized artifact patterns as you change direction and severity.</p>
 <label>Artifact <select id="artifactType"><option value="ghost">Motion ghosting</option><option value="wrap">Phase wrap</option><option value="shift">Chemical shift</option></select></label>
@@ -22,4 +21,4 @@
 <section id="mastery" class="panel" hidden><h2>My mastery</h2><p>Independent accuracy excludes attempts that used a location hint. Results stay on this device and are included in the study backup.</p>
 <table class="dashboard"><thead><tr><th>Study area</th><th>Independent correct</th><th>Assisted attempts</th></tr></thead><tbody id="masteryRows"></tbody></table>
 </section>
-</main><script src="./study-content.js"></script><script src="./study-center.js"></script></body></html>
+</main><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-center.js"></script></body></html>
