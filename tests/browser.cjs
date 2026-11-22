@@ -312,6 +312,7 @@ async function run() {
     assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
     await page.goto(home+'registry.html');
     await page.getByText(/232 original study items/).waitFor();
+    await page.locator('#profile').selectOption('armrit');
     await page.locator('#startTutor').click();
     await page.locator('#hint').click();
     await page.locator('#choices input').first().click();

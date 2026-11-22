@@ -83,11 +83,21 @@
   }
   function selectTutor(bank,history,{count,category,subject,kind='mixed',armrit=false,now=Date.now()}){
     const outcomes=new Map();
+    const topics=new Map();
+    const byId=new Map(bank.map(question=>[question.id,question]));
     for(const entry of [...history].reverse())for(const item of entry.items){
       if(!item.scored)continue;
+      const question=byId.get(item.id);
       const old=outcomes.get(item.id)??{streak:0};
       const independent=item.correct&&!item.assisted;
       const streak=independent?old.streak+1:0;
+      if(question){
+        for(const key of [question.category,question.category+':'+question.topic]){
+          const row=topics.get(key)??{count:0,missed:0};
+          row.count++;row.missed+=Number(!independent);
+          topics.set(key,row);
+        }
+      }
       outcomes.set(item.id,{streak,missed:!independent,due:Date.parse(entry.date)+Math.min(30,2**streak)*day});
     }
     const pool=bank.filter(q=>!q.pilot&&(!category||q.category===category)&&(!subject||q.armritSubject===subject)&&
@@ -97,7 +107,15 @@
       (kind!=='due'||(outcomes.has(q.id)&&outcomes.get(q.id).due<=now)));
     const random=kind==='daily'?seeded(new Date(now).toISOString().slice(0,10)):Math.random;
     const weighted=shuffle(pool,random);
-    if(kind==='missed'||kind==='due'||kind==='weak'){
+    if(kind==='weak'){
+      const missRate=key=>{
+        const record=topics.get(key);
+        return record?record.missed/record.count:0;
+      };
+      const priority=q=>2*Number(outcomes.get(q.id)?.missed??false)+
+        missRate(q.category+':'+q.topic)+0.75*missRate(q.category);
+      weighted.sort((a,b)=>priority(b)-priority(a));
+    }else if(kind==='missed'||kind==='due'){
       weighted.sort((a,b)=>Number(outcomes.get(b.id)?.missed??false)-Number(outcomes.get(a.id)?.missed??false));
     }
     return weighted.slice(0,count);
