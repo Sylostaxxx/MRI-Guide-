@@ -1,16 +1,18 @@
-// Coordinates refer to the named structures on the exact bundled textbook plate.
-const landmarks = {
-  'brain-cross': {
-    Caudate:[.445,.648],Putamen:[.367,.655],Pallidum:[.411,.697],'Lateral ventricle':[.482,.618]
-  },
-  heart: {
-    'Left atrium':[.581,.317],'Right atrium':[.359,.415],
-    'Left ventricle':[.613,.615],'Right ventricle':[.378,.559]
-  },
-  'knee-cross': {
-    Femur:[.207,.243],Patella:[.279,.325],Tibia:[.204,.638],'Medial meniscus':[.704,.514]
-  }
+// Normalized points reviewed on the exact unlabeled assets in quiz-assets.js.
+export const illustrationTargets = {
+  brain: [
+    ['Cerebellum',.741,.606],['Pituitary gland',.416,.597],
+    ['Thalamus',.524,.402],['Spinal cord',.619,.854]
+  ],
+  heart: [
+    ['Left atrium',.62,.447,'cardiac1:1'],['Right atrium',.268,.573],
+    ['Left ventricle',.742,.723],['Right ventricle',.435,.752]
+  ],
+  knee: [
+    ['Femur',.582,.274,'knee1:1'],['Patella',.105,.496],['Tibia',.608,.817],['Femoral cartilage',.561,.635,'knee1:2']
+  ]
 };
+export const verifiedVariant = Object.freeze({brainstem:'brain','brain-cross':'brain',diencephalon:'brain',heart:'heart','heart-cross':'heart',knee:'knee','knee-cross':'knee'});
 
 function shuffle(values) {
   const items=[...values];
@@ -21,91 +23,72 @@ function shuffle(values) {
   return items;
 }
 
-export function platePractice(el, display) {
-  let plate, source, task, assisted, exam;
-  const stage=el('platePoints'), feedback=el('plateFeedback'), token=el('plateToken');
-  function clear() {
-    task=null;assisted=false;stage.replaceChildren();
-    token.hidden=true;el('plateHint').hidden=true;el('plateFinish').hidden=true;
-    el('plateNext').hidden=true;
-  }
+export function platePractice(el, ui, display, layout, done) {
+  let source, deck=[], index=0, assisted=false, hinted=false, locked=false, total=0, scores;
+  const stage=el('platePoints');
   function finish() {
-    clear();
-    exam=null;display(source);plate=source;
-    feedback.textContent='';
+    deck=[];stage.replaceChildren();ui.close();layout(false);display(source);
   }
-  function answer(name) {
-    if(!task)return;
-    const expected=task, correct=expected===name;
-    try {
-      const key='mri-study-lab-review-v1';
-      const history=JSON.parse(localStorage.getItem(key)??'[]');
-      history.unshift({topic:'illustrated:'+plate+':'+expected,ok:correct&&!assisted,assisted,correct,date:new Date().toISOString()});
-      localStorage.setItem(key,JSON.stringify(history));
-    } catch {}
-    if(exam){
-      if(assisted)exam.assisted++;
-      if(correct&&!assisted)exam.independent++;
-      clear();
-      el('plateNext').hidden=false;el('plateFinish').hidden=false;
-      feedback.textContent=correct?'Correct · '+expected+'.':'Correct location · '+expected+'.';
-    }else if(correct){
-      feedback.textContent='Correct · '+name+(assisted?' with a hint.':'.');clear();
-    }else feedback.textContent='Try again. Locate '+task+'.';
+  function next() {
+    if (++index<total) { show();return; }
+    done('Quiz complete · '+scores.correct+' correct without a hint · '+scores.assisted+' assisted.');
+    finish();
   }
-  function start(target) {
-    clear();
-    const items=Object.entries(landmarks[plate]);
-    task=target??shuffle(items)[0][0];
-    token.hidden=false;token.textContent=task;token.draggable=true;
-    el('plateHint').hidden=false;el('plateFinish').hidden=false;
-    const prefix=exam?'Question '+(exam.index+1)+' of '+exam.deck.length+'. ':'';
-    feedback.textContent=prefix+'Tap the point on the plate, or drag the label to it.';
-    for(const [index,[name,[x,y]]] of items.entries()) {
-      const point=document.createElement('button');
+  function show() {
+    const [key,expected]=deck[index], [name]=expected;
+    assisted=false;hinted=false;locked=false;
+    display(key,true);
+    stage.replaceChildren();
+    let correctPoint;
+    function answer(choice) {
+      if(locked)return;
+      const correct=choice===expected;
+      try {
+        const storageKey='mri-study-lab-review-v1';
+        const history=JSON.parse(localStorage.getItem(storageKey)??'[]');
+        history.unshift({topic:'illustrated:'+key+':'+name,structureId:expected[3],ok:correct&&!assisted,assisted,correct,date:new Date().toISOString()});
+        localStorage.setItem(storageKey,JSON.stringify(history));
+      } catch {}
+      if(!correct&&el('retry').checked){ui.feedback('Incorrect. Try another location.','incorrect');return;}
+      locked=true;
+      scores.correct+=Number(correct&&!assisted);scores.assisted+=Number(assisted);
+      for(const point of stage.children)point.disabled=true;
+      correctPoint.classList.remove('hinted');
+      correctPoint.classList.add('answered');
+      ui.result(correct?(assisted?'Correct with a hint.':'Correct. Independent recall.'):'Incorrect. The correct location is marked.',correct?'correct':'incorrect');
+    }
+    for(const [position,choice] of illustrationTargets[key].entries()) {
+      const [,x,y]=choice, point=document.createElement('button');
       point.className='plate-point';point.type='button';
       point.style.left=x*100+'%';point.style.top=y*100+'%';
-      point.textContent=index+1;
-      point.setAttribute('aria-label','Location '+(index+1));
-      point.onclick=()=>answer(name);
+      point.textContent=position+1;
+      point.setAttribute('aria-label','Location '+(position+1));
+      point.onclick=()=>answer(choice);
       point.ondragover=event=>event.preventDefault();
-      point.ondrop=event=>{
-        event.preventDefault();
-        if(event.dataTransfer.getData('text/plain')===task)answer(name);
-      };
-      point.dataset.target=name;
+      point.ondrop=event=>{event.preventDefault();if(event.dataTransfer.getData('text/plain')===name)answer(choice);};
+      if(choice===expected)correctPoint=point;
       stage.append(point);
     }
+    ui.show({name,number:index+1,total,drag:true,next,exit:finish,hint(){
+      hinted=!hinted;assisted=true;
+      correctPoint.classList.toggle('hinted',hinted);ui.hint(hinted);
+    }});
   }
-  function showExamQuestion() {
-    const [key,name]=exam.deck[exam.index];
-    plate=key;display(plate);start(name);
+  function start(items) {
+    if(!items.length||items.some(([key])=>!Object.hasOwn(QuizAssets,key)))return;
+    deck=items;index=0;total=items.length;scores={correct:0,assisted:0};
+    layout(true);show();
   }
-  token.ondragstart=event=>event.dataTransfer.setData('text/plain',task);
-  el('platePractice').onclick=()=>{finish();start();};
-  el('plateMixed').onclick=()=>{
-    finish();
-    exam={index:0,independent:0,assisted:0,
-      deck:shuffle(Object.entries(landmarks).flatMap(([key,points])=>
-        shuffle(Object.keys(points)).slice(0,2).map(name=>[key,name])))};
-    showExamQuestion();
+  el('platePractice').onclick=()=>{
+    const key=verifiedVariant[source];
+    if(key)start(shuffle(illustrationTargets[key]).slice(0,3).map(item=>[key,item]));
   };
-  el('plateNext').onclick=()=>{
-    if(++exam.index<exam.deck.length){showExamQuestion();return;}
-    const {deck,independent,assisted:guided}=exam;
-    finish();
-    feedback.textContent='Exam complete · '+independent+' of '+deck.length+' correct without a hint · '+guided+' assisted.';
-  };
-  el('plateHint').onclick=()=>{
-    if(!task)return;
-    assisted=true;
-    for(const point of stage.children)point.classList.toggle('hinted',point.dataset.target===task);
-    feedback.textContent='The correct textbook landmark is marked in yellow. Choose it to answer.';
-  };
-  el('plateFinish').onclick=finish;
+  el('plateMixed').onclick=()=>start(shuffle(Object.entries(illustrationTargets).flatMap(([key,items])=>
+    shuffle(items).slice(0,2).map(item=>[key,item]))));
   return next=>{
-    if(source===next)return;
-    clear();source=next;plate=next;exam=null;feedback.textContent='';
-    el('platePractice').hidden=!landmarks[plate];
+    source=next;
+    el('platePractice').hidden=!verifiedVariant[source];
+    el('plateUnavailable').hidden=!source||!!verifiedVariant[source];
+    el('plateMixed').hidden=!source;
   };
 }

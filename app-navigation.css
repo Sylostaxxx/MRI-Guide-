@@ -1,0 +1,8 @@
+.primary-nav{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:6px 0 14px;border-bottom:1px solid #364e65;margin-bottom:16px}
+.primary-nav .app-mark{font-weight:750;font-size:1.14rem;white-space:nowrap;color:#f2f8ff;text-decoration:none}
+.primary-links{display:flex;flex:1;gap:4px 7px;flex-wrap:wrap;align-items:center}
+.primary-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 10px;color:#c2d7e9;border-radius:8px;font-weight:650;text-decoration:none}
+.primary-links a[aria-current=page]{background:#233b50;color:#a5f4df}
+.primary-links a:hover,.primary-links a:focus-visible{background:#263b51;color:#fff}
+.primary-links .settings-link{margin-left:auto;font-size:.9rem}
+@media(max-width:650px){.primary-links{flex-basis:100%}.primary-links a{padding:0 8px}.primary-links .settings-link{margin-left:0}}

@@ -11,6 +11,10 @@
   }
   function show(section) {
     course=section;step=0;score=0;
+    const area={systems:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
+    AppNavigation.active(area[section]??'clinical');
+    el('studyTitle').textContent=section==='systems'?'Anatomy Explorer':'Study Center';
+
     for (const key of ['systems','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
     for (const node of el('sections').children) node.setAttribute('aria-current',String(node.dataset.section===section));
     if (section==='artifact') artifact();
@@ -25,6 +29,7 @@
   for(const name of regions)el('bodyRegion').add(new Option(name,name));
   const match=entry=>!el('bodyRegion').value||entry.region===el('bodyRegion').value;
   let activeOrgan;
+  const sharedIds={'1':'knee1:1','3':'cerebra1:62','3.1':'cerebra1:91','5':'cardiac1:1'};
 
   function updateSystems() {
     const previous=el('system').value;
@@ -60,12 +65,12 @@
     if (mri) {
       const link=document.createElement('a');
       const params=new URLSearchParams({region:mri,structure:target});
-      link.href='./brain-atlas.html?'+params;
+      link.href=sharedIds[entry.id]?AtlasStudy.link(sharedIds[entry.id]):'./brain-atlas.html?'+params;
       link.textContent='Open the corresponding real MRI structure';
       el('mri').append(link);
     } else el('mri').textContent='A corresponding labeled MRI is unavailable in this collection.';
     el('organStatus').textContent='';
-    try { el('organNote').value=localStorage.getItem('mri.scan.note.system.'+entry.id)??''; }
+    try { el('organNote').value=sharedIds[entry.id]?AtlasStudy.readNote(sharedIds[entry.id]):localStorage.getItem('mri.scan.note.system.'+entry.id)??''; }
     catch { el('organNote').value='';el('organStatus').textContent='Browser storage unavailable.'; }
   }
   el('bodyRegion').onchange=updateSystems;
@@ -73,7 +78,8 @@
   el('organChoice').onchange=organ;
   el('organSave').onclick=()=>{
     try {
-      localStorage.setItem('mri.scan.note.system.'+activeOrgan.id,el('organNote').value);
+      if(sharedIds[activeOrgan.id])AtlasStudy.saveNote(sharedIds[activeOrgan.id],el('organNote').value);
+      else localStorage.setItem('mri.scan.note.system.'+activeOrgan.id,el('organNote').value);
       el('organStatus').textContent='Structure note saved.';
     } catch { el('organStatus').textContent='Structure note could not be saved.'; }
   };
@@ -115,19 +121,34 @@
   el('next').onclick=()=>{step++;exercise();};
 
   function mastery() {
-    const totals=new Map();
+    const totals=new Map(), recent=el('studyHistory');
+    recent.replaceChildren();
     try {
-      for (const attempt of read()) {
+      for (const [i,attempt] of read().entries()) {
         const [family,id]=attempt.topic.split(':');
         const name=family==='training'?(sections[id]??'Training'):family==='illustrated'?'Illustrated anatomy':({
           cerebra:'Brain atlas',cerebra1:'Brain atlas',spine1:'Spine atlas',knee1:'Knee atlas',cardiac1:'Cardiac atlas'
         }[family]??'Pre-study quiz');
+        if(i<20){
+          const item=document.createElement('li');
+          const result=attempt.assisted?'Assisted':attempt.ok?'Correct':'Missed';
+          item.textContent=name+' · '+result+' · '+new Date(attempt.date).toLocaleDateString();
+          recent.append(item);
+        }
         const row=totals.get(name)??{independent:0,correct:0,assisted:0};
         if (attempt.assisted) row.assisted++;
         else { row.independent++;row.correct+=Number(attempt.ok); }
         totals.set(name,row);
       }
     } catch {}
+    el('weakTopics').replaceChildren();
+    const weak=[...totals].filter(([,record])=>record.correct<record.independent)
+      .sort((a,b)=>(b[1].independent-b[1].correct)-(a[1].independent-a[1].correct));
+    for(const [name,record] of weak){
+      const item=document.createElement('li');item.textContent=name+' · '+(record.independent-record.correct)+' independent misses';
+      el('weakTopics').append(item);
+    }
+    if(!weak.length){const item=document.createElement('li');item.textContent='No independent misses recorded.';el('weakTopics').append(item);}
     el('masteryRows').replaceChildren();
     if (!totals.size) {
       const row=el('masteryRows').insertRow(), cell=row.insertCell();

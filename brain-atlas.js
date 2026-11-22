@@ -1,3 +1,4 @@
+import { createQuizPanel } from './anatomy-quiz-ui.js';
 import { platePractice } from './atlas-plate-practice.js';
 import { layerCatalog } from './atlas-layers.js';
 import { anatomyReference, atlasContext, discReference } from './brain-reference.js';
@@ -30,7 +31,12 @@ if (pack.title) {
   el('brainAttribution').hidden = true;
   el(region+'Attribution').hidden = false;
 }
-el(region+'Nav').hidden = true;
+el('atlasRegion').value=region;
+el('atlasRegion').onchange=()=>{
+  const next=el('atlasRegion').value, params=new URLSearchParams({region:next});
+  if(mode!=='mri')params.set('mode',mode);
+  location.href='./brain-atlas.html?'+params;
+};
 const views = [
   { name: 'Axial', axis: 2, u: 0, v: 1, edges: 'APLR' },
   { name: 'Coronal', axis: 1, u: 0, v: 2, edges: 'SILR' },
@@ -43,21 +49,35 @@ let selected = 0, target = 0, activeView = views[0], drawing = false;
 let layers, enabled = new Set(), isolated = 0, mode = 'mri', panning = false, timeout;
 const preferenceKey = 'mri.atlas.layers.' + packId;
 const tones = Object.create(null);
-const setPracticePlate=platePractice(el,drawPlate);
+const quizUI=createQuizPanel(el);
+const setPracticePlate=platePractice(el,quizUI,drawPlate,active=>{
+  el('mriPanel').hidden=active||mode==='illustrated'||mode==='cross';
+  el('explorePanel').hidden=active||!image;
+  el('atlasLayout').classList.toggle('compare',!active&&mode==='compare');
+},message=>{el('studyMessage').textContent=message;});
+let round=[],roundIndex=0,locked=false,priorView,hintCursor=null;
+let quizScore={correct:0,assisted:0};
+
 const plates = {brain:['brainstem','brain-cross'],spine:['cervical',null],knee:['knee','knee-cross'],cardiac:['heart','heart-cross']};
 
 function updatePlate() {
   const [illustrated,cross] = plates[region];
   const name = labels?.[selected]?.name;
   const sectionMatch=region==='brain'&&/Caudate|Putamen|Pallidum|Lateral Ventricle/.test(name??'');
-  const match=region==='brain'&&name?.endsWith('Thalamus')?'diencephalon':sectionMatch?cross:illustrated;
-  const key=mode==='cross'?cross:mode==='compare'?match:illustrated;
+  const thalamus=region==='brain'&&name?.endsWith('Thalamus');
+  const match=thalamus?'diencephalon':sectionMatch?cross:illustrated;
+  const key=mode==='cross'?(thalamus?'diencephalon':cross):match;
   setPracticePlate(key);drawPlate(key);
 }
 
-function drawPlate(key) {
-  const plate = AnatomyPlates[key];
-  const picture=el('plateImage'), caption=el('plateCaption');
+function drawPlate(key, question=false) {
+  const plate = question ? QuizAssets[key] : AnatomyPlates[key];
+  let picture=el('plateImage');
+  if(question){
+    const blank=document.createElement('img');blank.id=picture.id;
+    picture.replaceWith(blank);picture=blank;
+  }
+  const caption=el('plateCaption');
   picture.hidden=!plate;
   caption.replaceChildren();
   if (!plate) {
@@ -65,7 +85,8 @@ function drawPlate(key) {
     caption.textContent='A licensed cross-sectional plate is unavailable for this region. Real MRI includes orthogonal slices.';
     return;
   }
-  picture.src=plate.asset;picture.alt=plate.title;
+  picture.src=plate.asset;picture.alt=question?'Unlabeled anatomy illustration':plate.title;
+  if(question)return;
   const source=document.createElement('a');
   source.href=plate.source;source.textContent=plate.title;
   const license=document.createElement('a');
@@ -81,11 +102,19 @@ function setMode(next) {
   el('mriPanel').hidden=!mri;
   el('atlasPlate').hidden=mode==='mri';
   el('atlasLayout').classList.toggle('compare',mode==='compare');
-  el('explorePanel').hidden=!image||!mri;
+  el('explorePanel').hidden=!image;
+  el('practice').hidden=!image||!mri;
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
   if(mode!=='mri')updatePlate();else setPracticePlate(null);
 }
 for(const button of document.querySelectorAll('[data-mode]')) button.onclick=()=>setMode(button.dataset.mode);
+el('focusView').onclick=()=>{
+  const active=document.body.classList.toggle('focused');
+  el('focusView').setAttribute('aria-pressed',String(active));
+  el('focusView').textContent=active?'Exit full-screen view':'Full-screen view';
+  if(active){el('downloads').open=false;el('layerDrawer').open=false;el('structureDrawer').open=false;}
+};
+
 
 function visibleLabel(id) {
   return !!id && enabled.has(layers.mappings[id]) && (!isolated||id===isolated);
@@ -158,7 +187,7 @@ el('pan').onclick=()=>{
 };
 
 const drawingKey = view => 'mri.atlas.drawing.' + packId + '.' + view.axis + '.' + cursor[view.axis];
-const noteKey = id => 'mri.scan.note.' + packId + '.' + id;
+const structureId = id => packId+':'+id;
 const index = point => voxelIndex(image.dim, point);
 
 function strokes(view) {
@@ -186,8 +215,9 @@ function drawView(view) {
       frame.data[offset+1] = gray;
       frame.data[offset+2] = gray;
       frame.data[offset+3] = 255;
-      if (target && hintOn && id === target && !spine) {
-        frame.data[offset]=gray*.35+255*.65;frame.data[offset+1]=gray*.35+210*.65;frame.data[offset+2]=gray*.35+65*.65;
+      if (target && (hintOn||locked) && id === target && !spine) {
+        const tint=locked?[89,238,156]:[255,210,65];
+        for(let c=0;c<3;c++)frame.data[offset+c]=gray*.35+tint[c]*.65;
       } else if (alpha && visibleLabel(id) && !spine) {
         const mix = id === selected ? Math.max(alpha, .65) : alpha;
         const tint = id === selected ? [255,210,95] : tones[layers.mappings[id]];
@@ -207,9 +237,10 @@ function drawView(view) {
       ctx.globalAlpha = 1;
     }
   }
-  if (target && hintOn && spine && anchors[target]?.[axis] === cursor[axis]) {
-    const pt=anchors[target];ctx.strokeStyle='#ffd15f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pt[u]+.5,h-pt[v]-.5,5,0,2*Math.PI);ctx.stroke();
+  if (target && (hintOn||locked) && spine && anchors[target]?.[axis] === cursor[axis]) {
+    const pt=anchors[target];ctx.strokeStyle=locked?'#59ee9c':'#ffd15f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pt[u]+.5,h-pt[v]-.5,5,0,2*Math.PI);ctx.stroke();
   }
+  if(!target){
   ctx.strokeStyle = '#72e5ce';
   ctx.lineWidth = .55;
   const x = cursor[u]+.5, y = h-cursor[v]-.5;
@@ -222,6 +253,7 @@ function drawView(view) {
     for (const [px,py] of stroke.slice(1)) ctx.lineTo(px*w,py*h);
     ctx.stroke();
   }
+  }
   view.slider.value = cursor[axis];
   view.title.textContent = view.name + ' · ' + (cursor[axis]+1) + ' / ' + image.dim[axis];
 }
@@ -230,9 +262,6 @@ function render() {
   el('isolate').disabled=!selected||!!target;
   el('isolate').setAttribute('aria-pressed',String(!!isolated));
   el('practiceSelected').hidden=!selected||!!target||!visibleLabel(selected);
-  el('practiceHint').hidden = !target;
-  el('practiceHint').setAttribute('aria-pressed',String(hintOn && !!target));
-  el('practiceHint').textContent = hintOn && target ? 'Hide location hint' : 'Show location hint';
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
   el('position').textContent = pack.coordinates+' (mm) ' + cursor.map((voxel, axis) =>
@@ -241,7 +270,7 @@ function render() {
 
 function select(id) {
   selected = id;
-  if(mode==='compare')updatePlate();
+  if(mode!=='mri'&&!target)updatePlate();
   el('structure').textContent = labels[id]?.name ?? 'Unlabeled voxel';
   el('details').textContent = labels[id]
     ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + pack.label + ' ' + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
@@ -266,8 +295,9 @@ function select(id) {
   }
   el('notesPanel').hidden = !labels[id];
   el('inkSelected').hidden=!labels[id];
+  el('bookmark').hidden=!labels[id];
   if (labels[id]) {
-    try { el('notes').value = localStorage.getItem(noteKey(id)) ?? ''; }
+    try { el('notes').value=AtlasStudy.readNote(structureId(id));updateBookmark(); }
     catch { el('notes').value = ''; }
   }
 }
@@ -279,6 +309,7 @@ function normalized(canvas, event) {
 }
 
 function tap(view, event) {
+  if(target&&locked)return;
   const [x,y] = normalized(view.canvas,event);
   cursor[view.u] = Math.floor(x*view.canvas.width);
   cursor[view.v] = view.canvas.height-1-Math.floor(y*view.canvas.height);
@@ -293,10 +324,13 @@ function tap(view, event) {
     if (id) cursor = [...anchors[id]];
   }
   if (target) {
-    const correct = id === target;
-    el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + (hintUsed ? ' with a hint.' : ' independently.') : 'Try again. Find ' + labels[target].name + '.';
-    recordPractice(target, correct, hintUsed);
-    if (correct) { clearTimeout(timeout);el('timeLeft').textContent='';target = 0;hintOn = false;el('cancelPractice').hidden = true;select(id);updateResults(); }
+    const correct=id===target;
+    recordPractice(target,correct,hintUsed);
+    if(!correct&&el('retry').checked){
+      quizUI.feedback('Incorrect. Try another location.','incorrect');
+      render();return;
+    }
+    finishQuestion(correct);
   } else {
     el('feedback').textContent = '';
     if (id && !visibleLabel(id)) id=0;
@@ -446,8 +480,8 @@ async function open(online) {
       } catch { await caches.delete(cacheName).catch(() => {}); }
     }
     initLayers();
-    const lookup=new URLSearchParams(location.search).get('structure');
-    const match=Object.entries(labels).find(([,label])=>label.name===lookup||
+    const params=new URLSearchParams(location.search), lookup=params.get('structure'), label=params.get('label');
+    const match=labels[label]?[label,labels[label]]:Object.entries(labels).find(([,label])=>label.name===lookup||
       (label.subdivision&&label.subdivision+' '+label.name===lookup));
     if(match&&anchors[match[0]]) {
       const id=Number(match[0]);
@@ -457,6 +491,7 @@ async function open(online) {
     views.forEach(addView);
     el('workspace').hidden = false;el('load').hidden = true;el('remove').hidden = !offline;
     status(offline ? 'Atlas ready. MRI and labels saved for offline use.' : 'Atlas ready for this session. Browser storage could not save an offline copy.');
+    el('downloads').open=new URLSearchParams(location.search).get('panel')==='downloads';
     setMode(mode);updateResults();render();
   } catch(error) { status(error.message); }
   finally { el('load').disabled = false; }
@@ -489,52 +524,87 @@ el('practice').onclick = () => {
     el('feedback').textContent='Enable a layer containing labels and choose a slice or switch practice scope.';
     return;
   }
-  startPractice(candidates[Math.floor(Math.random()*candidates.length)]);
+  const pool=[...candidates], questions=[];
+  while(pool.length&&questions.length<5)questions.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  beginQuiz(questions);
 };
-function startPractice(id) {
+function beginQuiz(ids,returnMode=mode) {
+  priorView={mode:returnMode,selected,cursor:[...cursor],zoom:el('zoom').value,offsets:views.map(view=>[...view.offset])};
+  round=ids;roundIndex=0;quizScore={correct:0,assisted:0};
+  el('studyMessage').textContent='';
+  el('explorePanel').hidden=true;el('atlasPlate').hidden=true;
+  el('atlasLayout').classList.remove('compare');
+  showQuestion();
+}
+function showQuestion() {
   clearTimeout(timeout);
-  el('cancelPractice').hidden = false;
-  hintOn = false;hintUsed = false;
-  target=id;
-  selected = 0;el('notesPanel').hidden = true;el('reference').replaceChildren();
-  el('structure').textContent = 'Identification practice';
-  el('details').textContent = 'Find the named structure in the MRI.';
-  el('feedback').textContent = 'Find ' + labels[target].name + '.';
+  target=round[roundIndex];locked=false;hintOn=false;hintUsed=false;hintCursor=null;
+  el('explorePanel').hidden=true;
+  quizUI.show({name:labels[target].name,number:roundIndex+1,total:round.length,
+    next:nextQuestion,exit:endPractice,hint:toggleHint,details:()=>{
+      select(target);el('explorePanel').hidden=false;el('structureDrawer').open=true;
+    }});
   const seconds=Number(el('timer').value), deadline=Date.now()+seconds*1000;
-  el('timeLeft').textContent='';
-  if (seconds) {
+  if(seconds) {
     function tick() {
       const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));
-      el('timeLeft').textContent=left?left+' s':'';
+      quizUI.time(left?left+' s':'');
       if(left){timeout=setTimeout(tick,250);return;}
-      const name=labels[target].name;
-      recordPractice(target,false,hintUsed);endPractice();
-      el('feedback').textContent='Time expired · '+name+'.';
+      recordPractice(target,false,hintUsed);
+      finishQuestion(false,'Time expired. The target is marked.');
     }
     tick();
   }
-  updateResults();render();
+  render();
+}
+function finishQuestion(correct,message) {
+  clearTimeout(timeout);quizUI.time('');
+  locked=true;hintOn=false;
+  if(anchors[target])cursor=[...anchors[target]];
+  quizScore.correct+=Number(correct&&!hintUsed);quizScore.assisted+=Number(hintUsed);
+  resetViewportForTarget();
+  quizUI.result(message??(correct?(hintUsed?'Correct with a hint.':'Correct. Independent recall.'):'Incorrect. The target is marked.'),correct?'correct':'incorrect');
+  render();
+}
+function nextQuestion() {
+  if(++roundIndex<round.length){showQuestion();return;}
+  el('studyMessage').textContent='Quiz complete · '+quizScore.correct+' of '+round.length+
+    ' correct without a hint · '+quizScore.assisted+' assisted.';
+  endPractice();
 }
 function endPractice() {
-  clearTimeout(timeout);el('timeLeft').textContent='';
-  target=0;hintOn=false;el('cancelPractice').hidden=true;el('feedback').textContent='';
-  const id=mask.p[index(cursor)];
-  select(visibleLabel(id)?id:0);updateResults();render();
+  clearTimeout(timeout);
+  target=0;hintOn=false;locked=false;
+  quizUI.close();
+  cursor=priorView.cursor;el('zoom').value=priorView.zoom;
+  views.forEach((view,i)=>{view.offset=priorView.offsets[i];applyTransform(view);});
+  select(priorView.selected);setMode(priorView.mode);updateResults();render();
 }
-el('practiceSelected').onclick=()=>{if(selected&&visibleLabel(selected))startPractice(selected);};
-el('cancelPractice').onclick=endPractice;
-el('practiceHint').onclick = () => {
-  if (!target) return;
-  hintOn = !hintOn;
-  if (hintOn) { hintUsed = true; if (anchors[target]) cursor = [...anchors[target]]; }
-  el('feedback').textContent = 'Find ' + labels[target].name + '. This attempt counts as assisted recall.';
-  render();
+function resetViewportForTarget() {
+  el('zoom').value=1;
+  views.forEach(view=>{view.offset=[0,0];applyTransform(view);});
+}
+function toggleHint() {
+  hintOn=!hintOn;
+  if(hintOn){
+    hintUsed=true;hintCursor=[...cursor];
+    if(anchors[target])cursor=[...anchors[target]];
+    resetViewportForTarget();
+  }else if(hintCursor)cursor=hintCursor;
+  quizUI.hint(hintOn);render();
+}
+el('practiceSelected').onclick=()=>{
+  if(!selected||!visibleLabel(selected))return;
+  const returnMode=mode;
+  if(mode!=='mri'&&mode!=='compare')setMode('mri');
+  beginQuiz([selected],returnMode);
 };
 el('ink').onclick = () => {
   drawing = !drawing;el('ink').setAttribute('aria-pressed',drawing);
   if(drawing&&panning)el('pan').click();
 };
 el('inkSelected').onclick=()=>{
+  if(mode==='illustrated'||mode==='cross')setMode('mri');
   if(!drawing)el('ink').click();
   el('views').scrollIntoView({block:'start'});
 };
@@ -543,11 +613,23 @@ el('undo').onclick = () => {
   try { localStorage.setItem(drawingKey(activeView),JSON.stringify(current));render(); }
   catch { status('Could not save the drawing change.'); }
 };
+function updateBookmark() {
+  const saved=AtlasStudy.isBookmarked(structureId(selected));
+  el('bookmark').setAttribute('aria-pressed',String(saved));
+  el('bookmark').textContent=saved?'Remove bookmark':'Bookmark structure';
+}
+el('bookmark').onclick=()=>{
+  try { AtlasStudy.toggleBookmark(structureId(selected),labels[selected].name);updateBookmark(); }
+  catch { el('feedback').textContent='Bookmark storage is unavailable.'; }
+};
 el('save').onclick = () => {
   try {
-    localStorage.setItem(noteKey(selected),el('notes').value);
+    AtlasStudy.saveNote(structureId(selected),el('notes').value);
     el('feedback').textContent = 'Structure notes saved.';
   } catch { el('feedback').textContent = 'Notes could not be saved. Browser storage may be full.'; }
 };
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
+const viewMode=new URLSearchParams(location.search).get('mode');
+if(['mri','illustrated','cross','compare'].includes(viewMode))setMode(viewMode);
+if(new URLSearchParams(location.search).has('practice'))document.querySelector('.quiz-options').open=true;
 open(false);

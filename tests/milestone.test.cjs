@@ -74,8 +74,9 @@ test('offline shell includes existing and new study navigation without precachin
     assert.ok(fs.statSync(page).size > 0);
   }
   assert.doesNotMatch(sw,/\.nii\.gz/);
-  for (const page of ['index.html','real-scans.html']) {
-    assert.match(fs.readFileSync(page,'utf8'), /href="\.\/brain-atlas\.html"/);
+  assert.match(fs.readFileSync('index.html','utf8'), /href="\.\/brain-atlas\.html"/);
+  for (const page of ['index.html','real-scans.html','brain-atlas.html','study-center.html']) {
+    assert.match(fs.readFileSync(page,'utf8'), /src="\.\/app-navigation\.js"/);
   }
 });
 
@@ -209,4 +210,18 @@ test('layer preferences round-trip while an existing per-pack setting takes prec
   const empty=new MemoryStorage();
   StudyBackup.restore(empty,{notes:[],layers:{[key]:incoming}});
   assert.deepEqual(JSON.parse(empty.getItem(key)),incoming);
+});
+
+test('identification assets use the verified unlabeled allowlist, separate from study plates', async () => {
+  require('../quiz-assets.js');
+  const {verifiedVariant,illustrationTargets}=await import('../atlas-plate-practice.js');
+  assert.equal(verifiedVariant.cervical,undefined);
+  assert.match(QuizAssets.brain.changes,/preserved all three anatomy layers/);
+  for(const target of new Set(Object.values(verifiedVariant))){
+    const plate=QuizAssets[target];
+    assert.ok(plate.asset.startsWith('./atlas/quiz/'));
+    assert.match(plate.licenseUrl,/creativecommons\.org\/licenses\/by-sa\/4\.0/);
+    assert.equal(createHash('sha256').update(fs.readFileSync(plate.asset)).digest('hex'),plate.sha256);
+    assert.ok(illustrationTargets[target].every(([,x,y])=>x>0&&x<1&&y>0&&y<1));
+  }
 });

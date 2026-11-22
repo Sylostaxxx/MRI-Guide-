@@ -36,15 +36,28 @@ async function run() {
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror',error => errors.push(error.stack || error.message));
-    async function assistedPractice(manifestPath) {
+    async function sampleMRIQuestion(manifestPath,independent=false) {
       const manifest = JSON.parse(fs.readFileSync(manifestPath));
       await page.locator('#practice').click();
-      const prompt = await page.locator('#feedback').textContent();
-      const id = Object.keys(manifest.labels).find(id => prompt === 'Find '+manifest.labels[id].name+'.');
+      const prompt = await page.locator('#quizTarget').textContent();
+      const id = Object.keys(manifest.labels).find(id => prompt === manifest.labels[id].name);
       assert.ok(id, prompt);
       const [x,y,z] = manifest.anchors[id];
-      await page.locator('#practiceHint').click();
-      assert.match(await page.locator('#feedback').textContent(), /assisted recall/);
+      assert.equal(await page.locator('#explorePanel').isVisible(),false);
+      await page.locator('#zoom').fill('1.25');
+      await page.locator('#views canvas').first().scrollIntoViewIfNeeded();
+      const questionBounds=await page.locator('#quizPanel').boundingBox();
+      assert.ok(questionBounds.y>=-1&&questionBounds.y<300);
+      const gray=await page.locator('#views canvas').first().evaluate(canvas=>{
+        const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+        for(let i=0;i<data.length;i+=4)if(data[i]!==data[i+1]||data[i+1]!==data[i+2])return false;
+        return true;
+      });
+      assert.equal(gray,true);
+      if(!independent){
+        await page.locator('#quizHint').click();
+        assert.match(await page.locator('#quizFeedback').textContent(),/assisted/);
+      }else await page.locator('#zoom').fill('1');
       const view = page.getByRole('img',{name:'Axial MRI slice'});
       const rendered = await view.evaluate((canvas,{x,y})=>{
         const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height);
@@ -58,25 +71,37 @@ async function run() {
         }
         return {highlight, x:(x+.5)/canvas.width,y:(row+.5)/canvas.height};
       },{x,y});
-      assert.equal(rendered.highlight,true);
+      assert.equal(rendered.highlight,!independent);
       assert.match(await page.locator('#views h2').first().textContent(),new RegExp(' '+(z+1)+' /'));
-      const bounds=await view.boundingBox();
-      await view.click({position:{x:bounds.width*rendered.x,y:bounds.height*rendered.y}});
-      assert.match(await page.locator('#feedback').textContent(),/with a hint/);
+      // WebKit's mouse automation can round a CSS position across a cartilage
+      // voxel boundary. Feed the exact subpixel intersection into picking.
+      await view.scrollIntoViewIfNeeded();
+      await view.evaluate((canvas,point)=>{
+        const box=canvas.getBoundingClientRect();
+        canvas.dispatchEvent(new PointerEvent('pointerdown',{
+          isPrimary:true,pointerType:'mouse',
+          clientX:box.left+box.width*point.x,clientY:box.top+box.height*point.y
+        }));
+      },rendered);
+      assert.match(await page.locator('#quizFeedback').textContent(),independent?/Independent recall/:/with a hint/);
       const attempt=await page.evaluate(()=>JSON.parse(localStorage.getItem('mri-study-lab-review-v1'))[0]);
-      assert.equal(attempt.ok,false);
+      assert.equal(attempt.ok,independent);
       assert.equal(attempt.correct,true);
-      assert.equal(attempt.assisted,true);
+      assert.equal(attempt.assisted,!independent);
+      await page.locator('#quizExit').click();
     }
+    const ready=()=>page.waitForFunction(()=>document.querySelector('#status').textContent.includes('MRI and labels saved for offline use.'),{},{timeout:60000});
     await page.goto(home);
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     assert.deepEqual(errors,[]);
+    await page.getByRole('link',{name:'Physics',exact:true}).click();
     await page.getByRole('button',{name:'Physics Sandbox'}).click();
     await page.locator('#sField').selectOption('3');
     assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
     await page.locator('#sTR').fill('3000');
     assert.match(await page.locator('#relaxationSummary').textContent(), /TR 3000 ms/);
+    await page.getByRole('link',{name:'Clinical',exact:true}).click();
     await page.getByRole('button',{name:'Protocol Builder'}).click();
     assert.match(await page.locator('#protoCoverage').textContent(), /60.0 mm/);
     await page.locator('#protoNew').click();
@@ -106,24 +131,54 @@ async function run() {
     await page.locator('#region').selectOption('brain');
     await page.locator('#quicknote').fill('Existing notebook entry');
     await page.locator('#quickSave').click();
-    await page.getByRole('link',{name:'Real Brain Atlas'}).click();
+    await page.getByRole('link',{name:'Anatomy',exact:true}).click();
+    await page.getByRole('link',{name:'Open Real MRI Atlas'}).click();
     await page.locator('#load').click();
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     assert.equal(await page.locator('canvas').count(),3);
     await page.getByRole('button',{name:'Cross-Sectional Anatomy'}).click();
     await page.waitForFunction(()=>document.querySelector('#plateImage').naturalWidth>0);
-    await page.getByRole('button',{name:'Practice on this plate'}).click();
-    await page.getByRole('button',{name:'Plate location hint'}).click();
-    assert.equal(await page.locator('.plate-point.hinted').count(),1);
-    await page.locator('.plate-point.hinted').click();
-    assert.match(await page.locator('#plateFeedback').textContent(),/with a hint/);
-    await page.getByRole('button',{name:'Mixed anatomy exam'}).click();
+    assert.equal(await page.locator('#platePractice').isVisible(),true);
+    const studyPlate=await page.locator('#plateImage').getAttribute('src');
+    await page.setViewportSize({width:1180,height:820});
+    await page.locator('#platePractice').click();
+    assert.equal(await page.locator('#plateImage').getAttribute('src'),'./atlas/quiz/brain.webp');
+    await page.locator('#quizExit').click();
+    assert.equal(await page.locator('#plateImage').getAttribute('src'),studyPlate);
+    await page.locator('#plateMixed').click();
     for(let question=0;question<6;question++){
-      await page.getByRole('button',{name:'Plate location hint'}).click();
-      await page.locator('.plate-point.hinted').click();
-      await page.getByRole('button',{name:'Next question'}).click();
+      assert.equal(await page.locator('#quizCount').textContent(),'Question '+(question+1)+' of 6');
+      assert.match(await page.locator('#plateImage').getAttribute('src'),/^\.\/atlas\/quiz\/(heart|knee|brain)\.webp$/);
+      assert.equal(await page.locator('#plateImage').getAttribute('alt'),'Unlabeled anatomy illustration');
+      assert.equal(await page.locator('#plateCaption').isVisible(),false);
+      assert.equal(await page.locator('.plate-point.hinted').count(),0);
+      if(question===0){
+        const source=await page.locator('#plateImage').getAttribute('src');
+        const subjects=source.includes('heart')
+          ? ['Left atrium','Right atrium','Left ventricle','Right ventricle']
+          : source.includes('knee')?['Femur','Patella','Tibia','Femoral cartilage']
+          : ['Cerebellum','Pituitary gland','Thalamus','Spinal cord'];
+        const target=await page.locator('#quizTarget').textContent();
+        const wrong=(subjects.indexOf(target)+1)%4+1;
+        await page.getByRole('button',{name:'Location '+wrong,exact:true}).click();
+        assert.equal(await page.locator('#quizFeedback').getAttribute('data-tone'),'incorrect');
+        assert.equal(await page.locator('.plate-point.hinted').count(),0);
+      }
+      await page.locator('#quizHint').click();
+      const hint=page.locator('.plate-point.hinted');
+      assert.equal(await hint.count(),1);
+      if(question===0){
+        const location=await hint.textContent();
+        await page.locator('#quizHint').click();
+        assert.equal(await hint.count(),0);
+        await page.getByRole('button',{name:'Location '+location,exact:true}).click();
+        assert.match(await page.locator('#quizFeedback').textContent(),/with a hint/);
+      }else await hint.click();
+      await page.locator('#quizNext').click();
     }
-    assert.match(await page.locator('#plateFeedback').textContent(),/Exam complete.*6 assisted/);
+    assert.match(await page.locator('#studyMessage').textContent(),/Quiz complete.*6 assisted/);
+    assert.equal(await page.locator('#plateImage').getAttribute('src'),studyPlate);
+    await page.setViewportSize({width:820,height:1180});
     await page.getByRole('button',{name:'Side-by-Side Comparison'}).click();
     assert.equal(await page.locator('#views').isVisible(),true);
     assert.equal(await page.locator('#atlasPlate').isVisible(),true);
@@ -140,6 +195,7 @@ async function run() {
     await page.mouse.up();
     assert.notEqual(await panCanvas.locator('canvas').evaluate(c=>c.style.transform),'translate(0%, 0%) scale(2)');
     await page.getByRole('button',{name:'Reset zoom and pan'}).click();
+    await page.locator('#layerDrawer summary').click();
     await page.getByRole('button',{name:'Hide all',exact:true}).click();
     await page.locator('#search').fill('Left Thalamus');
     await page.getByText('No matching structures.',{exact:true}).waitFor();
@@ -150,6 +206,7 @@ async function run() {
     await page.getByRole('heading',{name:'Left Thalamus'}).waitFor();
     await page.locator('#notes').fill('Atlas observation');
     await page.locator('#save').click();
+    await page.locator('#bookmark').click();
     await page.locator('#ink').click();
     const canvas = page.getByRole('img',{name:'Axial MRI slice'});
     await canvas.scrollIntoViewIfNeeded();
@@ -159,55 +216,65 @@ async function run() {
     await page.mouse.move(box.x+box.width/2+20,box.y+box.height/2+20,{steps:5});
     await page.mouse.up();
     assert.equal(await page.locator('#undo').isEnabled(),true);
-    await page.getByRole('link',{name:'Cervical Spine Atlas',exact:true}).click();
+    await page.locator('#atlasRegion').selectOption('spine');
     await page.getByRole('heading',{name:'Cervical Spine Atlas'}).waitFor();
     await page.locator('#load').click();
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.getByRole('button',{name:'C2–C3 disc',exact:true}).click();
     await page.getByRole('heading',{name:'C2–C3 disc',exact:true}).waitFor();
-    await assistedPractice('atlas/spine/manifest.json');
-    await page.getByRole('link',{name:'Knee MRI Atlas',exact:true}).click();
+    await sampleMRIQuestion('atlas/spine/manifest.json');
+    await page.locator('#atlasRegion').selectOption('knee');
     await page.getByRole('heading',{name:'Knee MRI Atlas'}).waitFor();
     await page.locator('#load').click();
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.getByRole('button',{name:'Femoral cartilage',exact:true}).click();
     await page.getByRole('heading',{name:'Femoral cartilage',exact:true}).waitFor();
+    await page.locator('#layerDrawer summary').click();
     await page.getByRole('button',{name:'Isolate selected structure'}).click();
     assert.match(await page.locator('#layerStatus').textContent(),/Isolated.*Femoral cartilage/);
     await page.getByRole('button',{name:'Reset layers'}).click();
 
-    await assistedPractice('atlas/knee/manifest.json');
-    await page.getByRole('link',{name:'Cardiac MRI Atlas',exact:true}).click();
+    await page.locator('#windowDrawer summary').click();
+    await page.locator('#overlay').uncheck();
+    await sampleMRIQuestion('atlas/knee/manifest.json');
+    assert.equal(await page.locator('#overlay').isChecked(),false);
+    await page.locator('#overlay').check();
+    await page.locator('#atlasRegion').selectOption('cardiac');
     await page.getByRole('heading',{name:'Cardiac MRI Atlas'}).waitFor();
     await page.locator('#load').click();
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.getByRole('button',{name:'Left atrium',exact:true}).click();
     await page.getByRole('heading',{name:'Left atrium',exact:true}).waitFor();
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
     await page.goto(home + 'brain-atlas.html?region=cardiac',{waitUntil:'domcontentloaded'});
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
-    await assistedPractice('atlas/cardiac/manifest.json');
+    await ready();
+    await sampleMRIQuestion('atlas/cardiac/manifest.json',true);
+    await sampleMRIQuestion('atlas/cardiac/manifest.json');
     await page.goto(home + 'brain-atlas.html?region=knee',{waitUntil:'domcontentloaded'});
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.getByRole('button',{name:'Femur',exact:true}).click();
     await page.getByRole('heading',{name:'Femur',exact:true}).waitFor();
     await page.goto(home + 'brain-atlas.html?region=spine',{waitUntil:'domcontentloaded'});
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.getByRole('button',{name:'C7–T1 disc',exact:true}).click();
     await page.getByRole('heading',{name:'C7–T1 disc',exact:true}).waitFor();
     await page.goto(home + 'brain-atlas.html', {waitUntil:'domcontentloaded'});
-    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await ready();
     await page.locator('#search').fill('Left Thalamus');
     await page.getByRole('button',{name:'Left Thalamus',exact:true}).click();
     assert.equal(await page.locator('#notes').inputValue(),'Atlas observation');
     assert.equal(await page.locator('#undo').isEnabled(),true);
-    await page.getByRole('link',{name:'MRI Study Lab',exact:true}).click();
+    await page.getByRole('link',{name:'Clinical',exact:true}).click();
     await page.getByText('Available offline',{exact:false}).waitFor({timeout:60000});
     for (const region of ['cspine','knee','brain']) {
       await page.locator('#region').selectOption(region);
       await page.getByText('Available offline',{exact:false}).waitFor({timeout:60000});
     }
-    await page.getByRole('link',{name:'Study Center'}).click();
+    await page.getByRole('link',{name:'My Study Space'}).click();
+    assert.equal(await page.locator('#bookmarkList a').first().textContent(),'Left Thalamus');
+    assert.match(await page.locator('#atlasNoteList').textContent(),/Atlas observation/);
+    await page.getByRole('link',{name:'Anatomy',exact:true}).click();
+    await page.getByRole('link',{name:'Browse anatomical systems'}).click();
     assert.equal(await page.locator('#system option').count(),11);
     await page.locator('#bodyRegion').selectOption('Thorax');
     assert.equal(await page.locator('#system option').count(),3);
@@ -231,8 +298,7 @@ async function run() {
     assert.match(await page.locator('#stem').textContent(),/5 of 5/);
     await page.getByRole('button',{name:'My Mastery'}).click();
     assert.match(await page.locator('#masteryRows').textContent(),/Virtual Clinical Rotation5 \/ 50/);
-    await page.getByRole('link',{name:'MRI Study Lab',exact:true}).click();
-    await page.getByRole('button',{name:'Backup & Help'}).click();
+    await page.getByRole('link',{name:'Settings',exact:true}).click();
     const downloaded = page.waitForEvent('download');
     await page.locator('#export').click();
     const download = await downloaded;
@@ -242,6 +308,7 @@ async function run() {
     assert.equal(Object.keys(backup.drawings).length,1);
     assert.equal(backup.scanNotes['mri.scan.note.system.9'],'Kidney study note');
     assert.ok(backup.layers['mri.atlas.layers.knee1'].enabled.includes('cartilage'));
+    assert.equal(backup.bookmarks['mri.atlas.bookmark.cerebra1:91'],'Left Thalamus');
     assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');
