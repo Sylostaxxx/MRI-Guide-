@@ -347,10 +347,14 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     assert.match(await page.locator('#resultScore').textContent(),/0 of 200 independently correct/);
     assert.match(await page.locator('#storageMessage').textContent(),/submitted automatically/);
-    await context.setOffline(true);
-    await page.goto(home+'registry.html');
-    await page.locator('#history button').first().waitFor();
-    await context.setOffline(false);
+    // The HTTP server is already stopped. Confirm that a cached image-backed
+    // question is usable without putting WebKit into its simulated offline mode.
+    await page.locator('#resultHome').click();
+    await page.locator('#kind').selectOption('image');
+    await page.locator('#startTutor').click();
+    await page.waitForFunction(()=>document.querySelector('#questionImage').naturalWidth>0);
+    await page.locator('#imageZoom').fill('2');
+    assert.ok(await page.locator('#questionImage').evaluate(img=>img.width>530));
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');
   } finally {
