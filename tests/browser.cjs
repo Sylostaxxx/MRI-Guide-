@@ -132,6 +132,7 @@ async function run() {
     assert.match(await page.locator('#views canvas').first().evaluate(c=>c.style.transform),/scale\(2\)/);
     await page.getByRole('button',{name:'Pan images'}).click();
     const panCanvas=page.locator('#views .image').first();
+    await panCanvas.scrollIntoViewIfNeeded();
     const panRect=await panCanvas.boundingBox();
     await page.mouse.move(panRect.x+panRect.width/2,panRect.y+panRect.height/2);
     await page.mouse.down();
