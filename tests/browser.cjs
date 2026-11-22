@@ -73,8 +73,16 @@ async function run() {
       },{x,y});
       assert.equal(rendered.highlight,!independent);
       assert.match(await page.locator('#views h2').first().textContent(),new RegExp(' '+(z+1)+' /'));
-      const bounds=await view.boundingBox();
-      await view.click({position:{x:bounds.width*rendered.x,y:bounds.height*rendered.y}});
+      // WebKit's mouse automation can round a CSS position across a cartilage
+      // voxel boundary. Feed the exact subpixel intersection into picking.
+      await view.scrollIntoViewIfNeeded();
+      await view.evaluate((canvas,point)=>{
+        const box=canvas.getBoundingClientRect();
+        canvas.dispatchEvent(new PointerEvent('pointerdown',{
+          isPrimary:true,pointerType:'mouse',
+          clientX:box.left+box.width*point.x,clientY:box.top+box.height*point.y
+        }));
+      },rendered);
       assert.match(await page.locator('#quizFeedback').textContent(),independent?/Independent recall/:/with a hint/);
       const attempt=await page.evaluate(()=>JSON.parse(localStorage.getItem('mri-study-lab-review-v1'))[0]);
       assert.equal(attempt.ok,independent);
