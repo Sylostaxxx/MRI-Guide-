@@ -52,7 +52,7 @@ const tones = Object.create(null);
 const quizUI=createQuizPanel(el);
 const setPracticePlate=platePractice(el,quizUI,drawPlate,active=>{
   el('mriPanel').hidden=active||mode==='illustrated'||mode==='cross';
-  el('explorePanel').hidden=active||!image||mode!=='compare';
+  el('explorePanel').hidden=active||!image;
   el('atlasLayout').classList.toggle('compare',!active&&mode==='compare');
 },message=>{el('studyMessage').textContent=message;});
 let round=[],roundIndex=0,locked=false,priorView,hintCursor=null;
@@ -64,8 +64,9 @@ function updatePlate() {
   const [illustrated,cross] = plates[region];
   const name = labels?.[selected]?.name;
   const sectionMatch=region==='brain'&&/Caudate|Putamen|Pallidum|Lateral Ventricle/.test(name??'');
-  const match=region==='brain'&&name?.endsWith('Thalamus')?'diencephalon':sectionMatch?cross:illustrated;
-  const key=mode==='cross'?cross:mode==='compare'?match:illustrated;
+  const thalamus=region==='brain'&&name?.endsWith('Thalamus');
+  const match=thalamus?'diencephalon':sectionMatch?cross:illustrated;
+  const key=mode==='cross'?(thalamus?'diencephalon':cross):match;
   setPracticePlate(key);drawPlate(key);
 }
 
@@ -101,7 +102,7 @@ function setMode(next) {
   el('mriPanel').hidden=!mri;
   el('atlasPlate').hidden=mode==='mri';
   el('atlasLayout').classList.toggle('compare',mode==='compare');
-  el('explorePanel').hidden=!image||!mri;
+  el('explorePanel').hidden=!image;
   el('practice').hidden=!image||!mri;
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
   if(mode!=='mri')updatePlate();else setPracticePlate(null);
@@ -269,7 +270,7 @@ function render() {
 
 function select(id) {
   selected = id;
-  if(mode==='compare'&&!target)updatePlate();
+  if(mode!=='mri'&&!target)updatePlate();
   el('structure').textContent = labels[id]?.name ?? 'Unlabeled voxel';
   el('details').textContent = labels[id]
     ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + pack.label + ' ' + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
@@ -527,8 +528,8 @@ el('practice').onclick = () => {
   while(pool.length&&questions.length<5)questions.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
   beginQuiz(questions);
 };
-function beginQuiz(ids) {
-  priorView={selected,cursor:[...cursor],zoom:el('zoom').value,offsets:views.map(view=>[...view.offset])};
+function beginQuiz(ids,returnMode=mode) {
+  priorView={mode:returnMode,selected,cursor:[...cursor],zoom:el('zoom').value,offsets:views.map(view=>[...view.offset])};
   round=ids;roundIndex=0;quizScore={correct:0,assisted:0};
   el('studyMessage').textContent='';
   el('explorePanel').hidden=true;el('atlasPlate').hidden=true;
@@ -577,7 +578,7 @@ function endPractice() {
   quizUI.close();
   cursor=priorView.cursor;el('zoom').value=priorView.zoom;
   views.forEach((view,i)=>{view.offset=priorView.offsets[i];applyTransform(view);});
-  select(priorView.selected);setMode(mode);updateResults();render();
+  select(priorView.selected);setMode(priorView.mode);updateResults();render();
 }
 function resetViewportForTarget() {
   el('zoom').value=1;
@@ -592,12 +593,18 @@ function toggleHint() {
   }else if(hintCursor)cursor=hintCursor;
   quizUI.hint(hintOn);render();
 }
-el('practiceSelected').onclick=()=>{if(selected&&visibleLabel(selected))beginQuiz([selected]);};
+el('practiceSelected').onclick=()=>{
+  if(!selected||!visibleLabel(selected))return;
+  const returnMode=mode;
+  if(mode!=='mri'&&mode!=='compare')setMode('mri');
+  beginQuiz([selected],returnMode);
+};
 el('ink').onclick = () => {
   drawing = !drawing;el('ink').setAttribute('aria-pressed',drawing);
   if(drawing&&panning)el('pan').click();
 };
 el('inkSelected').onclick=()=>{
+  if(mode==='illustrated'||mode==='cross')setMode('mri');
   if(!drawing)el('ink').click();
   el('views').scrollIntoView({block:'start'});
 };

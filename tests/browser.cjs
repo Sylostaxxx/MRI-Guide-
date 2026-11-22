@@ -48,6 +48,12 @@ async function run() {
       await page.locator('#views canvas').first().scrollIntoViewIfNeeded();
       const questionBounds=await page.locator('#quizPanel').boundingBox();
       assert.ok(questionBounds.y>=-1&&questionBounds.y<300);
+      const gray=await page.locator('#views canvas').first().evaluate(canvas=>{
+        const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+        for(let i=0;i<data.length;i+=4)if(data[i]!==data[i+1]||data[i+1]!==data[i+2])return false;
+        return true;
+      });
+      assert.equal(gray,true);
       await page.locator('#quizHint').click();
       assert.match(await page.locator('#quizFeedback').textContent(), /assisted/);
       const view = page.getByRole('img',{name:'Axial MRI slice'});
@@ -132,6 +138,17 @@ async function run() {
       assert.equal(await page.locator('#plateImage').getAttribute('alt'),'Unlabeled anatomy illustration');
       assert.equal(await page.locator('#plateCaption').isVisible(),false);
       assert.equal(await page.locator('.plate-point.hinted').count(),0);
+      if(question===0){
+        const source=await page.locator('#plateImage').getAttribute('src');
+        const subjects=source.includes('heart')
+          ? ['Left atrium','Right atrium','Left ventricle','Right ventricle']
+          : ['Femur','Patella','Tibia','Femoral cartilage'];
+        const target=await page.locator('#quizTarget').textContent();
+        const wrong=(subjects.indexOf(target)+1)%4+1;
+        await page.getByRole('button',{name:'Location '+wrong,exact:true}).click();
+        assert.equal(await page.locator('#quizFeedback').getAttribute('data-tone'),'incorrect');
+        assert.equal(await page.locator('.plate-point.hinted').count(),0);
+      }
       await page.locator('#quizHint').click();
       const hint=page.locator('.plate-point.hinted');
       assert.equal(await hint.count(),1);
@@ -202,7 +219,11 @@ async function run() {
     assert.match(await page.locator('#layerStatus').textContent(),/Isolated.*Femoral cartilage/);
     await page.getByRole('button',{name:'Reset layers'}).click();
 
+    await page.locator('#windowDrawer summary').click();
+    await page.locator('#overlay').uncheck();
     await assistedPractice('atlas/knee/manifest.json');
+    assert.equal(await page.locator('#overlay').isChecked(),false);
+    await page.locator('#overlay').check();
     await page.locator('#atlasRegion').selectOption('cardiac');
     await page.getByRole('heading',{name:'Cardiac MRI Atlas'}).waitFor();
     await page.locator('#load').click();

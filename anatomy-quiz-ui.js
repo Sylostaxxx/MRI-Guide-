@@ -21,6 +21,7 @@ export function createQuizPanel(el) {
       el('quizInstruction').textContent='Locate the following structure';
       target.textContent=next.name;
       target.draggable=Boolean(next.drag);
+      target.focus({preventScroll:true});
       el('quizHint').hidden=false;
       el('quizHint').setAttribute('aria-pressed','false');
       el('quizHint').textContent='Show location hint';

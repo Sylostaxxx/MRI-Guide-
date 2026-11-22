@@ -121,13 +121,20 @@
   el('next').onclick=()=>{step++;exercise();};
 
   function mastery() {
-    const totals=new Map();
+    const totals=new Map(), recent=el('studyHistory');
+    recent.replaceChildren();
     try {
-      for (const attempt of read()) {
+      for (const [i,attempt] of read().entries()) {
         const [family,id]=attempt.topic.split(':');
         const name=family==='training'?(sections[id]??'Training'):family==='illustrated'?'Illustrated anatomy':({
           cerebra:'Brain atlas',cerebra1:'Brain atlas',spine1:'Spine atlas',knee1:'Knee atlas',cardiac1:'Cardiac atlas'
         }[family]??'Pre-study quiz');
+        if(i<20){
+          const item=document.createElement('li');
+          const result=attempt.assisted?'Assisted':attempt.ok?'Correct':'Missed';
+          item.textContent=name+' · '+result+' · '+new Date(attempt.date).toLocaleDateString();
+          recent.append(item);
+        }
         const row=totals.get(name)??{independent:0,correct:0,assisted:0};
         if (attempt.assisted) row.assisted++;
         else { row.independent++;row.correct+=Number(attempt.ok); }
