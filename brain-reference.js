@@ -1,5 +1,15 @@
 // Short atlas reading prompts. Source references are displayed on the atlas page.
-export const brainReference = {
+export const anatomyReference = {
+  Femur: {
+    location: 'The distal femur forms the upper part of the knee. Its medial and lateral condyles articulate with the tibia. The patella tracks along the anterior trochlea.',
+    function: 'Transfers load to the tibia and provides attachment for ligaments and muscles.',
+    imaging: 'T1 shows marrow and cortical anatomy. Fluid-sensitive fat-suppressed MRI can show occult fracture and marrow edema.'
+  },
+  'Femoral cartilage': {
+    location: 'Articular cartilage covers the distal femoral condyles and trochlea. It overlies the subchondral bone.',
+    function: 'Distributes load and provides a low-friction joint surface.',
+    imaging: 'High-resolution DESS can delineate cartilage surfaces. Focal defects and diffuse thinning can occur with injury or osteoarthritis.'
+  },
   Thalamus: {
     location: 'Deep gray matter bordering the third ventricle and medial to the posterior limb of the internal capsule.',
     function: 'Relays and integrates sensory and motor signals and participates in attention and arousal.',

@@ -10,3 +10,5 @@ Use **Backup & Help** to export notebook entries, quiz history, scan notes, and 
 See [PROGRESS.md](PROGRESS.md) for current imaging coverage and remaining work.
 
 The Cervical Spine Atlas uses a cropped T1 volume and the original point-wise landmarks from the [Spine Generic data release](https://github.com/spine-generic/data-single-subject). The pack manifest records source hashes, processing, and attribution.
+
+The Knee MRI Atlas uses the pyKNEEr v4 demo reference MRI and two anatomical masks, [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). To rebuild it, point `python scripts/prepare-knee.py` at the extracted `inputs/reference/newsubject` directory.

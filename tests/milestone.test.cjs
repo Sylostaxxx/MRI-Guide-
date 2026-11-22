@@ -113,3 +113,20 @@ test('cervical T1 and manual landmarks align after canonical reorientation and c
     previous = point[2];
   }
 });
+
+test('knee DESS and both masks retain their aligned RAS grid after decimation', async () => {
+  const manifest = JSON.parse(fs.readFileSync('atlas/knee/manifest.json'));
+  const [image, labels] = await Promise.all(manifest.volumes.map(async asset => {
+    const data = fs.readFileSync(asset.path);
+    assert.equal(createHash('sha256').update(data).digest('hex'), asset.sha256);
+    return parse(data);
+  }));
+  verifyAtlasGrid(image,labels);
+  assert.deepEqual(image.dim,[160,192,192]);
+  assert.ok(image.affine[0] < image.affine[5]);
+  for (const [id,point] of Object.entries(manifest.anchors)) {
+    const i = voxelIndex(image.dim,point);
+    assert.equal(labels.p[i],Number(id));
+    assert.ok(image.p[i] > 0);
+  }
+});
