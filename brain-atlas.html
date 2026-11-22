@@ -20,9 +20,9 @@ aside{margin-block:16px}dt{font-weight:700;margin-top:.5rem}dd{margin-left:0}.re
 </style>
 </head>
 <body><main>
-<nav><a href="./">MRI Study Lab</a> · <a href="./real-scans.html">MRI sequences</a></nav>
-<h1>Real Brain Atlas</h1>
-<p>Explore the CerebrA anatomical labels on the symmetric MNI-ICBM152 population-average T1-weighted MRI.</p>
+<nav><a href="./">MRI Study Lab</a> · <a href="./real-scans.html">MRI sequences</a> · <a id="spineNav" href="./brain-atlas.html?region=spine">Cervical Spine Atlas</a><a id="brainNav" href="./brain-atlas.html" hidden>Real Brain Atlas</a></nav>
+<h1 id="atlasTitle">Real Brain Atlas</h1>
+<p id="intro">Explore the CerebrA anatomical labels on the symmetric MNI-ICBM152 population-average T1-weighted MRI.</p>
 <div class="controls"><button id="load">Download and open atlas</button><button id="remove" hidden>Remove offline atlas</button></div>
 <p id="status" role="status">Download the 21 MB atlas once to use it offline.</p>
 <div id="workspace" hidden>
@@ -43,6 +43,7 @@ aside{margin-block:16px}dt{font-weight:700;margin-top:.5rem}dd{margin-left:0}.re
 <div id="notesPanel" hidden><label for="notes">My structure notes</label><textarea id="notes"></textarea><button id="save">Save structure notes</button></div>
 </aside>
 </div>
-<p><small>Atlas by Manera, Dadar, Fonov and Collins. Educational reference. <a href="https://doi.org/10.12751/g-node.be5e62">Dataset and license</a> · <a href="https://doi.org/10.1038/s41597-020-0557-9">Publication</a> · <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system">Anatomy reference</a></small></p>
+<p id="brainAttribution"><small>Atlas by Manera, Dadar, Fonov and Collins. Educational reference. <a href="https://doi.org/10.12751/g-node.be5e62">Dataset and license</a> · <a href="https://doi.org/10.1038/s41597-020-0557-9">Publication</a> · <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system">Anatomy reference</a></small></p>
+<p id="spineAttribution" hidden><small>MRI by Julien Cohen-Adad and Spine Generic contributors. Manual landmarks by Sandrine Bedard. Cropped for study. <a href="https://github.com/spine-generic/data-single-subject">Source dataset</a> · <a href="./atlas/spine/LICENSE.txt">CC BY 4.0</a></small></p>
 </main><script src="./nifti.js"></script><script type="module" src="./brain-atlas.js"></script></body>
 </html>

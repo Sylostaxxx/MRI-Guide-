@@ -3,8 +3,20 @@ const { parse, verifyAtlasGrid, voxelIndex } = Nifti;
 
 const el = id => document.getElementById(id);
 const status = text => { el('status').textContent = text; };
-const cacheName = 'mri-brain-atlas-cerebra-1';
-const manifestURL = './atlas/manifest.json';
+const spine = new URLSearchParams(location.search).get('region') === 'spine';
+const packId = spine ? 'spine1' : 'cerebra1';
+const cacheName = spine ? 'mri-spine-atlas-1' : 'mri-brain-atlas-cerebra-1';
+const manifestURL = spine ? './atlas/spine/manifest.json' : './atlas/manifest.json';
+if (spine) {
+  document.title = 'Cervical Spine Atlas | MRI Study Lab';
+  el('atlasTitle').textContent = 'Cervical Spine Atlas';
+  el('intro').textContent = 'Explore 12 point landmarks on a 3D T1 MRI of the cervical and upper thoracic spine.';
+  el('status').textContent = 'Download the cervical MRI and landmarks once to use them offline.';
+  el('brainAttribution').hidden = true;
+  el('spineAttribution').hidden = false;
+  el('spineNav').hidden = true;
+  el('brainNav').hidden = false;
+}
 const views = [
   { name: 'Axial', axis: 2, u: 0, v: 1, edges: 'APLR' },
   { name: 'Coronal', axis: 1, u: 0, v: 2, edges: 'SILR' },
@@ -13,8 +25,8 @@ const views = [
 let image, mask, labels, anchors, cursor;
 let selected = 0, target = 0, activeView = views[0], drawing = false;
 
-const drawingKey = view => 'mri.atlas.drawing.cerebra1.' + view.axis + '.' + cursor[view.axis];
-const noteKey = id => 'mri.scan.note.cerebra1.' + id;
+const drawingKey = view => 'mri.atlas.drawing.' + packId + '.' + view.axis + '.' + cursor[view.axis];
+const noteKey = id => 'mri.scan.note.' + packId + '.' + id;
 const index = point => voxelIndex(image.dim, point);
 
 function strokes(view) {
@@ -50,6 +62,17 @@ function drawView(view) {
     }
   }
   ctx.putImageData(frame,0,0);
+  if (spine && alpha) {
+    for (const [id,point] of Object.entries(anchors)) {
+      if (point[axis] !== cursor[axis]) continue;
+      const x = point[u]+.5, y = h-point[v]-.5;
+      ctx.strokeStyle = Number(id) === selected ? '#ffd15f' : '#83e8d0';
+      ctx.globalAlpha = Math.min(1,alpha*3);
+      ctx.lineWidth = 1;
+      ctx.beginPath();ctx.arc(x,y,3,0,2*Math.PI);ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
   ctx.strokeStyle = '#72e5ce';
   ctx.lineWidth = .55;
   const x = cursor[u]+.5, y = h-cursor[v]-.5;
@@ -69,7 +92,7 @@ function drawView(view) {
 function render() {
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
-  el('position').textContent = 'MNI RAS (mm) ' + cursor.map((voxel, axis) =>
+  el('position').textContent = (spine ? 'Scanner RAS (mm) ' : 'MNI RAS (mm) ') + cursor.map((voxel, axis) =>
     (image.affine[axis*5]*voxel + image.affine[axis*4+3]).toFixed(1)).join(', ');
 }
 
@@ -77,7 +100,7 @@ function select(id) {
   selected = id;
   el('structure').textContent = labels[id]?.name ?? 'Unlabeled voxel';
   el('details').textContent = labels[id]
-    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + 'CerebrA label ' + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
+    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + (spine ? 'Spine Generic point landmark ' : 'CerebrA label ') + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
     : 'Choose a colored region or search for a structure.';
   const baseName = labels[id]?.name.replace(/^(Left|Right) /,'');
   const reference = brainReference[baseName];
@@ -111,7 +134,16 @@ function tap(view, event) {
   const [x,y] = normalized(view.canvas,event);
   cursor[view.u] = Math.floor(x*view.canvas.width);
   cursor[view.v] = view.canvas.height-1-Math.floor(y*view.canvas.height);
-  const id = mask.p[index(cursor)];
+  let id = mask.p[index(cursor)];
+  if (spine) {
+    let distance = 7;
+    for (const [candidate,point] of Object.entries(anchors)) {
+      if (point[view.axis] !== cursor[view.axis]) continue;
+      const gap = Math.hypot(point[view.u]-cursor[view.u],point[view.v]-cursor[view.v]);
+      if (gap < distance) { id = Number(candidate);distance = gap; }
+    }
+    if (id) cursor = [...anchors[id]];
+  }
   if (target) {
     const correct = id === target;
     el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + '.' : 'Try again. Find ' + labels[target].name + '.';
@@ -128,7 +160,7 @@ function recordPractice(id, correct) {
   try {
     const key = 'mri-study-lab-review-v1';
     const history = JSON.parse(localStorage.getItem(key) ?? '[]');
-    history.unshift({ topic:'cerebra:' + id, ok:correct, date:new Date().toISOString() });
+    history.unshift({ topic:packId + ':' + id, ok:correct, date:new Date().toISOString() });
     localStorage.setItem(key,JSON.stringify(history));
   } catch { status('This practice response could not be saved.'); }
 }
@@ -184,11 +216,11 @@ function addView(view) {
 function updateResults() {
   const query = el('search').value.trim().toLowerCase();
   el('results').replaceChildren();
-  if (!query || target) return;
+  if ((!query && !spine) || target) return;
   for (const [id,label] of Object.entries(labels)) {
     if (!label.name.toLowerCase().includes(query) || !anchors[id]) continue;
     const button = document.createElement('button');
-    button.textContent = label.name;
+    button.textContent = label.name + (label.subdivision ? ' · ' + label.subdivision + ' subdivision' : '');
     button.onclick = () => { cursor = [...anchors[id]];select(Number(id));render(); };
     el('results').append(button);
   }
@@ -224,7 +256,7 @@ async function open(online) {
     const [t1, segmentation] = volumes.map(item => item.volume);
     verifyAtlasGrid(t1,segmentation);
     image = t1;mask = segmentation;labels = manifest.labels;anchors = manifest.anchors;
-    cursor = image.dim.map(n => Math.floor(n/2));
+    cursor = spine ? [...anchors[5]] : image.dim.map(n => Math.floor(n/2));
     let offline = false;
     if (cache) {
       try {
@@ -236,7 +268,7 @@ async function open(online) {
     views.forEach(addView);
     el('workspace').hidden = false;el('load').hidden = true;el('remove').hidden = !offline;
     status(offline ? 'Atlas ready. MRI and labels saved for offline use.' : 'Atlas ready for this session. Browser storage could not save an offline copy.');
-    render();
+    updateResults();render();
   } catch(error) { status(error.message); }
   finally { el('load').disabled = false; }
 }

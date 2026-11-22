@@ -91,3 +91,25 @@ test('relaxation, ideal spin-echo signal and proton frequency obey expected limi
   assert.ok(spinEchoSignal(3000,100,850,75) < spinEchoSignal(3000,25,850,75));
   assert.ok(Math.abs(larmorMHz(3) - 127.73244) < 1e-10);
 });
+
+test('cervical T1 and manual landmarks align after canonical reorientation and crop', async () => {
+  const manifest = JSON.parse(fs.readFileSync('atlas/spine/manifest.json'));
+  const [image, labels] = await Promise.all(manifest.volumes.map(async asset => {
+    const data = fs.readFileSync(asset.path);
+    assert.equal(createHash('sha256').update(data).digest('hex'), asset.sha256);
+    return parse(data);
+  }));
+  verifyAtlasGrid(image,labels);
+  assert.deepEqual(image.dim,[76,132,222]);
+  assert.equal(Object.keys(manifest.anchors).length,12);
+  assert.equal(manifest.labels[3].name,'C2–C3 disc');
+  assert.equal(manifest.labels[8].name,'C7–T1 disc');
+  let previous = Infinity;
+  for (const [id,point] of Object.entries(manifest.anchors)) {
+    const i = voxelIndex(image.dim,point);
+    assert.equal(labels.p[i],Number(id));
+    assert.ok(image.p[i] > 0);
+    assert.ok(point[2] < previous,'landmarks descend in the RAS+ superior axis');
+    previous = point[2];
+  }
+});

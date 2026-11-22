@@ -1,4 +1,4 @@
-const CACHE = 'mri-study-lab-shell-3';
+const CACHE = 'mri-study-lab-shell-4';
 const ROOT = new URL(self.registration.scope);
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon.png', './real-scans.html',

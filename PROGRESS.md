@@ -14,8 +14,9 @@
 | Region | Image coverage |
 | --- | --- |
 | Brain | Partial. Symmetric T1 population average with CerebrA labels. Separate existing T1, T2, PD, and MRA examples. No complete diagnostic exam packs. |
-| Cervical and lumbar spine, knee, shoulder | Schematic planning practice. No bundled real-image packs. |
-| Thoracic spine, neck, elbow, wrist, hand, hip, ankle, foot | No verified bundled image packs. |
+| Cervical and upper thoracic spine | 3 T T1 pack with 12 manually placed point landmarks. The overlay shows landmarks rather than segmented volumes. Coverage extends to the T4–T5 landmark. |
+| Lumbar spine, knee, shoulder | Schematic planning practice. No bundled real-image packs. |
+| Lower thoracic spine, neck, elbow, wrist, hand, hip, ankle, foot | No verified bundled image packs. |
 | Chest, abdomen, pelvis, cardiac, breast, vascular, fetal, and other specialized exams | No verified bundled image packs. |
 
 The brain pack documents file provenance in [atlas/manifest.json](atlas/manifest.json). It contains a population average. The original sequence examples remain downloads from the separately licensed [NiiVue demo collection](https://github.com/niivue/niivue-demo-images#licenses). Each uses its native voxel axes without verified patient orientation.
