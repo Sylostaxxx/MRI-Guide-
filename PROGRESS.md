@@ -42,7 +42,7 @@ The current milestone reuses the scalar NIfTI-1 parser shared with the existing 
 - Build real-localizer protocol simulations with sequence parameters, positioning, coils, procedure challenges, and cited educational feedback. The existing simulator has schematic planning challenges and local reference image/DICOM preview.
 - Extend the existing physics sandbox into sequence, encoding, k-space, contrast, artifact, and safety simulations.
 - Expand identification practice into the memory arcade and spaced repetition. Replace the eight-question pre-study bank with original, cited ARRT and ARMRIT-aligned coverage, timed exams, review, and adaptive difficulty.
-- Add notebook tags, bookmarks, recall exercises, and persistent volume management. Study backups include the saved IndexedDB protocol reference snapshot. Downloaded atlas packs remain separate.
+- Add notebook tags, bookmarks, recall exercises, and persistent volume management. Current study backups exclude image downloads and the saved IndexedDB reference snapshot.
 - Extend browser automation to backup import and multi-tab use. Verify physical iPad Safari, Home Screen installation, and real Apple Pencil input.
 
 ## Real MRI planning
