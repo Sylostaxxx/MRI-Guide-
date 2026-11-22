@@ -138,7 +138,16 @@ async function run() {
     await page.getByRole('button',{name:'Femoral cartilage',exact:true}).click();
     await page.getByRole('heading',{name:'Femoral cartilage',exact:true}).waitFor();
     await assistedPractice('atlas/knee/manifest.json');
+    await page.getByRole('link',{name:'Cardiac MRI Atlas',exact:true}).click();
+    await page.getByRole('heading',{name:'Cardiac MRI Atlas'}).waitFor();
+    await page.locator('#load').click();
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await page.getByRole('button',{name:'Left atrium',exact:true}).click();
+    await page.getByRole('heading',{name:'Left atrium',exact:true}).waitFor();
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
+    await page.goto(home + 'brain-atlas.html?region=cardiac',{waitUntil:'domcontentloaded'});
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await assistedPractice('atlas/cardiac/manifest.json');
     await page.goto(home + 'brain-atlas.html?region=knee',{waitUntil:'domcontentloaded'});
     await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
     await page.getByRole('button',{name:'Femur',exact:true}).click();

@@ -1,5 +1,10 @@
 // Short atlas reading prompts. Source references are displayed on the atlas page.
 export const anatomyReference = {
+  'Left atrium': {
+    location: 'Posterior chamber of the heart, anterior to the esophagus. Pulmonary veins enter it, and the mitral valve leads to the left ventricle.',
+    function: 'Collects oxygenated blood from the lungs and contributes to left ventricular filling.',
+    imaging: 'Three-dimensional cardiac MRI can map the chamber and pulmonary venous anatomy. Atrial dilation is associated with mitral valve disease and atrial fibrillation.'
+  },
   Femur: {
     location: 'The distal femur forms the upper part of the knee. Its medial and lateral condyles articulate with the tibia. The patella tracks along the anterior trochlea.',
     function: 'Transfers load to the tibia and provides attachment for ligaments and muscles.',

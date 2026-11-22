@@ -1,0 +1,43 @@
+{
+  "id": "msd-heart-la003-v1",
+  "source": "https://medicaldecathlon.com/",
+  "publication": "https://doi.org/10.1038/s41467-022-30695-9",
+  "mirror": "https://huggingface.co/datasets/MedOtter/msd-cardiac/tree/f0b3bff6f3933107a25f87a9fc3e1f42c641bb4f",
+  "license": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "attribution": "Medical Segmentation Decathlon Task02 Heart; King\u2019s College London contributors.",
+  "region": "Heart, left atrial region",
+  "sequence": "3D cardiac MRI, MSD Task02",
+  "orientation": "Axis-aligned RAS+ in the dataset geometry; 1.25 \u00d7 1.25 \u00d7 1.37 mm",
+  "processing": "Cropped the MRI and mask to a shared region around the left atrium with a 30 mm margin; reconstructed clean headers without spatial interpolation.",
+  "labels": {
+    "1": {
+      "name": "Left atrium"
+    }
+  },
+  "anchors": {
+    "1": [
+      52,
+      51,
+      51
+    ]
+  },
+  "volumes": [
+    {
+      "title": "Cardiac MRI",
+      "path": "./atlas/cardiac/heart-mri.nii.gz",
+      "sourceFile": "imagesTr/la_003.nii.gz",
+      "sourceSha256": "035de3923ffe7a8bd5e1d8ad8eefb57eeaf9a98074a8f70825aab88464e4e098",
+      "bytes": 1808842,
+      "sha256": "bb774bfc3f4d01a7ce04f74c031f8522c962007939f308be0eb0fcfae5d4128d"
+    },
+    {
+      "title": "Left atrial mask",
+      "path": "./atlas/cardiac/heart-labels.nii.gz",
+      "sourceFile": "labelsTr/la_003.nii.gz",
+      "sourceSha256": "c91fea6782a75ae98de74bdbdd3a9ae4e68998e7dca65b2174cc4d0ecf16e913",
+      "bytes": 5071,
+      "sha256": "f4f9d3e30474e48484298b519c6e6887cdaee440745bf4d906454ca97a8a1992"
+    }
+  ]
+}

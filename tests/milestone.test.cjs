@@ -145,3 +145,20 @@ test('physical prescription geometry handles gaps, FOV and oblique intersections
   const [[x,z]]=intersection(views.coronal,15,[0,0,0],oblique,8,100);
   assert.ok(Math.abs(dot(oblique.normal,[x,15,z])-8)<1e-9);
 });
+
+test('cropped cardiac MRI and left atrial mask keep the source voxel geometry', async () => {
+  const manifest = JSON.parse(fs.readFileSync('atlas/cardiac/manifest.json'));
+  const [image,labels] = await Promise.all(manifest.volumes.map(async asset=>{
+    const data=fs.readFileSync(asset.path);
+    assert.equal(createHash('sha256').update(data).digest('hex'),asset.sha256);
+    return parse(data);
+  }));
+  verifyAtlasGrid(image,labels);
+  assert.equal(image.affine[0],1.25);
+  assert.equal(image.affine[5],1.25);
+  assert.ok(Math.abs(image.affine[10]-1.37)<1e-5);
+  const index=voxelIndex(image.dim,manifest.anchors[1]);
+  assert.equal(labels.p[index],1);
+  assert.ok(image.p[index]>0);
+  assert.equal(labels.p.reduce((sum,value)=>sum+value,0),45003);
+});

@@ -88,7 +88,7 @@
       for (const attempt of read()) {
         const [family,id]=attempt.topic.split(':');
         const name=family==='training'?(sections[id]??'Training'):({
-          cerebra:'Brain atlas',cerebra1:'Brain atlas',spine1:'Spine atlas',knee1:'Knee atlas'
+          cerebra:'Brain atlas',cerebra1:'Brain atlas',spine1:'Spine atlas',knee1:'Knee atlas',cardiac1:'Cardiac atlas'
         }[family]??'Pre-study quiz');
         const row=totals.get(name)??{independent:0,correct:0,assisted:0};
         if (attempt.assisted) row.assisted++;
