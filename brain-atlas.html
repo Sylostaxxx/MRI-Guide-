@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101826">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>Real Brain Atlas | MRI Study Lab</title>
+<style>
+:root{color-scheme:dark;--background:#101826;--panel:#1a2536;--accent:#70dfc5;color:#eef5ff;background:var(--background);font:16px/1.5 system-ui}
+main{max-width:1250px;margin:auto;padding:clamp(12px,3vw,28px)}a{color:var(--accent)}h1,h2,p{margin:.5rem 0 1rem}
+button,input,textarea{font:inherit}button,input[type=search],textarea{color:inherit;background:#26364b;border:1px solid #627e96;border-radius:8px;padding:8px 12px;min-height:44px;box-sizing:border-box}
+button:not(:disabled){cursor:pointer}button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+[hidden]{display:none!important}.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-block:12px}
+.views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.views section,aside{background:var(--panel);border-radius:12px;padding:12px;min-width:0}
+.views h2{font-size:1rem}.views label{display:block}.views input{width:100%;min-height:35px}.image{position:relative}.image canvas{display:block;background:#05080c;width:100%;touch-action:none}.markers{position:absolute;inset:0;pointer-events:none;font-size:14px;font-weight:bold;color:#fff;text-shadow:0 0 5px #000,0 0 5px #000}
+.markers span{position:absolute}.top{top:3px;left:50%}.bottom{bottom:3px;left:50%}.left{left:4px;top:50%}.right{right:4px;top:50%}
+aside{margin-block:16px}dt{font-weight:700;margin-top:.5rem}dd{margin-left:0}.results{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow:auto}textarea{width:100%;min-height:84px}
+@media(max-width:600px){.views{grid-template-columns:1fr}.views section{max-width:400px;width:100%;box-sizing:border-box;margin:auto}}
+</style>
+</head>
+<body><main>
+<nav><a href="./">MRI Study Lab</a> · <a href="./real-scans.html">MRI sequences</a> · <a id="spineNav" href="./brain-atlas.html?region=spine">Cervical Spine Atlas</a><a id="brainNav" href="./brain-atlas.html" hidden>Real Brain Atlas</a></nav>
+<h1 id="atlasTitle">Real Brain Atlas</h1>
+<p id="intro">Explore the CerebrA anatomical labels on the symmetric MNI-ICBM152 population-average T1-weighted MRI.</p>
+<div class="controls"><button id="load">Download and open atlas</button><button id="remove" hidden>Remove offline atlas</button></div>
+<p id="status" role="status">Download the 21 MB atlas once to use it offline.</p>
+<div id="workspace" hidden>
+<div class="controls">
+<label>Overlay opacity <input id="opacity" type="range" min="0" max="85" value="32"></label>
+<label>Window width <input id="width" type="range" min="5" max="100" value="85"></label>
+<label>Window center <input id="center" type="range" min="0" max="100" value="42"></label>
+<label><input id="overlay" type="checkbox" checked> Show overlays</label>
+<button id="ink" aria-pressed="false">Draw on slices</button><button id="undo" disabled>Undo stroke</button>
+</div>
+<p id="position"></p>
+<div class="views" id="views"></div>
+<aside aria-labelledby="structure">
+<h2 id="structure">Find a structure</h2>
+<p id="details">Tap a labeled voxel or search by anatomical name.</p>
+<dl id="reference"></dl><div class="controls"><label>Search structures <input id="search" type="search"></label><button id="practice">Practice identification</button><button id="cancelPractice" hidden>End practice</button></div>
+<div id="results" class="results"></div><p id="feedback" role="status"></p>
+<div id="notesPanel" hidden><label for="notes">My structure notes</label><textarea id="notes"></textarea><button id="save">Save structure notes</button></div>
+</aside>
+</div>
+<p id="brainAttribution"><small>Atlas by Manera, Dadar, Fonov and Collins. Educational reference. <a href="https://doi.org/10.12751/g-node.be5e62">Dataset and license</a> · <a href="https://doi.org/10.1038/s41597-020-0557-9">Publication</a> · <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system">Anatomy reference</a></small></p>
+<p id="spineAttribution" hidden><small>MRI by Julien Cohen-Adad and Spine Generic contributors. Manual landmarks by Sandrine Bedard. Cropped for study. <a href="https://github.com/spine-generic/data-single-subject">Source dataset</a> · <a href="./atlas/spine/LICENSE.txt">CC BY 4.0</a></small></p>
+</main><script src="./nifti.js"></script><script type="module" src="./brain-atlas.js"></script></body>
+</html>

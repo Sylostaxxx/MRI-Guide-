@@ -1,0 +1,955 @@
+{
+  "id": "cerebra-icbm152-v1",
+  "source": "https://doi.org/10.12751/g-node.be5e62",
+  "publication": "https://doi.org/10.1038/s41597-020-0557-9",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Ana L. Manera, Mahsa Dadar, Vladimir Fonov and D. Louis Collins. Symmetric MNI-ICBM152 2009c T1 reference by Fonov et al.",
+  "region": "Brain",
+  "sequence": "T1-weighted population average",
+  "orientation": "RAS+, MNI152 space, 1 mm isotropic",
+  "labelSource": "CerebrA_LabelDetails.csv",
+  "processing": "Reordered the original MINC axes to RAS+ and converted to NIfTI float32. Encoded source integer labels as uint8. Gzip compressed both without spatial resampling.",
+  "volumes": [
+    {
+      "title": "T1 MRI",
+      "path": "./atlas/cerebra-t1.nii.gz",
+      "sourceFile": "mni_icbm152_t1_tal_nlin_sym_09c.mnc",
+      "bytes": 20857514,
+      "sha256": "19796cb4b27d6dd83096009c8d3ef8f4f2b43ab0e4fd7d7698ffc3de017e4bca"
+    },
+    {
+      "title": "anatomical labels",
+      "path": "./atlas/cerebra-labels.nii.gz",
+      "sourceFile": "CerebrA.nii",
+      "bytes": 262219,
+      "sha256": "4c8da3f194cfa73dc17193b0df850056bda503d3d5b9f207a8df9e81d9b30d47"
+    }
+  ],
+  "labels": {
+    "30": {
+      "name": "Right Caudal Anterior Cingulate",
+      "hemisphere": "Right"
+    },
+    "81": {
+      "name": "Left Caudal Anterior Cingulate",
+      "hemisphere": "Left"
+    },
+    "42": {
+      "name": "Right Caudal Middle Frontal",
+      "hemisphere": "Right"
+    },
+    "93": {
+      "name": "Left Caudal Middle Frontal",
+      "hemisphere": "Left"
+    },
+    "43": {
+      "name": "Right Cuneus",
+      "hemisphere": "Right"
+    },
+    "94": {
+      "name": "Left Cuneus",
+      "hemisphere": "Left"
+    },
+    "36": {
+      "name": "Right Entorhinal",
+      "hemisphere": "Right"
+    },
+    "87": {
+      "name": "Left Entorhinal",
+      "hemisphere": "Left"
+    },
+    "24": {
+      "name": "Right Fusiform",
+      "hemisphere": "Right"
+    },
+    "75": {
+      "name": "Left Fusiform",
+      "hemisphere": "Left"
+    },
+    "10": {
+      "name": "Right Inferior Parietal",
+      "hemisphere": "Right"
+    },
+    "61": {
+      "name": "Left Inferior Parietal",
+      "hemisphere": "Left"
+    },
+    "3": {
+      "name": "Right Inferior temporal",
+      "hemisphere": "Right"
+    },
+    "54": {
+      "name": "Left Inferior temporal",
+      "hemisphere": "Left"
+    },
+    "33": {
+      "name": "Right Isthmus Cingulate",
+      "hemisphere": "Right"
+    },
+    "84": {
+      "name": "Left Isthmus Cingulate",
+      "hemisphere": "Left"
+    },
+    "34": {
+      "name": "Right Lateral Occipital",
+      "hemisphere": "Right"
+    },
+    "85": {
+      "name": "Left Lateral Occipital",
+      "hemisphere": "Left"
+    },
+    "7": {
+      "name": "Right Lateral Orbitofrontal",
+      "hemisphere": "Right"
+    },
+    "58": {
+      "name": "Left Lateral Orbitofrontal",
+      "hemisphere": "Left"
+    },
+    "12": {
+      "name": "Right Lingual",
+      "hemisphere": "Right"
+    },
+    "63": {
+      "name": "Left Lingual",
+      "hemisphere": "Left"
+    },
+    "15": {
+      "name": "Right Medial Orbitofrontal",
+      "hemisphere": "Right"
+    },
+    "66": {
+      "name": "Left Medial Orbitofrontal",
+      "hemisphere": "Left"
+    },
+    "28": {
+      "name": "Right Middle Temporal",
+      "hemisphere": "Right"
+    },
+    "79": {
+      "name": "Left Middle Temporal",
+      "hemisphere": "Left"
+    },
+    "18": {
+      "name": "Right Parahippocampal",
+      "hemisphere": "Right"
+    },
+    "69": {
+      "name": "Left Parahippocampal",
+      "hemisphere": "Left"
+    },
+    "16": {
+      "name": "Right Paracentral",
+      "hemisphere": "Right"
+    },
+    "67": {
+      "name": "Left Paracentral",
+      "hemisphere": "Left"
+    },
+    "32": {
+      "name": "Right Pars Opercularis",
+      "hemisphere": "Right"
+    },
+    "83": {
+      "name": "Left Pars Opercularis",
+      "hemisphere": "Left"
+    },
+    "44": {
+      "name": "Right Pars Orbitalis",
+      "hemisphere": "Right"
+    },
+    "95": {
+      "name": "Left Pars Orbitalis",
+      "hemisphere": "Left"
+    },
+    "22": {
+      "name": "Right Pars Triangularis",
+      "hemisphere": "Right"
+    },
+    "73": {
+      "name": "Left Pars Triangularis",
+      "hemisphere": "Left"
+    },
+    "6": {
+      "name": "Right Pericalcarine",
+      "hemisphere": "Right"
+    },
+    "57": {
+      "name": "Left Pericalcarine",
+      "hemisphere": "Left"
+    },
+    "13": {
+      "name": "Right Postcentral",
+      "hemisphere": "Right"
+    },
+    "64": {
+      "name": "Left Postcentral",
+      "hemisphere": "Left"
+    },
+    "47": {
+      "name": "Right Posterior Cingulate",
+      "hemisphere": "Right"
+    },
+    "98": {
+      "name": "Left Posterior Cingulate",
+      "hemisphere": "Left"
+    },
+    "35": {
+      "name": "Right Precentral",
+      "hemisphere": "Right"
+    },
+    "86": {
+      "name": "Left Precentral",
+      "hemisphere": "Left"
+    },
+    "31": {
+      "name": "Right Precuneus",
+      "hemisphere": "Right"
+    },
+    "82": {
+      "name": "Left Precuneus",
+      "hemisphere": "Left"
+    },
+    "8": {
+      "name": "Right Rostral Anterior Cingulate",
+      "hemisphere": "Right"
+    },
+    "59": {
+      "name": "Left Rostral Anterior Cingulate",
+      "hemisphere": "Left"
+    },
+    "1": {
+      "name": "Right Rostral Middle Frontal",
+      "hemisphere": "Right"
+    },
+    "52": {
+      "name": "Left Rostral Middle Frontal",
+      "hemisphere": "Left"
+    },
+    "38": {
+      "name": "Right Superior Frontal",
+      "hemisphere": "Right"
+    },
+    "89": {
+      "name": "Left Superior Frontal",
+      "hemisphere": "Left"
+    },
+    "9": {
+      "name": "Right Superior Parietal",
+      "hemisphere": "Right"
+    },
+    "60": {
+      "name": "Left Superior Parietal",
+      "hemisphere": "Left"
+    },
+    "45": {
+      "name": "Right Superior Temporal",
+      "hemisphere": "Right"
+    },
+    "96": {
+      "name": "Left Superior Temporal",
+      "hemisphere": "Left"
+    },
+    "51": {
+      "name": "Right Supramarginal",
+      "hemisphere": "Right"
+    },
+    "102": {
+      "name": "Left Supramarginal",
+      "hemisphere": "Left"
+    },
+    "14": {
+      "name": "Right Transverse Temporal",
+      "hemisphere": "Right"
+    },
+    "65": {
+      "name": "Left Transverse Temporal",
+      "hemisphere": "Left"
+    },
+    "23": {
+      "name": "Right Insula",
+      "hemisphere": "Right"
+    },
+    "74": {
+      "name": "Left Insula",
+      "hemisphere": "Left"
+    },
+    "11": {
+      "name": "Brainstem",
+      "subdivision": "Right"
+    },
+    "62": {
+      "name": "Brainstem",
+      "subdivision": "Left"
+    },
+    "29": {
+      "name": "Third Ventricle",
+      "subdivision": "Right"
+    },
+    "80": {
+      "name": "Third Ventricle",
+      "subdivision": "Left"
+    },
+    "37": {
+      "name": "Fourth Ventricle",
+      "subdivision": "Right"
+    },
+    "88": {
+      "name": "Fourth Ventricle",
+      "subdivision": "Left"
+    },
+    "17": {
+      "name": "Optic Chiasm",
+      "subdivision": "Right"
+    },
+    "68": {
+      "name": "Optic Chiasm",
+      "subdivision": "Left"
+    },
+    "41": {
+      "name": "Right Lateral Ventricle",
+      "hemisphere": "Right"
+    },
+    "92": {
+      "name": "Left Lateral Ventricle",
+      "hemisphere": "Left"
+    },
+    "5": {
+      "name": "Right Inferior Lateral Ventricle",
+      "hemisphere": "Right"
+    },
+    "56": {
+      "name": "Left Inferior Lateral Ventricle",
+      "hemisphere": "Left"
+    },
+    "46": {
+      "name": "Right Cerebellum Gray Matter",
+      "hemisphere": "Right"
+    },
+    "97": {
+      "name": "Left Cerebellum Gray Matter",
+      "hemisphere": "Left"
+    },
+    "39": {
+      "name": "Right Cerebellum White Matter",
+      "hemisphere": "Right"
+    },
+    "90": {
+      "name": "Left Cerebellum White Matter",
+      "hemisphere": "Left"
+    },
+    "40": {
+      "name": "Right Thalamus",
+      "hemisphere": "Right"
+    },
+    "91": {
+      "name": "Left Thalamus",
+      "hemisphere": "Left"
+    },
+    "49": {
+      "name": "Right Caudate",
+      "hemisphere": "Right"
+    },
+    "100": {
+      "name": "Left Caudate",
+      "hemisphere": "Left"
+    },
+    "21": {
+      "name": "Right Putamen",
+      "hemisphere": "Right"
+    },
+    "72": {
+      "name": "Left Putamen",
+      "hemisphere": "Left"
+    },
+    "27": {
+      "name": "Right Pallidum",
+      "hemisphere": "Right"
+    },
+    "78": {
+      "name": "Left Pallidum",
+      "hemisphere": "Left"
+    },
+    "48": {
+      "name": "Right Hippocampus",
+      "hemisphere": "Right"
+    },
+    "99": {
+      "name": "Left Hippocampus",
+      "hemisphere": "Left"
+    },
+    "19": {
+      "name": "Right Amygdala",
+      "hemisphere": "Right"
+    },
+    "70": {
+      "name": "Left Amygdala",
+      "hemisphere": "Left"
+    },
+    "4": {
+      "name": "Right Accumbens Area",
+      "hemisphere": "Right"
+    },
+    "55": {
+      "name": "Left Accumbens Area",
+      "hemisphere": "Left"
+    },
+    "26": {
+      "name": "Right Ventral Diencephalon",
+      "hemisphere": "Right"
+    },
+    "77": {
+      "name": "Left Ventral Diencephalon",
+      "hemisphere": "Left"
+    },
+    "25": {
+      "name": "Right Basal Forebrain",
+      "hemisphere": "Right"
+    },
+    "76": {
+      "name": "Left Basal Forebrain",
+      "hemisphere": "Left"
+    },
+    "50": {
+      "name": "Vermal lobules I-V",
+      "subdivision": "Right"
+    },
+    "101": {
+      "name": "Vermal lobules I-V",
+      "subdivision": "Left"
+    },
+    "2": {
+      "name": "Vermal lobules VI-VII",
+      "subdivision": "Right"
+    },
+    "53": {
+      "name": "Vermal lobules VI-VII",
+      "subdivision": "Left"
+    },
+    "20": {
+      "name": "Vermal lobules VIII-X",
+      "subdivision": "Right"
+    },
+    "71": {
+      "name": "Vermal lobules VIII-X",
+      "subdivision": "Left"
+    }
+  },
+  "anchors": {
+    "30": [
+      101,
+      153,
+      105
+    ],
+    "81": [
+      91,
+      153,
+      105
+    ],
+    "42": [
+      132,
+      146,
+      125
+    ],
+    "93": [
+      60,
+      146,
+      125
+    ],
+    "43": [
+      105,
+      51,
+      103
+    ],
+    "94": [
+      87,
+      51,
+      103
+    ],
+    "36": [
+      118,
+      128,
+      46
+    ],
+    "87": [
+      74,
+      128,
+      46
+    ],
+    "24": [
+      132,
+      90,
+      57
+    ],
+    "75": [
+      60,
+      90,
+      57
+    ],
+    "10": [
+      142,
+      68,
+      110
+    ],
+    "61": [
+      50,
+      68,
+      110
+    ],
+    "3": [
+      145,
+      107,
+      48
+    ],
+    "54": [
+      47,
+      107,
+      48
+    ],
+    "33": [
+      104,
+      86,
+      97
+    ],
+    "84": [
+      88,
+      86,
+      97
+    ],
+    "34": [
+      128,
+      45,
+      80
+    ],
+    "85": [
+      64,
+      45,
+      80
+    ],
+    "7": [
+      119,
+      168,
+      59
+    ],
+    "58": [
+      73,
+      168,
+      59
+    ],
+    "12": [
+      110,
+      64,
+      73
+    ],
+    "63": [
+      82,
+      64,
+      73
+    ],
+    "15": [
+      101,
+      170,
+      60
+    ],
+    "66": [
+      91,
+      170,
+      60
+    ],
+    "28": [
+      153,
+      100,
+      66
+    ],
+    "79": [
+      39,
+      100,
+      66
+    ],
+    "18": [
+      120,
+      101,
+      61
+    ],
+    "69": [
+      72,
+      101,
+      61
+    ],
+    "16": [
+      104,
+      105,
+      138
+    ],
+    "67": [
+      88,
+      105,
+      138
+    ],
+    "32": [
+      144,
+      148,
+      89
+    ],
+    "83": [
+      48,
+      148,
+      89
+    ],
+    "44": [
+      138,
+      166,
+      64
+    ],
+    "95": [
+      54,
+      166,
+      64
+    ],
+    "22": [
+      145,
+      164,
+      83
+    ],
+    "73": [
+      47,
+      164,
+      83
+    ],
+    "6": [
+      107,
+      50,
+      85
+    ],
+    "57": [
+      85,
+      50,
+      85
+    ],
+    "13": [
+      140,
+      107,
+      124
+    ],
+    "64": [
+      52,
+      107,
+      124
+    ],
+    "47": [
+      101,
+      112,
+      117
+    ],
+    "98": [
+      90,
+      112,
+      117
+    ],
+    "35": [
+      139,
+      126,
+      123
+    ],
+    "86": [
+      53,
+      126,
+      123
+    ],
+    "31": [
+      105,
+      73,
+      118
+    ],
+    "82": [
+      87,
+      73,
+      118
+    ],
+    "8": [
+      102,
+      168,
+      80
+    ],
+    "59": [
+      90,
+      168,
+      80
+    ],
+    "1": [
+      135,
+      175,
+      96
+    ],
+    "52": [
+      57,
+      175,
+      96
+    ],
+    "38": [
+      107,
+      166,
+      115
+    ],
+    "89": [
+      85,
+      166,
+      115
+    ],
+    "9": [
+      122,
+      70,
+      131
+    ],
+    "60": [
+      70,
+      70,
+      131
+    ],
+    "45": [
+      147,
+      124,
+      69
+    ],
+    "96": [
+      45,
+      124,
+      69
+    ],
+    "51": [
+      151,
+      97,
+      114
+    ],
+    "102": [
+      41,
+      97,
+      114
+    ],
+    "14": [
+      142,
+      112,
+      87
+    ],
+    "65": [
+      50,
+      112,
+      87
+    ],
+    "23": [
+      134,
+      134,
+      78
+    ],
+    "74": [
+      58,
+      134,
+      78
+    ],
+    "11": [
+      102,
+      101,
+      42
+    ],
+    "62": [
+      89,
+      101,
+      42
+    ],
+    "29": [
+      96,
+      119,
+      77
+    ],
+    "80": [
+      95,
+      117,
+      77
+    ],
+    "37": [
+      99,
+      88,
+      47
+    ],
+    "88": [
+      93,
+      88,
+      46
+    ],
+    "17": [
+      103,
+      135,
+      58
+    ],
+    "68": [
+      89,
+      135,
+      58
+    ],
+    "41": [
+      110,
+      113,
+      98
+    ],
+    "92": [
+      82,
+      113,
+      98
+    ],
+    "5": [
+      129,
+      116,
+      63
+    ],
+    "56": [
+      63,
+      116,
+      63
+    ],
+    "46": [
+      124,
+      68,
+      40
+    ],
+    "97": [
+      68,
+      68,
+      40
+    ],
+    "39": [
+      115,
+      80,
+      42
+    ],
+    "90": [
+      77,
+      80,
+      42
+    ],
+    "40": [
+      108,
+      114,
+      85
+    ],
+    "91": [
+      84,
+      114,
+      85
+    ],
+    "49": [
+      110,
+      142,
+      88
+    ],
+    "100": [
+      82,
+      142,
+      88
+    ],
+    "21": [
+      122,
+      135,
+      78
+    ],
+    "72": [
+      70,
+      135,
+      78
+    ],
+    "27": [
+      115,
+      130,
+      76
+    ],
+    "78": [
+      77,
+      130,
+      76
+    ],
+    "48": [
+      122,
+      110,
+      64
+    ],
+    "99": [
+      70,
+      110,
+      64
+    ],
+    "19": [
+      119,
+      128,
+      57
+    ],
+    "70": [
+      73,
+      128,
+      57
+    ],
+    "4": [
+      105,
+      144,
+      71
+    ],
+    "55": [
+      87,
+      144,
+      71
+    ],
+    "26": [
+      106,
+      115,
+      68
+    ],
+    "77": [
+      86,
+      115,
+      68
+    ],
+    "25": [
+      103,
+      136,
+      66
+    ],
+    "76": [
+      89,
+      136,
+      66
+    ],
+    "50": [
+      100,
+      79,
+      64
+    ],
+    "101": [
+      92,
+      79,
+      64
+    ],
+    "2": [
+      99,
+      62,
+      56
+    ],
+    "53": [
+      93,
+      62,
+      56
+    ],
+    "20": [
+      99,
+      71,
+      40
+    ],
+    "71": [
+      93,
+      71,
+      41
+    ]
+  },
+  "notices": [
+    "CerebrA-LICENSE.txt",
+    "ICBM-LICENSE.txt"
+  ]
+}

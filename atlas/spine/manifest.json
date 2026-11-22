@@ -1,0 +1,131 @@
+{
+  "id": "spine-generic-poly-t1-v1",
+  "source": "https://github.com/spine-generic/data-single-subject",
+  "license": "CC-BY-4.0",
+  "sourceRevision": "dc0a1771e8a7fb3bbf07d53a84fb7f56de623fed",
+  "landmarkConvention": "https://spinalcordtoolbox.com/stable/user_section/command-line/sct_label_utils.html",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Julien Cohen-Adad and Spine Generic contributors. Manual disc labels by Sandrine Bedard.",
+  "region": "Cervical and upper thoracic spine",
+  "sequence": "3D T1-weighted MRI at 3 T",
+  "orientation": "Native scanner RAS+, 1 mm isotropic",
+  "processing": "Reoriented label axes, cropped both volumes to the cervical and upper thoracic region, discarded original headers, and compressed as NIfTI-1 without interpolation.",
+  "labels": {
+    "1": {
+      "name": "Craniovertebral landmark 1"
+    },
+    "2": {
+      "name": "Craniovertebral landmark 2"
+    },
+    "3": {
+      "name": "C2\u2013C3 disc"
+    },
+    "4": {
+      "name": "C3\u2013C4 disc"
+    },
+    "5": {
+      "name": "C4\u2013C5 disc"
+    },
+    "6": {
+      "name": "C5\u2013C6 disc"
+    },
+    "7": {
+      "name": "C6\u2013C7 disc"
+    },
+    "8": {
+      "name": "C7\u2013T1 disc"
+    },
+    "9": {
+      "name": "T1\u2013T2 disc"
+    },
+    "10": {
+      "name": "T2\u2013T3 disc"
+    },
+    "11": {
+      "name": "T3\u2013T4 disc"
+    },
+    "12": {
+      "name": "T4\u2013T5 disc"
+    }
+  },
+  "anchors": {
+    "1": [
+      38,
+      93,
+      200
+    ],
+    "2": [
+      38,
+      95,
+      187
+    ],
+    "3": [
+      38,
+      92,
+      169
+    ],
+    "4": [
+      38,
+      91,
+      153
+    ],
+    "5": [
+      38,
+      87,
+      136
+    ],
+    "6": [
+      38,
+      84,
+      120
+    ],
+    "7": [
+      38,
+      82,
+      104
+    ],
+    "8": [
+      38,
+      79,
+      89
+    ],
+    "9": [
+      38,
+      69,
+      73
+    ],
+    "10": [
+      38,
+      57,
+      57
+    ],
+    "11": [
+      38,
+      43,
+      37
+    ],
+    "12": [
+      38,
+      35,
+      16
+    ]
+  },
+  "volumes": [
+    {
+      "path": "./atlas/spine/cervical-t1.nii.gz",
+      "title": "Cervical T1 MRI",
+      "sourceFile": "sub-poly/anat/sub-poly_T1w.nii.gz",
+      "sourceSha256": "7720a3c3bdd6dcf3936b34153140fcb203a95348c33c0c3dc3cfefa759d2f1ea",
+      "bytes": 3206748,
+      "sha256": "c8858ef8276141018fdb4bd6bb2e23726d32e5b47983cd3ac89de968e125ec9f"
+    },
+    {
+      "path": "./atlas/spine/cervical-landmarks.nii.gz",
+      "title": "spine landmarks",
+      "sourceFile": "derivatives/labels/sub-poly/anat/sub-poly_T1w_labels-disc-manual.nii.gz",
+      "sourceSha256": "7bd60e43e33beef0ebe1fe80439dbe5bd78d419b3442e6d80497ffda57d996b7",
+      "bytes": 2324,
+      "sha256": "419b4d62b2b14dc4fe5b03ff4dcc2cca1288521f581f0792508060fab25a5eee"
+    }
+  ]
+}
