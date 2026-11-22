@@ -162,3 +162,37 @@ test('cropped cardiac MRI and left atrial mask keep the source voxel geometry', 
   assert.ok(image.p[index]>0);
   assert.equal(labels.p.reduce((sum,value)=>sum+value,0),45003);
 });
+
+test('atlas layers use pack labels and keep unsupported categories unavailable', async () => {
+  const { layerCatalog }=await import('../atlas-layers.js');
+  for (const [region,path] of [
+    ['brain','atlas/manifest.json'],['spine','atlas/spine/manifest.json'],
+    ['knee','atlas/knee/manifest.json'],['cardiac','atlas/cardiac/manifest.json']
+  ]) {
+    const {labels}=JSON.parse(fs.readFileSync(path));
+    const {mappings,groups}=layerCatalog(region,labels);
+    assert.deepEqual(Object.keys(labels),Object.keys(mappings));
+    assert.ok(Object.values(mappings).every(id=>groups.some(group=>group.id===id&&group.available)));
+    assert.equal(groups.find(group=>group.id==='artery').available,false);
+    if(region==='spine')assert.equal(groups.find(group=>group.id==='cord').available,false);
+    if(region==='knee')assert.deepEqual(Object.values(mappings).sort(),['bone','cartilage']);
+  }
+});
+
+test('system plates have verified file signatures, hashes and publisher attribution', () => {
+  require('../study-content.js');
+  require('../organ-catalog.js');
+  require('../anatomy-plates.js');
+  assert.equal(OrganCatalog.length,11);
+  assert.equal(new Set(OrganCatalog.flatMap(group=>group.entries.map(entry=>entry.id))).size,22);
+  for (const group of OrganCatalog) {
+    for(const structure of group.entries)assert.ok(AnatomyPlates[structure.plate]);
+  }
+  for (const plate of Object.values(AnatomyPlates)) {
+    const image=fs.readFileSync(plate.asset);
+    assert.equal(image.subarray(8,12).toString(),'WEBP');
+    assert.equal(createHash('sha256').update(image).digest('hex'),plate.sha256);
+    assert.match(plate.source,/^https:\/\/openstax\.org\/books\//);
+    assert.match(plate.licenseUrl,/^https:\/\/creativecommons\.org\/licenses\//);
+  }
+});
