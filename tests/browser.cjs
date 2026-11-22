@@ -67,7 +67,17 @@ async function run() {
     await page.mouse.move(box.x+box.width/2+20,box.y+box.height/2+20,{steps:5});
     await page.mouse.up();
     assert.equal(await page.locator('#undo').isEnabled(),true);
+    await page.getByRole('link',{name:'Cervical Spine Atlas',exact:true}).click();
+    await page.getByRole('heading',{name:'Cervical Spine Atlas'}).waitFor();
+    await page.locator('#load').click();
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await page.getByRole('button',{name:'C2–C3 disc',exact:true}).click();
+    await page.getByRole('heading',{name:'C2–C3 disc',exact:true}).waitFor();
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
+    await page.goto(home + 'brain-atlas.html?region=spine',{waitUntil:'domcontentloaded'});
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await page.getByRole('button',{name:'C7–T1 disc',exact:true}).click();
+    await page.getByRole('heading',{name:'C7–T1 disc',exact:true}).waitFor();
     await page.goto(home + 'brain-atlas.html', {waitUntil:'domcontentloaded'});
     await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
     await page.locator('#search').fill('Left Thalamus');

@@ -227,9 +227,27 @@ function updateResults() {
   if (!el('results').children.length) el('results').textContent = 'No matching structures.';
 }
 
-async function bytes(response, name) {
+async function bytes(response, asset, offline) {
+  const name = asset.title;
   if (!response.ok) throw Error('Could not download ' + name + ' (HTTP ' + response.status + ').');
-  return response.arrayBuffer();
+  if (offline || !response.body) return response.arrayBuffer();
+  const reader = response.body.getReader();
+  const data = new Uint8Array(asset.bytes);
+  let loaded = 0, shown = -1;
+  try {
+    while (true) {
+      const {value,done} = await reader.read();
+      if (done) break;
+      if (value.length > data.length-loaded) throw Error('Unexpected size for ' + name + '.');
+      data.set(value,loaded);loaded += value.length;
+      const percent = Math.floor(loaded/data.length*100);
+      if (percent >= shown+5 || percent === 100) {
+        shown = percent;status('Downloading ' + name + ' · ' + percent + '%');
+      }
+    }
+  } finally { await reader.cancel(); }
+  if (loaded !== data.length) throw Error('Incomplete atlas download. Try again online.');
+  return data.buffer;
 }
 
 async function open(online) {
@@ -246,7 +264,7 @@ async function open(online) {
     for (const asset of manifest.volumes) {
       status((saved ? 'Reading ' : 'Downloading ') + asset.title + '…');
       const file = (saved && await cache.match(asset.path)) || await fetch(asset.path);
-      const buffer = await bytes(file,asset.title);
+      const buffer = await bytes(file,asset,saved);
       if (buffer.byteLength !== asset.bytes) throw Error('Incomplete atlas download. Try again online.');
       const digest = await crypto.subtle.digest('SHA-256',buffer);
       const checksum = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2,'0')).join('');
