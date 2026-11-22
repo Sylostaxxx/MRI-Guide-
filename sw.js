@@ -1,1 +1,34 @@
-const CACHE='mri-study-lab-real-1';const FILES=['./','./index.html','./manifest.webmanifest','./icon.png','./real-scans.html'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mri-study-lab-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method==='GET'&&u.origin===location.origin&&u.pathname.startsWith(new URL(self.registration.scope).pathname)){e.respondWith((async()=>{const c=await caches.open(CACHE);if(e.request.mode==='navigate'){try{const r=await fetch(e.request);if(r.ok)await c.put(e.request,r.clone());return r}catch(err){return await c.match(e.request,{ignoreSearch:true})||Response.error()}}return await c.match(e.request)||fetch(e.request)})())}});
+const CACHE = 'mri-study-lab-shell-2';
+const ROOT = new URL(self.registration.scope);
+const FILES = [
+  './', './index.html', './manifest.webmanifest', './icon.png', './real-scans.html',
+  './brain-atlas.html', './brain-atlas.js', './brain-reference.js', './nifti.js', './study-backup.js'
+];
+const shellURLs = new Set(FILES.map(file => new URL(file, ROOT).href));
+
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache =>
+    cache.addAll(FILES.map(file => new Request(new URL(file, ROOT), { cache: 'reload' })))));
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    for (const name of await caches.keys()) {
+      if ((name.startsWith('mri-study-lab-shell-') && name !== CACHE) || name === 'mri-study-lab-real-1') {
+        await caches.delete(name);
+      }
+    }
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== ROOT.origin) return;
+  if (event.request.mode === 'navigate') url.search = '';
+  if (!shellURLs.has(url.href)) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    return (await cache.match(url.href)) ?? fetch(event.request);
+  })());
+});
