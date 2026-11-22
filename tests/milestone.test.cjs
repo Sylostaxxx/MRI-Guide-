@@ -298,3 +298,90 @@ test('registry deadlines and pilot exclusions persist and backups retain complet
   assert.equal(RegistryCore.read(storage).active,null);
   assert.equal(StudyBackup.read(storage).registry.history[0].id,run.id);
 });
+
+require('../registry-bank-academy.js');
+require('../study-content-map.js');
+require('../study-review.js');
+require('../study-store.js');
+require('../physics-lessons.js');
+require('../physics-videos.js');
+
+test('academy content is complete for each published lesson and isolated from Exam A', () => {
+  const bank=RegistryContent.bank;
+  assert.equal(bank.length,279);
+  assert.equal(bank.filter(q=>!q.pilot).length,249);
+  assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
+  const exact = new Set();
+  for(const q of bank){
+    const key=q.stem.trim().toLowerCase().replace(/[^a-z0-9]/g,'')+'|'+(q.image??'');
+    assert.ok(!exact.has(key),q.id);
+    exact.add(key);
+    assert.ok(q.blueprint&&q.subtopic&&q.version&&q.key.length&&q.references.length&&StudyContentMap.related(q),q.id);
+    assert.equal(new Set(q.options.map(([choice])=>choice)).size,q.options.length,q.id);
+    assert.ok(q.options.every(pair=>pair.length===2&&pair.every(Boolean)),q.id);
+    assert.ok(q.key.every(i=>i>=0&&i<q.options.length),q.id);
+  }
+  const original=bank.filter(q=>!q.id.startsWith('v'));
+  assert.deepEqual(RegistryCore.buildForm(bank,RegistryBlueprints.arrt),RegistryCore.buildForm(original,RegistryBlueprints.arrt));
+  for (const lesson of PhysicsLessons.lessons) {
+    for (const key of ['textbook','equation','simple','example','trap','takeaway']) assert.ok(lesson[key].length>35,key);
+    const ids=StudyContentMap.lessons[lesson.id];
+    assert.equal(new Set(ids).size,5,lesson.id);
+    assert.ok(ids.every(id=>bank.some(q=>q.id===id&&StudyContentMap.lessonFor(q)===lesson.id)));
+    assert.ok(PhysicsVideos[lesson.id].every(video=>/^https:\/\//.test(video.url)&&video.creator&&video.verified));
+  }
+  for (const [id,image] of Object.entries(RegistryImages)) {
+    if(!image.marked)continue;
+    assert.equal(createHash('sha256').update(fs.readFileSync(image.promptPath)).digest('hex'),image.promptSha256,id);
+    assert.notEqual(image.sha256,image.promptSha256,id);
+  }
+});
+
+test('review preserves mistakes, rejects assisted mastery, and counts independent success across days', () => {
+  const {day,summarize,dashboard}=StudyReview;
+  const now=new Date(2026,10,22,12).getTime();
+  const attempt=(at,correct,hint=false)=>({question:'p01',at,correct,hint,subject:'Physics'});
+  const attempts=[attempt(now,false),attempt(now+1,false),attempt(now+2,true,true),
+    attempt(now+day,true),attempt(now+day+1,true),attempt(now+2*day,true),attempt(now+3*day,true)];
+  let row=summarize(attempts.slice(0,2)).get('p01');
+  assert.equal(row.due,now+1+4*3600000);
+  row=summarize(attempts.slice(0,5)).get('p01');
+  assert.deepEqual([row.misses,row.streak,row.mastered],[2,1,false]);
+  row=summarize(attempts).get('p01');
+  assert.deepEqual([row.misses,row.streak,row.mastered,row.due],[2,3,true,now+10*day]);
+  row=summarize(attempts,now+4*day).get('p01');
+  assert.deepEqual([row.misses,row.streak,row.mastered,row.due],[2,0,false,0]);
+  const d=dashboard(attempts,now+3*day);
+  assert.deepEqual([d.today,d.streak,d.total,d.topics.get('Physics').correct],[1,4,7,4]);
+});
+
+test('continuous review favors unseen, then due, without immediately repeating a question',()=>{
+  const pool=['a','b','c'].map(id=>({id,topic:'k-space'}));
+  const recent={recent:['a'],weak:false};
+  const stats=new Map([['a',{due:0,misses:1,last:5,lastMiss:5}],['b',{due:50,misses:0,last:5,lastMiss:0}]]);
+  assert.equal(StudyReview.select(pool,[],recent,stats,10,()=>0).id,'c');
+  assert.equal(StudyReview.select(pool.slice(0,2),[],recent,stats,10,()=>0).id,'b');
+  assert.equal(StudyReview.select(pool.slice(0,2),[],{recent:[]},stats,10,()=>0).id,'a');
+  assert.equal(StudyReview.select(pool.slice(0,1),[],recent,stats,10,()=>0).id,'a');
+});
+
+test('continuous study backups reject invalid attempt and session schemas',()=>{
+  const attempt={id:'session:1',question:'p01',version:'1',at:20,topic:'T1',subject:'Physics',
+    session:'session',mode:'continuous',response:[0],correct:false,hint:false,ms:700};
+  const payload={version:1,attempts:[attempt],records:[{id:'reset',value:{at:30},at:30}]};
+  assert.equal(StudyStore.validate(payload),payload);
+  assert.throws(()=>StudyStore.validate({...payload,version:99}),/backup/);
+  assert.throws(()=>StudyStore.validate({...payload,attempts:[{...attempt,mode:'exam'}]}),/attempt/);
+  assert.throws(()=>StudyStore.validate({...payload,records:[{id:'session',value:{},at:30}]}),/session/);
+});
+
+require('../study-variants.js');
+test('generated Larmor variations have stable unique options and verified arithmetic',()=>{
+  const expected=[42.58,85.16,170.32,298.06];
+  assert.deepEqual(StudyVariants.variants.map(q=>parseFloat(q.options[q.key[0]][0])),expected);
+  for (const q of StudyVariants.variants) {
+    assert.equal(new Set(q.options.map(pair=>pair[0])).size,4);
+    assert.equal(StudyContentMap.lessonFor(q),'larmor');
+    assert.ok(!RegistryContent.bank.some(item=>item.id===q.id));
+  }
+});

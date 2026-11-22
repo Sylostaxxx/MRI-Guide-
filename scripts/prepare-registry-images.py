@@ -1,5 +1,4 @@
 """Render registry reference slices from the versioned bundled atlas volumes and anchors."""
-import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -49,24 +48,31 @@ for id,(region,code,axis,mark) in cases.items():
     width = 560
     height = round(width*h*spacing[v]/(w*spacing[u]))
     raster = raster.resize((width,height), Image.Resampling.LANCZOS)
+    prompt = {}
     if mark:
         tx = (vox[u]+.5)*width/w
         ty = (h-vox[v]-.5)*height/h
         # The arrow terminates at the verified voxel center. The shaft stays outside its tip.
         hx = tx-36 if tx>width/2 else tx+36
         hy = ty-36 if ty>height/2 else ty+36
-        draw = ImageDraw.Draw(raster)
-        draw.line((hx,hy,tx,ty), fill='#161209',width=6)
-        draw.line((hx,hy,tx,ty), fill='#ffdb5c',width=3)
         dx,dy = hx-tx,hy-ty
         length = np.hypot(dx,dy)
         dx,dy = dx/length,dy/length
-        draw.polygon([(tx,ty),(tx+dx*13-dy*5,ty+dy*13+dx*5),(tx+dx*13+dy*5,ty+dy*13-dx*5)],fill='#ffdb5c')
+        tip = [(tx,ty),(tx+dx*13-dy*5,ty+dy*13+dx*5),(tx+dx*13+dy*5,ty+dy*13-dx*5)]
+        neutral = raster.copy()
+        for image, color in [(neutral, '#f5f5f5'), (raster, '#ffdb5c')]:
+            draw = ImageDraw.Draw(image)
+            draw.line((hx,hy,tx,ty), fill='#161209',width=6)
+            draw.line((hx,hy,tx,ty), fill=color,width=3)
+            draw.polygon(tip,fill=color)
+        prompt_path = output / (id + '-prompt.webp')
+        neutral.save(prompt_path, 'WEBP', quality=87)
+        prompt = {'promptPath': './'+str(prompt_path), 'promptSha256': hashlib.sha256(prompt_path.read_bytes()).hexdigest()}
     path=output/(id+'.webp')
     raster.save(path,'WEBP',quality=87)
     records[id]={'path':'./'+str(path),'region':region,'label':code,
         'labelName':manifest['labels'][str(code)]['name'],'voxel':vox,'axis':axis,'marked':mark,
         'license':manifest['license'],'licenseUrl':manifest['licenseUrl'],'source':manifest['source'],
         'attribution':manifest['attribution'],
-        'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+        'sha256':hashlib.sha256(path.read_bytes()).hexdigest(), **prompt}
 Path('registry-images.js').write_text('globalThis.RegistryImages = '+json.dumps(records,ensure_ascii=False,indent=2)+';\n')

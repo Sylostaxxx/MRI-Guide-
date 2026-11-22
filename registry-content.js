@@ -29,7 +29,7 @@
   function add({category,id,topic,stem,options,key=[0],type='single',source, ...rest}) {
     const ref=sources[source??defaultSource[category]];
     if(!ref)throw Error('Unknown source '+source);
-    bank.push({id,category,topic,objective:rest.objective??topic,armritSubject:subject[category],stem,options,key,type,
+    bank.push({id,version:'1',category,topic,subtopic:topic,blueprint:'arrt-mri-2025-02-01',objective:rest.objective??topic,armritSubject:subject[category],stem,options,key,type,
       references:[ref],related:area[category],review:'editorial-only',...rest});
   }
   function lines(category,rows,{pilot=false}={}){

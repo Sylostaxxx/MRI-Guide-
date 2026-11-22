@@ -2,8 +2,8 @@
   const destinations = [
     ['anatomy','Anatomy','./'],
     ['clinical','Clinical','./?section=clinical'],
-    ['physics','Physics','./?section=physics'],
-    ['practice','Practice','./?section=practice'],
+    ['physics','Physics','./academy.html'],
+    ['practice','Practice','./practice.html'],
     ['study','My Study Space','./?section=study']
   ];
   const nav=document.querySelector('[data-app-nav]');
