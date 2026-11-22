@@ -43,24 +43,30 @@
   const str = value => typeof value === 'string' && value.length > 0;
   const object = value => value && typeof value === 'object' && !Array.isArray(value);
   const modes = ['continuous','lesson','retry','legacy-tutor'];
+  const indexes = values => Array.isArray(values) && values.every(n => Number.isInteger(n) && n >= 0);
+  function validAttempt(a) {
+    return object(a) && [a.id,a.question,a.version,a.topic,a.subject,a.session].every(str) &&
+      modes.includes(a.mode) && Number.isFinite(a.at) && a.at >= 0 &&
+      Number.isFinite(a.ms) && a.ms >= 0 && indexes(a.response) &&
+      typeof a.correct === 'boolean' && typeof a.hint === 'boolean';
+  }
   function validate(data) {
     if (!object(data) || data.version !== version || !Array.isArray(data.attempts) || !Array.isArray(data.records)) throw Error('Invalid continuous study backup.');
-    for (const a of data.attempts) {
-      if (!object(a) || ![a.id,a.question,a.version,a.topic,a.subject,a.session].every(str) ||
-          !modes.includes(a.mode) || !Number.isFinite(a.at) || a.at < 0 ||
-          !Number.isFinite(a.ms) || a.ms < 0 || !Array.isArray(a.response) ||
-          !a.response.every(n => Number.isInteger(n) && n >= 0) ||
-          typeof a.correct !== 'boolean' || typeof a.hint !== 'boolean') throw Error('Invalid practice attempt.');
-    }
+    if (data.attempts.some(attempt=>!validAttempt(attempt))) throw Error('Invalid practice attempt.');
     for (const row of data.records) {
       if (!object(row) || !str(row.id) || !object(row.value) || !Number.isFinite(row.at)) throw Error('Invalid study record.');
       const value = row.value;
       if (/^session(?::(?:lesson|retry):[a-z0-9-]+)?$/.test(row.id)) {
-        if (!str(value.id) || !modes.includes(value.mode) || !Array.isArray(value.recent) ||
-            !value.recent.every(str) || !Array.isArray(value.queue) || !value.queue.every(str) ||
-            !Array.isArray(value.order) || !value.order.every(Number.isInteger) ||
+        const hasResult = value.result !== null;
+        if (!str(value.id) || !['continuous','lesson','retry'].includes(value.mode) ||
+            !Array.isArray(value.recent) || !value.recent.every(str) ||
+            !Array.isArray(value.queue) || !value.queue.every(str) || !indexes(value.order) ||
+            (value.draft !== undefined && !indexes(value.draft)) ||
+            (value.current !== null && !str(value.current)) ||
+            (hasResult && (!validAttempt(value.result) || value.result.question !== value.current || value.result.session !== value.id)) ||
             !Number.isInteger(value.number) || value.number < 1 ||
-            typeof value.paused !== 'boolean' || typeof value.ended !== 'boolean') throw Error('Invalid saved session.');
+            !Number.isFinite(value.elapsed) || value.elapsed < 0 || !str(value.subject) || !str(value.difficulty) ||
+            !['paused','ended','hint'].every(field=>typeof value[field] === 'boolean')) throw Error('Invalid saved session.');
       } else if (row.id === 'reset') {
         if (!Number.isFinite(value.at)) throw Error('Invalid mastery reset.');
       } else if (/^lesson:[a-z0-9-]+$/.test(row.id)) {

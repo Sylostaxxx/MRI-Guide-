@@ -2,7 +2,7 @@
   const destinations = [
     ['anatomy','Anatomy','./'],
     ['clinical','Clinical','./?section=clinical'],
-    ['physics','Physics','./?section=physics'],
+    ['physics','Physics','./academy.html'],
     ['practice','Practice','./practice.html'],
     ['study','My Study Space','./?section=study']
   ];

@@ -96,7 +96,7 @@ async function run() {
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     assert.deepEqual(errors,[]);
     await page.getByRole('link',{name:'Physics',exact:true}).click();
-    await page.getByRole('button',{name:'Physics Sandbox'}).click();
+    await page.getByRole('link',{name:'Physics Sandbox',exact:true}).click();
     await page.locator('#sField').selectOption('3');
     assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
     await page.locator('#sTR').fill('3000');
