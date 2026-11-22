@@ -35,7 +35,7 @@ async function run() {
       acceptDownloads:true });
     const page = await context.newPage();
     const errors = [];
-    page.on('pageerror',error => errors.push(error.message));
+    page.on('pageerror',error => errors.push(error.stack || error.message));
     await page.goto(home);
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
@@ -59,8 +59,8 @@ async function run() {
     await page.mouse.move(box.x+box.width/2+20,box.y+box.height/2+20,{steps:5});
     await page.mouse.up();
     assert.equal(await page.locator('#undo').isEnabled(),true);
-    await context.setOffline(true);
-    await page.reload();
+    await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
+    await page.goto(home + 'brain-atlas.html', {waitUntil:'domcontentloaded'});
     await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
     await page.locator('#search').fill('Left Thalamus');
     await page.getByRole('button',{name:'Left Thalamus',exact:true}).click();
