@@ -225,3 +225,76 @@ test('identification assets use the verified unlabeled allowlist, separate from 
     assert.ok(illustrationTargets[target].every(([,x,y])=>x>0&&x<1&&y>0&&y<1));
   }
 });
+
+for (const name of ['blueprints','core','content','images','bank-physics','calculations','bank-acquisition','bank-procedures','bank-safety','bank-pilot']) {
+  require('../registry-'+name+'.js');
+}
+
+test('registry bank has distinct keys, sourced rationales and an exact scored ARRT blueprint', () => {
+  const { bank } = RegistryContent;
+  const { arrt, armrit } = RegistryBlueprints;
+  const ids = new Set();
+  const stems = new Set();
+  for (const q of bank) {
+    assert.ok(!ids.has(q.id), q.id);
+    ids.add(q.id);
+    const signature = q.stem.toLowerCase().replace(/[^a-z0-9]/g,'')+'|'+(q.image ?? '');
+    assert.ok(!stems.has(signature), q.id);
+    stems.add(signature);
+    assert.ok(arrt.categories[q.category] && q.objective && armrit.subjects.includes(q.armritSubject), q.id);
+    assert.ok(q.references.every(([label,url])=>label && new URL(url).protocol==='https:'), q.id);
+    assert.ok(q.options.every(([answer,why])=>answer && why), q.id);
+    assert.equal(new Set(q.options.map(([answer])=>answer)).size,q.options.length,q.id);
+    assert.ok(q.key.every(key=>Number.isInteger(key) && key>=0 && key<q.options.length),q.id);
+    assert.equal(new Set(q.key).size,q.key.length,q.id);
+    if (q.type==='multiple') assert.ok(q.key.length>1 && q.key.length<q.options.length,q.id);
+    else assert.equal(q.key.length,q.type==='single'?1:q.options.length,q.id);
+  }
+  const form = RegistryCore.buildForm(bank,arrt);
+  assert.equal(form.length,230);
+  assert.equal(form.filter(item=>!item.scored).length,30);
+  const counts = Object.fromEntries(Object.keys(arrt.categories).map(key=>[key,0]));
+  const catalog = new Map(bank.map(q=>[q.id,q]));
+  for (const item of form.filter(item=>item.scored)) counts[catalog.get(item.id).category]++;
+  assert.deepEqual(Object.values(counts),[40,36,30,25,15,17,21,16]);
+  for (const formId of ['B','C','D','E','random']) assert.equal(RegistryCore.buildForm(bank,arrt,formId),null);
+  assert.deepEqual([armrit.total,armrit.minutes,armrit.formats],[225,210,['single']]);
+});
+
+test('registry calculation keys match independently checked displayed answers and image files match their manifests', () => {
+  const expected = {p31:127.74,p32:1.5,p33:63.2,p34:13.5,p35:150,p36:42.58,p37:.30,p38:125000,
+    p39:3,p40:12.5,s27:.859,s28:3.84,s29:2,s30:.50,s31:96,s32:173,s33:59,s34:2,s35:48,s36:5};
+  const questions = RegistryContent.bank.filter(q=>q.formula);
+  assert.equal(questions.length,Object.keys(expected).length);
+  for (const q of questions) assert.equal(parseFloat(q.options[q.key[0]][0]),expected[q.id],q.id);
+  const visual = RegistryContent.bank.filter(q=>q.image);
+  assert.equal(visual.length,Object.keys(RegistryImages).length);
+  for (const q of visual) {
+    const asset = RegistryImages[q.image];
+    assert.ok(asset?.license && asset.attribution && [0,1,2].includes(asset.axis),q.id);
+    assert.equal(createHash('sha256').update(fs.readFileSync(asset.path)).digest('hex'),asset.sha256,q.id);
+  }
+});
+
+test('registry deadlines and pilot exclusions persist and backups retain completed sessions', () => {
+  const { bank } = RegistryContent;
+  const scored = bank.find(q=>q.type==='single' && !q.pilot);
+  const pilot = bank.find(q=>q.pilot);
+  const order = bank.find(q=>q.type==='order');
+  const multiple = bank.find(q=>q.type==='multiple');
+  assert.ok(RegistryCore.isCorrect(multiple,[...multiple.key].reverse()));
+  assert.ok(!RegistryCore.isCorrect(order,[...order.key].reverse()));
+  const storage = new MemoryStorage();
+  const run = RegistryCore.makeRun({mode:'exam',title:'Exam',minutes:230,now:1000,
+    items:[{question:scored,scored:true},{question:pilot,scored:false},{question:scored,scored:true}]});
+  run.answers = {0:scored.key,1:pilot.key,2:scored.key};
+  run.assisted = {2:true};
+  RegistryCore.save(storage,{active:run,history:[]});
+  assert.equal(RegistryCore.read(storage).active.deadline,1000+230*60000);
+  const report = RegistryCore.report(run,2000);
+  assert.deepEqual([report.correct,report.eligible,report.assisted,report.items[0].ms],[1,2,1,1000]);
+  StudyBackup.restore(storage,{notes:[],registry:{active:null,history:[report],archive:{}}});
+  StudyBackup.restore(storage,{notes:[]});
+  assert.equal(RegistryCore.read(storage).active,null);
+  assert.equal(StudyBackup.read(storage).registry.history[0].id,run.id);
+});

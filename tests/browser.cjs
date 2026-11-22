@@ -310,6 +310,51 @@ async function run() {
     assert.ok(backup.layers['mri.atlas.layers.knee1'].enabled.includes('cartilage'));
     assert.equal(backup.bookmarks['mri.atlas.bookmark.cerebra1:91'],'Left Thalamus');
     assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
+    await page.goto(home+'registry.html');
+    await page.getByText(/232 original study items/).waitFor();
+    await page.locator('#profile').selectOption('armrit');
+    await page.locator('#startTutor').click();
+    await page.locator('#hint').click();
+    await page.locator('#choices input').first().click();
+    await page.locator('#check').click();
+    await page.locator('#explanation').waitFor();
+    await page.locator('#review').click();
+    page.once('dialog',dialog=>dialog.accept());
+    await page.locator('#submit').click();
+    assert.match(await page.locator('#resultScore').textContent(),/1 assisted/);
+    await page.locator('#resultHome').click();
+    await page.locator('#history button').first().waitFor();
+    await page.locator('#startExam').click();
+    await page.locator('#flag').click();
+    await page.reload();
+    assert.equal(await page.locator('#flag').getAttribute('aria-pressed'),'true');
+    assert.match(await page.locator('#questionCount').textContent(),/230/);
+    assert.equal(await page.locator('#hint').isVisible(),false);
+    assert.equal(await page.locator('#check').isVisible(),false);
+    assert.equal(await page.evaluate(()=>{
+      const {active}=JSON.parse(localStorage.getItem('mri.registry.v1'));
+      return active.deadline-active.started;
+    }),230*60000);
+    await page.addInitScript(()=>{
+      const key='mri.registry.v1';
+      const saved=JSON.parse(localStorage.getItem(key)??'null');
+      if(saved?.active?.mode==='exam'){
+        saved.active.deadline=Date.now()-10;
+        localStorage.setItem(key,JSON.stringify(saved));
+      }
+    });
+    await page.reload();
+    await page.locator('#resultScore').waitFor();
+    assert.match(await page.locator('#resultScore').textContent(),/0 of 200 independently correct/);
+    assert.match(await page.locator('#storageMessage').textContent(),/submitted automatically/);
+    // The HTTP server is already stopped. Confirm that a cached image-backed
+    // question is usable without putting WebKit into its simulated offline mode.
+    await page.locator('#resultHome').click();
+    await page.locator('#kind').selectOption('image');
+    await page.locator('#startTutor').click();
+    await page.waitForFunction(()=>document.querySelector('#questionImage').naturalWidth>0);
+    await page.locator('#imageZoom').fill('2');
+    assert.ok(await page.locator('#questionImage').evaluate(img=>img.width>530));
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');
   } finally {

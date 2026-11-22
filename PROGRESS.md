@@ -72,3 +72,17 @@ The [CHAOS training release](https://doi.org/10.5281/zenodo.3431873) is a candid
 - Labeled textbook plates remain study references. Illustration questions use a verified unlabeled Wikimedia Commons asset allowlist, currently covering brain, cardiac and knee anatomy. The brain SVG has a separate label layer that can be removed reproducibly without editing its anatomical layers. The mixed quiz covers those three regions. Cervical identification remains available on MRI. Quiz assets are licensed CC BY-SA 4.0 and cached offline.
 - Structure links and bookmarks use the original pack and label IDs. Curated organ cards share MRI notes for the exact mapped structure; legacy organ notes remain available in My Study Space. Bookmarks are included in backups. The large MRI packs and existing saved reference images stay in their current storage.
 - The five sections organize existing educational activities. A full registry bank and manufacturer-specific console models remain open. Physical iPad and Apple Pencil testing remains open.
+
+## Registry preparation
+
+| Measure | Current release |
+| --- | --- |
+| Original bank | 232 items. All items have a source, a topic and objective mapping, and explanations for each option. |
+| ARRT MRI forms | Exam A has 230 items, including exactly 200 scored across the eight February 2025 categories and 30 simulated pilots. A 115-item half-length form shares items with Exam A. |
+| Additional forms | B–E need 920 more eligible items, including 120 pilots, for four non-overlapping forms. Randomized full-length forms also await deeper category pools. The 2,500-item target is in progress. |
+| Visual coverage | 21 real MRI items, including 19 eligible for Exam A and two supplemental cardiac items. Images cover brain, cervical and upper thoracic spine, knee, and left atrium. Full anatomical coverage, multi-sequence cases, and real artifact and pathology cases are outstanding. |
+| Calculation coverage | 20 formula items with independently recomputed displayed answer keys in automated tests. |
+| ARMRIT | Separate official profile and subject filters for single-best-answer practice. Full-length ARMRIT simulation is outstanding. |
+| Study and review | Daily warm-up, subject and custom quizzes, image and calculation practice, missed and spaced review, weak-topic practice, per-item timing, session history, and assisted-answer tracking. |
+| Sources and review | Every item has a public reference. Visual files include source attribution, licenses, voxel coordinates, and checksums. Independent clinical review and difficulty calibration are outstanding. |
+| Offline and storage | Registry questions and reference images are part of the offline shell. Active sessions, answers, flags, and history are stored locally and included in Settings backups. |
