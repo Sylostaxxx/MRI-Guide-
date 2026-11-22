@@ -1,0 +1,62 @@
+{
+  "id": "pykneer-demo-v4",
+  "source": "https://doi.org/10.5281/zenodo.3820248",
+  "license": "CC-BY-NC-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "attribution": "Serena Bonaretti. pyKNEEr demo images, version 4.",
+  "region": "Knee",
+  "sequence": "Preprocessed 3D DESS reference",
+  "orientation": "Axis-aligned RAS+ in pyKNEEr standardized knee space; not native scanner coordinates.",
+  "processing": "Converted MetaImage LPS geometry to RAS+ NIfTI. The MRI and masks were sampled at identical every-other indices in the two high-resolution directions and the two binary masks combined.",
+  "labels": {
+    "1": {
+      "name": "Femur"
+    },
+    "2": {
+      "name": "Femoral cartilage"
+    }
+  },
+  "anchors": {
+    "1": [
+      80,
+      105,
+      127
+    ],
+    "2": [
+      73,
+      95,
+      92
+    ]
+  },
+  "notice": "LICENSE.txt",
+  "volumes": [
+    {
+      "title": "Knee reference MRI",
+      "path": "./atlas/knee/knee-dess.nii.gz",
+      "sourceFiles": [
+        {
+          "filename": "reference.mha",
+          "sha256": "bbcd791cdcacc75608d83498b7d6d41b4e8c9e62bb9401e490bba933641b1af7"
+        }
+      ],
+      "bytes": 20925013,
+      "sha256": "edf71990329c9391d5cdaa9657374ce2e30aee11cc7040189a188e6557864aa1"
+    },
+    {
+      "title": "Femur and femoral cartilage labels",
+      "path": "./atlas/knee/knee-labels.nii.gz",
+      "sourceFiles": [
+        {
+          "filename": "reference_f.mha",
+          "sha256": "d1408f156a4c658e239f4d0131921781885b3da60e80d33b2993ad473a52df84"
+        },
+        {
+          "filename": "reference_fc.mha",
+          "sha256": "12abe740585365cd44d7d2c6701e92f302a95b39bdcd2d61d66eb7d635d97705"
+        }
+      ],
+      "bytes": 30870,
+      "sha256": "3b0b072382fe6488b6539aaa054e2f34860d4411965e4e8955f393b7fb695987"
+    }
+  ]
+}

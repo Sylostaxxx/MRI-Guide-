@@ -76,7 +76,17 @@ async function run() {
     await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
     await page.getByRole('button',{name:'C2–C3 disc',exact:true}).click();
     await page.getByRole('heading',{name:'C2–C3 disc',exact:true}).waitFor();
+    await page.getByRole('link',{name:'Knee MRI Atlas',exact:true}).click();
+    await page.getByRole('heading',{name:'Knee MRI Atlas'}).waitFor();
+    await page.locator('#load').click();
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await page.getByRole('button',{name:'Femoral cartilage',exact:true}).click();
+    await page.getByRole('heading',{name:'Femoral cartilage',exact:true}).waitFor();
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
+    await page.goto(home + 'brain-atlas.html?region=knee',{waitUntil:'domcontentloaded'});
+    await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
+    await page.getByRole('button',{name:'Femur',exact:true}).click();
+    await page.getByRole('heading',{name:'Femur',exact:true}).waitFor();
     await page.goto(home + 'brain-atlas.html?region=spine',{waitUntil:'domcontentloaded'});
     await page.getByText('MRI and labels saved for offline use.',{exact:false}).waitFor({timeout:60000});
     await page.getByRole('button',{name:'C7–T1 disc',exact:true}).click();

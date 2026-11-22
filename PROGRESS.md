@@ -5,7 +5,7 @@
 - The CerebrA brain pack uses the publisher’s symmetric population-average T1 MRI and 102 anatomical label IDs. Both volumes share a 1 mm RAS+ grid. Automated checks compare affine matrices, file checksums, all label lookup points, and thalamic laterality.
 - The atlas supports linked axial, coronal, and sagittal slices, orientation markers, interactive overlays, search, identification practice, per-label notes, and pointer and Pencil strokes saved by slice. Eight structure groups have educational reference cards.
 - Combined study backup reads the original browser storage keys. Restore merges notebook entries, quiz history, scan notes, and atlas drawings. It accepts legacy notebook and scan-note JSON files. Tests cover repeated imports, conflicts, and rollback after a failed write.
-- The versioned offline shell includes the main app, sequence library, and atlas interface. The selected atlas pack is stored separately. Browser-level offline and Safari behavior need confirmation.
+- The versioned offline shell includes the main app, sequence library, and atlas interface. The selected atlas pack is stored separately. Chromium and WebKit automated checks exercise navigation with the origin unavailable. Physical iPad Home Screen and Apple Pencil behavior still need confirmation.
 
 - The Physics Sandbox includes live T1 recovery, T2 and T2* decay plots, an idealized spin-echo signal estimate, and proton Larmor frequency. Automated checks verify the mathematical relationships.
 
@@ -15,7 +15,8 @@
 | --- | --- |
 | Brain | Partial. Symmetric T1 population average with CerebrA labels. Separate existing T1, T2, PD, and MRA examples. No complete diagnostic exam packs. |
 | Cervical and upper thoracic spine | 3 T T1 pack with 12 manually placed point landmarks. The overlay shows landmarks rather than segmented volumes. Coverage extends to the T4–T5 landmark. |
-| Lumbar spine, knee, shoulder | Schematic planning practice. No bundled real-image packs. |
+| Knee | One preprocessed 3D DESS example with femur and femoral cartilage labels. |
+| Lumbar spine, shoulder | Schematic planning practice. No bundled real-image packs. |
 | Lower thoracic spine, neck, elbow, wrist, hand, hip, ankle, foot | No verified bundled image packs. |
 | Chest, abdomen, pelvis, cardiac, breast, vascular, fetal, and other specialized exams | No verified bundled image packs. |
 
@@ -41,4 +42,4 @@ The current milestone reuses the scalar NIfTI-1 parser shared with the existing 
 - Extend the existing physics sandbox into sequence, encoding, k-space, contrast, artifact, and safety simulations.
 - Expand identification practice into the memory arcade and spaced repetition. Replace the eight-question pre-study bank with original, cited ARRT and ARMRIT-aligned coverage, timed exams, review, and adaptive difficulty.
 - Add notebook tags, bookmarks, recall exercises, and persistent volume management. Current study backups exclude image downloads and the saved IndexedDB reference snapshot.
-- Add browser automation for offline return visits, note migration, atlas editing, and mobile navigation. Verify Safari, installed iPad behavior, and real Apple Pencil input.
+- Extend browser automation to backup import and multi-tab use. Verify physical iPad Safari, Home Screen installation, and real Apple Pencil input.

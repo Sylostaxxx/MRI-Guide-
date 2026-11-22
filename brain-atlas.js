@@ -1,22 +1,26 @@
-import { brainReference } from './brain-reference.js';
+import { anatomyReference } from './brain-reference.js';
 const { parse, verifyAtlasGrid, voxelIndex } = Nifti;
 
 const el = id => document.getElementById(id);
 const status = text => { el('status').textContent = text; };
-const spine = new URLSearchParams(location.search).get('region') === 'spine';
-const packId = spine ? 'spine1' : 'cerebra1';
-const cacheName = spine ? 'mri-spine-atlas-1' : 'mri-brain-atlas-cerebra-1';
-const manifestURL = spine ? './atlas/spine/manifest.json' : './atlas/manifest.json';
-if (spine) {
-  document.title = 'Cervical Spine Atlas | MRI Study Lab';
-  el('atlasTitle').textContent = 'Cervical Spine Atlas';
-  el('intro').textContent = 'Explore 12 point landmarks on a 3D T1 MRI of the cervical and upper thoracic spine.';
-  el('status').textContent = 'Download the cervical MRI and landmarks once to use them offline.';
+const region = new URLSearchParams(location.search).get('region');
+const spine = region === 'spine';
+const knee = region === 'knee';
+const packId = spine ? 'spine1' : knee ? 'knee1' : 'cerebra1';
+const cacheName = spine ? 'mri-spine-atlas-1' : knee ? 'mri-knee-atlas-1' : 'mri-brain-atlas-cerebra-1';
+const manifestURL = spine ? './atlas/spine/manifest.json' : knee ? './atlas/knee/manifest.json' : './atlas/manifest.json';
+if (spine || knee) {
+  const title = spine ? 'Cervical Spine Atlas' : 'Knee MRI Atlas';
+  document.title = title + ' | MRI Study Lab';
+  el('atlasTitle').textContent = title;
+  el('intro').textContent = spine
+    ? 'Explore 12 point landmarks on a 3D T1 MRI of the cervical and upper thoracic spine.'
+    : 'Explore the femur and articular cartilage on a preprocessed 3D DESS reference scan.';
+  el('status').textContent = 'Download the MRI and labels once to use them offline.';
   el('brainAttribution').hidden = true;
-  el('spineAttribution').hidden = false;
-  el('spineNav').hidden = true;
-  el('brainNav').hidden = false;
+  el(spine ? 'spineAttribution' : 'kneeAttribution').hidden = false;
 }
+el(spine ? 'spineNav' : knee ? 'kneeNav' : 'brainNav').hidden = true;
 const views = [
   { name: 'Axial', axis: 2, u: 0, v: 1, edges: 'APLR' },
   { name: 'Coronal', axis: 1, u: 0, v: 2, edges: 'SILR' },
@@ -92,7 +96,7 @@ function drawView(view) {
 function render() {
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
-  el('position').textContent = (spine ? 'Scanner RAS (mm) ' : 'MNI RAS (mm) ') + cursor.map((voxel, axis) =>
+  el('position').textContent = (spine ? 'Scanner RAS (mm) ' : knee ? 'Standardized RAS (mm) ' : 'MNI RAS (mm) ') + cursor.map((voxel, axis) =>
     (image.affine[axis*5]*voxel + image.affine[axis*4+3]).toFixed(1)).join(', ');
 }
 
@@ -100,10 +104,10 @@ function select(id) {
   selected = id;
   el('structure').textContent = labels[id]?.name ?? 'Unlabeled voxel';
   el('details').textContent = labels[id]
-    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + (spine ? 'Spine Generic point landmark ' : 'CerebrA label ') + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
+    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + (spine ? 'Spine Generic point landmark ' : knee ? 'pyKNEEr label ' : 'CerebrA label ') + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
     : 'Choose a colored region or search for a structure.';
   const baseName = labels[id]?.name.replace(/^(Left|Right) /,'');
-  const reference = brainReference[baseName];
+  const reference = anatomyReference[baseName];
   const fields = el('reference');
   fields.replaceChildren();
   if (reference) {
@@ -177,6 +181,7 @@ function addView(view) {
   el('views').append(section);
   const canvas = view.canvas = section.querySelector('canvas');
   canvas.width = image.dim[view.u];canvas.height = image.dim[view.v];
+  canvas.style.aspectRatio = (canvas.width * image.affine[view.u*5]) + ' / ' + (canvas.height * image.affine[view.v*5]);
   canvas.setAttribute('aria-label', view.name + ' MRI slice');
   canvas.setAttribute('role','img');
   section.querySelector('.markers').innerHTML = [...view.edges].map((letter,i) =>
@@ -216,7 +221,7 @@ function addView(view) {
 function updateResults() {
   const query = el('search').value.trim().toLowerCase();
   el('results').replaceChildren();
-  if ((!query && !spine) || target) return;
+  if ((!query && !spine && !knee) || target) return;
   for (const [id,label] of Object.entries(labels)) {
     if (!label.name.toLowerCase().includes(query) || !anchors[id]) continue;
     const button = document.createElement('button');
@@ -274,7 +279,7 @@ async function open(online) {
     const [t1, segmentation] = volumes.map(item => item.volume);
     verifyAtlasGrid(t1,segmentation);
     image = t1;mask = segmentation;labels = manifest.labels;anchors = manifest.anchors;
-    cursor = spine ? [...anchors[5]] : image.dim.map(n => Math.floor(n/2));
+    cursor = spine ? [...anchors[5]] : knee ? [...anchors[2]] : image.dim.map(n => Math.floor(n/2));
     let offline = false;
     if (cache) {
       try {
