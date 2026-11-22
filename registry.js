@@ -265,7 +265,7 @@
     el('check').hidden=timedExam||checked;
     el('check').disabled=!answer.length;
     const assisted=active.assisted[i];
-    const correct=isCorrect(q,answer);
+    const correct=core.isCorrect(q,answer);
     el('message').className=checked?(correct?'correct':'wrong'):'';
     el('message').textContent=checked?(correct?(assisted?'Correct with a hint.':'Correct.'):'Review the explanation.')
       :assisted&&!timedExam?'Focus on '+q.topic+'. This attempt is assisted.':'';
