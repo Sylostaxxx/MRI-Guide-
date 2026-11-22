@@ -53,8 +53,8 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <button id="platePractice" hidden>Start illustration quiz</button>
 <button id="plateMixed" hidden>Mixed illustration quiz</button>
 <details class="study-chrome quiz-options"><summary>Quiz options</summary>
-<label>Scope <select id="scope"><option value="visible">Current slices</option><option value="layers">Enabled layers · all slices</option></select></label>
-<label>Time limit <select id="timer"><option value="0">Untimed</option><option value="20">20 seconds</option><option value="45">45 seconds</option></select></label>
+<label>MRI scope <select id="scope"><option value="visible">Current slices</option><option value="layers">Enabled layers · all slices</option></select></label>
+<label>MRI time limit <select id="timer"><option value="0">Untimed</option><option value="20">20 seconds</option><option value="45">45 seconds</option></select></label>
 <label><input id="retry" type="checkbox" checked> Allow retries</label>
 </details>
 <p id="studyMessage" role="status"></p><span id="plateUnavailable" hidden>This plate is available for study. Identification requires a verified unlabeled version.</span>
@@ -108,7 +108,7 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <div id="notesPanel" hidden><label for="notes">My structure notes</label><textarea id="notes"></textarea><button id="save">Save structure notes</button> <button id="inkSelected" hidden>Annotate current slices</button></div>
 </aside></details>
 </div>
-<details class="study-chrome" id="attribution"><summary>Sources and licenses</summary><p>Unlabeled quiz illustrations: <a href="https://commons.wikimedia.org/wiki/File:Diagram_of_the_human_heart_(no_labels).svg">cardiac cutaway by Wapcaplet, Yaddah and Stenemo</a> and <a href="https://commons.wikimedia.org/wiki/File:Knee_sagittal.png">sagittal knee by Sheldahl</a>. <a href="./atlas/quiz/LICENSE-BY-SA.txt">CC BY-SA 4.0</a>. Converted to WebP without anatomical edits.</p>
+<details class="study-chrome" id="attribution"><summary>Sources and licenses</summary><p>Unlabeled quiz illustrations: <a href="https://commons.wikimedia.org/wiki/File:Diagram_of_the_human_heart_(no_labels).svg">cardiac cutaway by Wapcaplet, Yaddah and Stenemo</a> <a href="https://commons.wikimedia.org/wiki/File:Knee_sagittal.png">sagittal knee by Sheldahl</a>, and <a href="https://commons.wikimedia.org/wiki/File:Human_brain_-_Sagittal_section.svg">sagittal brain by Lsanabria, based on Jmarchn</a>. <a href="./atlas/quiz/LICENSE-BY-SA.txt">CC BY-SA 4.0</a>. The brain figure’s separate label layer was removed. All anatomical artwork was retained.</p>
 <p id="brainAttribution"><small>Atlas by Manera, Dadar, Fonov and Collins. Educational reference. <a href="https://doi.org/10.12751/g-node.be5e62">Dataset and license</a> · <a href="https://doi.org/10.1038/s41597-020-0557-9">Publication</a> · <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/13-2-the-central-nervous-system">Anatomy reference</a></small></p>
 <p id="spineAttribution" hidden><small>MRI by Julien Cohen-Adad and Spine Generic contributors. Manual landmarks by Sandrine Bedard. Cropped for study. <a href="https://github.com/spine-generic/data-single-subject">Source dataset</a> · <a href="./atlas/spine/LICENSE.txt">CC BY 4.0</a></small></p>
 <p id="kneeAttribution" hidden><small>pyKNEEr demo images v4 by Serena Bonaretti. Converted and downsampled for study. <a href="https://doi.org/10.5281/zenodo.3820248">Source dataset</a> · <a href="./atlas/knee/LICENSE.txt">CC BY-NC-SA 4.0</a></small></p>

@@ -1,5 +1,9 @@
 // Normalized points reviewed on the exact unlabeled assets in quiz-assets.js.
 export const illustrationTargets = {
+  brain: [
+    ['Cerebellum',.741,.606],['Pituitary gland',.416,.597],
+    ['Thalamus',.524,.402],['Spinal cord',.619,.854]
+  ],
   heart: [
     ['Left atrium',.62,.447,'cardiac1:1'],['Right atrium',.268,.573],
     ['Left ventricle',.742,.723],['Right ventricle',.435,.752]
@@ -8,7 +12,7 @@ export const illustrationTargets = {
     ['Femur',.582,.274,'knee1:1'],['Patella',.105,.496],['Tibia',.608,.817],['Femoral cartilage',.561,.635,'knee1:2']
   ]
 };
-export const verifiedVariant = Object.freeze({heart:'heart','heart-cross':'heart',knee:'knee','knee-cross':'knee'});
+export const verifiedVariant = Object.freeze({brainstem:'brain','brain-cross':'brain',diencephalon:'brain',heart:'heart','heart-cross':'heart',knee:'knee','knee-cross':'knee'});
 
 function shuffle(values) {
   const items=[...values];
@@ -80,7 +84,7 @@ export function platePractice(el, ui, display, layout, done) {
     if(key)start(shuffle(illustrationTargets[key]).slice(0,3).map(item=>[key,item]));
   };
   el('plateMixed').onclick=()=>start(shuffle(Object.entries(illustrationTargets).flatMap(([key,items])=>
-    shuffle(items).slice(0,3).map(item=>[key,item]))));
+    shuffle(items).slice(0,2).map(item=>[key,item]))));
   return next=>{
     source=next;
     el('platePractice').hidden=!verifiedVariant[source];

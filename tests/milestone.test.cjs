@@ -215,7 +215,8 @@ test('layer preferences round-trip while an existing per-pack setting takes prec
 test('identification assets use the verified unlabeled allowlist, separate from study plates', async () => {
   require('../quiz-assets.js');
   const {verifiedVariant,illustrationTargets}=await import('../atlas-plate-practice.js');
-  assert.equal(verifiedVariant['brain-cross'],undefined);
+  assert.equal(verifiedVariant.cervical,undefined);
+  assert.match(QuizAssets.brain.changes,/preserved all three anatomy layers/);
   for(const target of new Set(Object.values(verifiedVariant))){
     const plate=QuizAssets[target];
     assert.ok(plate.asset.startsWith('./atlas/quiz/'));

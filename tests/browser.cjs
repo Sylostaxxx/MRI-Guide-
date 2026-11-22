@@ -36,7 +36,7 @@ async function run() {
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror',error => errors.push(error.stack || error.message));
-    async function assistedPractice(manifestPath) {
+    async function sampleMRIQuestion(manifestPath,independent=false) {
       const manifest = JSON.parse(fs.readFileSync(manifestPath));
       await page.locator('#practice').click();
       const prompt = await page.locator('#quizTarget').textContent();
@@ -54,8 +54,10 @@ async function run() {
         return true;
       });
       assert.equal(gray,true);
-      await page.locator('#quizHint').click();
-      assert.match(await page.locator('#quizFeedback').textContent(), /assisted/);
+      if(!independent){
+        await page.locator('#quizHint').click();
+        assert.match(await page.locator('#quizFeedback').textContent(),/assisted/);
+      }else await page.locator('#zoom').fill('1');
       const view = page.getByRole('img',{name:'Axial MRI slice'});
       const rendered = await view.evaluate((canvas,{x,y})=>{
         const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height);
@@ -69,15 +71,15 @@ async function run() {
         }
         return {highlight, x:(x+.5)/canvas.width,y:(row+.5)/canvas.height};
       },{x,y});
-      assert.equal(rendered.highlight,true);
+      assert.equal(rendered.highlight,!independent);
       assert.match(await page.locator('#views h2').first().textContent(),new RegExp(' '+(z+1)+' /'));
       const bounds=await view.boundingBox();
       await view.click({position:{x:bounds.width*rendered.x,y:bounds.height*rendered.y}});
-      assert.match(await page.locator('#quizFeedback').textContent(),/with a hint/);
+      assert.match(await page.locator('#quizFeedback').textContent(),independent?/Independent recall/:/with a hint/);
       const attempt=await page.evaluate(()=>JSON.parse(localStorage.getItem('mri-study-lab-review-v1'))[0]);
-      assert.equal(attempt.ok,false);
+      assert.equal(attempt.ok,independent);
       assert.equal(attempt.correct,true);
-      assert.equal(attempt.assisted,true);
+      assert.equal(attempt.assisted,!independent);
       await page.locator('#quizExit').click();
     }
     const ready=()=>page.waitForFunction(()=>document.querySelector('#status').textContent.includes('MRI and labels saved for offline use.'),{},{timeout:60000});
@@ -128,13 +130,17 @@ async function run() {
     assert.equal(await page.locator('canvas').count(),3);
     await page.getByRole('button',{name:'Cross-Sectional Anatomy'}).click();
     await page.waitForFunction(()=>document.querySelector('#plateImage').naturalWidth>0);
-    assert.equal(await page.locator('#platePractice').isVisible(),false);
+    assert.equal(await page.locator('#platePractice').isVisible(),true);
     const studyPlate=await page.locator('#plateImage').getAttribute('src');
     await page.setViewportSize({width:1180,height:820});
+    await page.locator('#platePractice').click();
+    assert.equal(await page.locator('#plateImage').getAttribute('src'),'./atlas/quiz/brain.webp');
+    await page.locator('#quizExit').click();
+    assert.equal(await page.locator('#plateImage').getAttribute('src'),studyPlate);
     await page.locator('#plateMixed').click();
     for(let question=0;question<6;question++){
       assert.equal(await page.locator('#quizCount').textContent(),'Question '+(question+1)+' of 6');
-      assert.match(await page.locator('#plateImage').getAttribute('src'),/^\.\/atlas\/quiz\/(heart|knee)\.webp$/);
+      assert.match(await page.locator('#plateImage').getAttribute('src'),/^\.\/atlas\/quiz\/(heart|knee|brain)\.webp$/);
       assert.equal(await page.locator('#plateImage').getAttribute('alt'),'Unlabeled anatomy illustration');
       assert.equal(await page.locator('#plateCaption').isVisible(),false);
       assert.equal(await page.locator('.plate-point.hinted').count(),0);
@@ -142,7 +148,8 @@ async function run() {
         const source=await page.locator('#plateImage').getAttribute('src');
         const subjects=source.includes('heart')
           ? ['Left atrium','Right atrium','Left ventricle','Right ventricle']
-          : ['Femur','Patella','Tibia','Femoral cartilage'];
+          : source.includes('knee')?['Femur','Patella','Tibia','Femoral cartilage']
+          : ['Cerebellum','Pituitary gland','Thalamus','Spinal cord'];
         const target=await page.locator('#quizTarget').textContent();
         const wrong=(subjects.indexOf(target)+1)%4+1;
         await page.getByRole('button',{name:'Location '+wrong,exact:true}).click();
@@ -207,7 +214,7 @@ async function run() {
     await ready();
     await page.getByRole('button',{name:'C2–C3 disc',exact:true}).click();
     await page.getByRole('heading',{name:'C2–C3 disc',exact:true}).waitFor();
-    await assistedPractice('atlas/spine/manifest.json');
+    await sampleMRIQuestion('atlas/spine/manifest.json');
     await page.locator('#atlasRegion').selectOption('knee');
     await page.getByRole('heading',{name:'Knee MRI Atlas'}).waitFor();
     await page.locator('#load').click();
@@ -221,7 +228,7 @@ async function run() {
 
     await page.locator('#windowDrawer summary').click();
     await page.locator('#overlay').uncheck();
-    await assistedPractice('atlas/knee/manifest.json');
+    await sampleMRIQuestion('atlas/knee/manifest.json');
     assert.equal(await page.locator('#overlay').isChecked(),false);
     await page.locator('#overlay').check();
     await page.locator('#atlasRegion').selectOption('cardiac');
@@ -233,7 +240,8 @@ async function run() {
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
     await page.goto(home + 'brain-atlas.html?region=cardiac',{waitUntil:'domcontentloaded'});
     await ready();
-    await assistedPractice('atlas/cardiac/manifest.json');
+    await sampleMRIQuestion('atlas/cardiac/manifest.json',true);
+    await sampleMRIQuestion('atlas/cardiac/manifest.json');
     await page.goto(home + 'brain-atlas.html?region=knee',{waitUntil:'domcontentloaded'});
     await ready();
     await page.getByRole('button',{name:'Femur',exact:true}).click();
