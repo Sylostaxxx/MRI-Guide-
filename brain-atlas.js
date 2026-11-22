@@ -1,6 +1,6 @@
 import { platePractice } from './atlas-plate-practice.js';
 import { layerCatalog } from './atlas-layers.js';
-import { anatomyReference } from './brain-reference.js';
+import { anatomyReference, atlasContext, discReference } from './brain-reference.js';
 const { parse, verifyAtlasGrid, voxelIndex } = Nifti;
 
 const el = id => document.getElementById(id);
@@ -148,6 +148,7 @@ function applyTransform(view) {
 }
 el('zoom').oninput=()=>views.forEach(applyTransform);
 el('resetView').onclick=()=>{
+  if(panning)el('pan').click();
   el('zoom').value=1;views.forEach(view=>{view.offset=[0,0];applyTransform(view);});
 };
 el('pan').onclick=()=>{
@@ -246,13 +247,16 @@ function select(id) {
     ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + pack.label + ' ' + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
     : 'Choose a colored region or search for a structure.';
   const baseName = labels[id]?.name.replace(/^(Left|Right) /,'');
-  const reference = anatomyReference[baseName];
+  const disc=spine&&baseName?.endsWith(' disc');
+  const reference = disc?discReference:anatomyReference[baseName];
+  const context=atlasContext[disc?'disc':baseName];
   const fields = el('reference');
   fields.replaceChildren();
   if (reference) {
     for (const [title, body] of [
-      ['Location and neighbors',reference.location],['Function',reference.function],
-      ['MRI appearance, sequences and clinical context',reference.imaging]
+      ['Location',reference.location],['Function',reference.function],
+      ['Neighboring structures',context[0]],['MRI appearance',reference.imaging],
+      ['Relevant sequences',context[1]],['Common pathology',context[2]],['Clinical significance',context[3]]
     ]) {
       const heading = document.createElement('dt');
       const detail = document.createElement('dd');
@@ -261,6 +265,7 @@ function select(id) {
     }
   }
   el('notesPanel').hidden = !labels[id];
+  el('inkSelected').hidden=!labels[id];
   if (labels[id]) {
     try { el('notes').value = localStorage.getItem(noteKey(id)) ?? ''; }
     catch { el('notes').value = ''; }
@@ -528,6 +533,10 @@ el('practiceHint').onclick = () => {
 el('ink').onclick = () => {
   drawing = !drawing;el('ink').setAttribute('aria-pressed',drawing);
   if(drawing&&panning)el('pan').click();
+};
+el('inkSelected').onclick=()=>{
+  if(!drawing)el('ink').click();
+  el('views').scrollIntoView({block:'start'});
 };
 el('undo').onclick = () => {
   const current = strokes(activeView);current.pop();

@@ -196,3 +196,17 @@ test('system plates have verified file signatures, hashes and publisher attribut
     assert.match(plate.licenseUrl,/^https:\/\/creativecommons\.org\/licenses\//);
   }
 });
+
+test('layer preferences round-trip while an existing per-pack setting takes precedence', () => {
+  const original=new MemoryStorage();
+  const key='mri.atlas.layers.knee1';
+  const local={enabled:['bone'],opacity:34,overlay:true};
+  const incoming={enabled:['cartilage'],opacity:18,overlay:false};
+  original.setItem(key,JSON.stringify(local));
+  assert.deepEqual(StudyBackup.validate(StudyBackup.read(original)).layers[key],local);
+  StudyBackup.restore(original,{notes:[],layers:{[key]:incoming}});
+  assert.deepEqual(JSON.parse(original.getItem(key)),local);
+  const empty=new MemoryStorage();
+  StudyBackup.restore(empty,{notes:[],layers:{[key]:incoming}});
+  assert.deepEqual(JSON.parse(empty.getItem(key)),incoming);
+});

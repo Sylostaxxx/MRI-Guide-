@@ -130,6 +130,14 @@ async function run() {
     await page.getByRole('button',{name:'Real MRI',exact:true}).click();
     await page.locator('#zoom').fill('2');
     assert.match(await page.locator('#views canvas').first().evaluate(c=>c.style.transform),/scale\(2\)/);
+    await page.getByRole('button',{name:'Pan images'}).click();
+    const panCanvas=page.locator('#views .image').first();
+    const panRect=await panCanvas.boundingBox();
+    await page.mouse.move(panRect.x+panRect.width/2,panRect.y+panRect.height/2);
+    await page.mouse.down();
+    await page.mouse.move(panRect.x+panRect.width*.6,panRect.y+panRect.height*.55,{steps:3});
+    await page.mouse.up();
+    assert.notEqual(await panCanvas.locator('canvas').evaluate(c=>c.style.transform),'translate(0%, 0%) scale(2)');
     await page.getByRole('button',{name:'Reset zoom and pan'}).click();
     await page.getByRole('button',{name:'Hide all',exact:true}).click();
     await page.locator('#search').fill('Left Thalamus');
@@ -232,6 +240,7 @@ async function run() {
     assert.equal(backup.scanNotes['mri.scan.note.cerebra1.91'],'Atlas observation');
     assert.equal(Object.keys(backup.drawings).length,1);
     assert.equal(backup.scanNotes['mri.scan.note.system.9'],'Kidney study note');
+    assert.ok(backup.layers['mri.atlas.layers.knee1'].enabled.includes('cartilage'));
     assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');

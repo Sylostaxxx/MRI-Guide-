@@ -33,7 +33,7 @@ The brain pack documents file provenance in [atlas/manifest.json](atlas/manifest
 | OHIF | Full viewer platform suited to DICOMweb workflows. A broader integration than the current static app needs for local learning packs. |
 | Papaya | A possible NIfTI viewer fallback. Compare its touch controls, segmentation picking, and offline distribution with NiiVue. |
 
-The current milestone reuses the scalar NIfTI-1 parser shared with the existing library. The atlas explicitly checks for its supported axis-aligned RAS+ grid. The existing DICOM preview supports a subset of uncompressed monochrome inputs. Compressed DICOM, general affine orientation and segmentation imports, persistent imported volumes, measurements, and pan and zoom remain open.
+The current milestone reuses the scalar NIfTI-1 parser shared with the existing library. The atlas explicitly checks for its supported axis-aligned RAS+ grid. The existing DICOM preview supports a subset of uncompressed monochrome inputs. Compressed DICOM, general affine orientation and segmentation imports, persistent imported volumes and measurements remain open. Zoom and pan are available in the atlas.
 
 ## Remaining development
 
