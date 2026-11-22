@@ -278,7 +278,7 @@ el('protoCheck').onclick=()=>{pRead();const t=pTargets[pChallenge];if(el('protoR
 el('protoSave').onclick=()=>{pRead();const body=`Protocol: ${names[el('protoRegion').value]}, ${el('protoPlane').value}. Angle ${pState.angle}°, offset ${pState.offset} schematic mm, ${pState.count} slices, thickness ${pState.thickness} mm, gap ${pState.gap}%, slice ${pState.selected}. ${el('protoNote').value}`;if(customNote('protocol',el('protoRegion').value,body)){el('protoFeedback').textContent='✓ Plan and notes saved to notebook.';el('protoNote').value=''}};
 let draggingP=false;const pv=el('protoViewer');pv.addEventListener('pointerdown',e=>{draggingP=true;pv.setPointerCapture(e.pointerId)});pv.addEventListener('pointermove',e=>{if(!draggingP)return;const b=pv.getBoundingClientRect();el('protoOffset').value=Math.round(Math.max(-100,Math.min(100,((e.clientX-b.left)/b.width-.5)*250)));pDraw()});pv.addEventListener('pointerup',()=>draggingP=false);pv.addEventListener('pointercancel',()=>draggingP=false);
 function openImageDB(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window))return reject(Error('Unavailable'));const r=indexedDB.open('mri-study-lab-images',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('refs'))r.result.createObjectStore('refs')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function saveRef(blob){const db=await openImageDB();await new Promise((res,rej)=>{const tx=db.transaction('refs','readwrite');tx.objectStore('refs').put(blob,'protocol-ref');tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close()}
+async function saveRef(blob){const durable=new Blob([await blob.arrayBuffer()],{type:blob.type});const db=await openImageDB();await new Promise((res,rej)=>{const tx=db.transaction('refs','readwrite');tx.objectStore('refs').put(durable,'protocol-ref');tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close()}
 async function readRef(){
   const db=await openImageDB();
   try {
@@ -308,14 +308,18 @@ async function restoreRefIfEmpty(blob){
 const referenceTypes=['image/jpeg','image/png','image/webp'];
 const maxReferenceBytes=15*1024*1024;
 async function encodeReference(blob){
-  if(!referenceTypes.includes(blob.type)||blob.size>maxReferenceBytes)throw Error('Invalid reference image');
-  const data=await new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(reader.result);
-    reader.onerror=()=>reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-  return {type:blob.type,base64:data.slice(data.indexOf(',')+1)};
+  if(!blob.size||blob.size>maxReferenceBytes)throw Error('Invalid reference image');
+  const bytes=new Uint8Array(await blob.arrayBuffer());
+  let type=blob.type;
+  if(!referenceTypes.includes(type)){
+    if(bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47)type='image/png';
+    else if(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)type='image/jpeg';
+    else if(String.fromCharCode(...bytes.subarray(0,4))==='RIFF'&&String.fromCharCode(...bytes.subarray(8,12))==='WEBP')type='image/webp';
+    else throw Error('Unrecognized reference image type');
+  }
+  let binary='';
+  for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+  return {type,base64:btoa(binary)};
 }
 function decodeReference(image){
   if(!image||!referenceTypes.includes(image.type)||typeof image.base64!=='string'||

@@ -202,7 +202,7 @@ async function run() {
     await page.locator('#export').click();
     const download = await downloaded;
     const backup = JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-    assert.equal(backup.referenceImage?.base64,tinyPNG);
+    assert.equal(backup.referenceImage?.base64,tinyPNG,await page.locator('#backupStatus').textContent());
     await page.getByRole('button',{name:'Protocol Builder'}).click();
     await page.locator('#protoClearImage').click();
     await page.getByRole('button',{name:'Backup & Help'}).click();
