@@ -180,7 +180,6 @@ el('physicsToNotes').onclick=()=>{el('filter').value='physics';tab('notes')};
 renderSettings();renderChallenge();
 
 render();showAll();
-})();
 
 // Physics Sandbox V3 — deliberately approximate SE trade-off calculator.
 const sandboxDefaults={sTR:600,sTE:20,sFOV:240,sMatrix:256,sSlice:5,sNEX:1,sBW:200,sETL:1};
@@ -339,5 +338,6 @@ el('dicomSaveSnapshot').onclick=async()=>{if(!dicomStack.length)return;try{const
 el('dicomDemo').onclick=()=>{const w=256,h=256,pixels=new Float32Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const dx=(x-w/2)/w,dy=(y-h/2)/h;const ell=(dx*dx/.17+dy*dy/.20);pixels[y*w+x]=ell<1?Math.round(150+90*Math.sin(x*.08)*Math.cos(y*.11)):Math.round(12+8*Math.sin(x*.09))}dicomStack=[{name:'Built-in synthetic test pattern (NOT MRI)',rows:h,cols:w,pixels,min:0,max:255,ww:230,wc:120,sort:0,series:'demo',invert:false,modality:'DEMO'}];dicomInverted=false;el('dicomControls').classList.remove('hidden');el('dicomStatus').textContent='Loaded synthetic test image. Import a real licensed DICOM series using the file selector.';updateDICOM(0,true)};
 
 setChallenge(0);loadRef();
+})();
 
 </script><script>if('serviceWorker' in navigator && window.isSecureContext){navigator.serviceWorker.register('./sw.js').catch(console.warn)}</script></body></html>

@@ -39,9 +39,12 @@ async function run() {
     await page.goto(home);
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+    assert.deepEqual(errors,[]);
     await page.getByRole('button',{name:'Physics Sandbox'}).click();
     await page.locator('#sField').selectOption('3');
     assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
+    await page.locator('#sTR').fill('3000');
+    assert.match(await page.locator('#relaxationSummary').textContent(), /TR 3000 ms/);
     await page.getByRole('button',{name:'Protocol Builder'}).click();
     assert.match(await page.locator('#protoCoverage').textContent(), /60.0 mm/);
     await page.locator('#protoNew').click();
