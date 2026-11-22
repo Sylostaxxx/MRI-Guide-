@@ -74,6 +74,7 @@
   catch {get('lessonStatus').textContent='Lesson progress storage is unavailable.';}
   sync();
   for (const [id,field] of [['bookmarkLesson','bookmarked'],['completeLesson','complete']]) {
+    get(id).disabled=false;
     get(id).onclick=async()=>{
       get(id).disabled=true;
       try {

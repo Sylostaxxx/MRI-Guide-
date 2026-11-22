@@ -322,6 +322,7 @@
     }
     recalculate();
   } catch (error) {reportError(error);get('start').disabled=true;return;}
+  get('start').disabled=false;
   for (const tab of document.querySelectorAll('[data-view]')) tab.onclick = ()=>show(tab.dataset.view);
   for (const id of ['queueMode','troubleSubject','since','minMisses','troubleDifficulty','troubleTopic']) {
     get(id).oninput = () => {troubleLimit=25;renderTrouble();};

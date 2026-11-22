@@ -361,7 +361,7 @@ async function run() {
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
-    assert.match(await page.locator('#practiceNumber').textContent(),/Question 1/);
+    await page.getByText('Question 1',{exact:true}).waitFor();
     const currentQuestion=await page.locator('#practiceStem').textContent();
     await page.locator('#pause').click();
     await page.getByRole('button',{name:'Resume',exact:true}).waitFor();
@@ -392,6 +392,11 @@ async function run() {
     await page.getByRole('heading',{name:'T1 longitudinal relaxation',exact:true}).waitFor();
     await page.locator('#diagramValue').fill('1200');
     assert.match(await page.locator('#diagramReadout').textContent(),/86.5%/);
+    for (const viewport of [{width:820,height:1180},{width:1180,height:820}]) {
+      await page.setViewportSize(viewport);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth));
+    }
+    await page.setViewportSize({width:820,height:1180});
     await page.locator('#bookmarkLesson').click();
     await page.getByText('Lesson progress saved.',{exact:true}).waitFor();
     await page.reload();
