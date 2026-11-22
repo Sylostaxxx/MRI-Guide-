@@ -3,16 +3,19 @@
   const review = 'mri-study-lab-review-v1';
   const scanPrefix = 'mri.scan.note.';
   const drawingPrefix = 'mri.atlas.drawing.';
+  const bookmarkPrefix = 'mri.atlas.bookmark.';
   const layerPrefix = 'mri.atlas.layers.';
 
   function read(storage) {
     const scanNotes = Object.create(null);
     const drawings = Object.create(null);
     const layers = Object.create(null);
+    const bookmarks=Object.create(null);
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
       if (key.startsWith(scanPrefix)) scanNotes[key] = storage.getItem(key);
       if (key.startsWith(drawingPrefix)) drawings[key] = JSON.parse(storage.getItem(key));
+      if (key.startsWith(bookmarkPrefix)) bookmarks[key]=storage.getItem(key);
       if (key.startsWith(layerPrefix)) layers[key] = JSON.parse(storage.getItem(key));
     }
     return {
@@ -20,7 +23,8 @@
       history: JSON.parse(storage.getItem(review) ?? '[]'),
       scanNotes,
       drawings,
-      layers
+      layers,
+      bookmarks
     };
   }
 
@@ -36,7 +40,7 @@
     if (Object.keys(data).length && Object.keys(data).every(key => key.startsWith(scanPrefix))) {
       data = { notes: [], scanNotes: data };
     }
-    const { notes, history = [], scanNotes = {}, drawings = {}, layers = {} } = data;
+    const { notes, history = [], scanNotes = {}, drawings = {}, layers = {}, bookmarks = {} } = data;
     if (!Array.isArray(notes) || notes.some(note => !note ||
         !['id', 'region', 'body'].every(field => typeof note[field] === 'string') ||
         !note.id || !note.region)) throw Error('Invalid notebook entries.');
@@ -52,7 +56,8 @@
     validateMap(layers, layerPrefix, entry => entry && Array.isArray(entry.enabled) &&
       entry.enabled.every(id=>typeof id==='string') && Number.isFinite(entry.opacity) &&
       entry.opacity>=0 && entry.opacity<=85 && typeof entry.overlay==='boolean');
-    return { notes, history, scanNotes, drawings, layers };
+    validateMap(bookmarks,bookmarkPrefix,value=>typeof value==='string'&&value.length>0);
+    return { notes, history, scanNotes, drawings, layers, bookmarks };
   }
 
   function merge(local, imported) {
@@ -93,7 +98,8 @@
       history: [...attempts.values()].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
       scanNotes,
       drawings,
-      layers: { ...imported.layers, ...local.layers }
+      layers: { ...imported.layers, ...local.layers },
+      bookmarks: { ...imported.bookmarks, ...local.bookmarks }
     };
   }
 
@@ -103,6 +109,7 @@
       [notebook]: JSON.stringify({ version: 1, notes: result.notes }),
       [review]: JSON.stringify(result.history),
       ...result.scanNotes,
+      ...result.bookmarks,
       ...Object.fromEntries(Object.entries(result.layers).map(([key, value]) => [key, JSON.stringify(value)])),
       ...Object.fromEntries(Object.entries(result.drawings).map(([key, strokes]) => [key, JSON.stringify(strokes)]))
     };

@@ -3,8 +3,8 @@
 <title>Study Center | MRI Study Lab</title>
 <style>
 :root{color-scheme:dark;background:#101826;color:#eef5ff;font:16px/1.55 system-ui}main{max-width:920px;padding:22px;margin:auto}a{color:#79e3cc}button,textarea,select,input{font:inherit}button,textarea,select{color:inherit;background:#23344a;border:1px solid #638399;border-radius:8px;padding:9px 12px;min-height:44px}button:enabled{cursor:pointer}button[aria-current=true]{border-color:#79e3cc;color:#79e3cc}.nav,.options{display:flex;gap:8px;flex-wrap:wrap}.options{flex-direction:column;align-items:flex-start}.panel{background:#182538;border-radius:12px;padding:18px;margin:18px 0}.figure{display:block;width:100%;max-height:720px;object-fit:contain;background:#fff;border-radius:10px}figure{margin:18px 0}.organ-filters{display:flex;gap:12px;flex-wrap:wrap}.organ-filters label{display:grid;gap:3px}textarea{width:100%;box-sizing:border-box}.dashboard{width:100%;text-align:left;border-collapse:collapse}.dashboard td,.dashboard th{padding:8px 6px;border-bottom:1px solid #495b72}canvas{display:block;width:min(100%,384px);height:auto;background:#080c13}.small{color:#beccda}[hidden]{display:none!important}
-</style></head><body><main>
-<a href="./">MRI Study Lab</a><h1>Study Center</h1><nav id="sections" class="nav" aria-label="Study activities"></nav>
+</style><link rel="stylesheet" href="./app-navigation.css"></head><body><main>
+<nav data-app-nav="anatomy" aria-label="Primary navigation"></nav><h1 id="studyTitle">Study Center</h1><nav id="sections" class="nav" aria-label="Study activities"></nav>
 <section id="systems" class="panel"><h2>Anatomy Explorer</h2>
 <div class="organ-filters"><label>Body region <select id="bodyRegion"><option value="">All regions</option></select></label><label>System <select id="system"></select></label><label>Structure <select id="organChoice"></select></label></div>
 <h3 id="structure"></h3><figure><img class="figure" id="diagram" alt=""><figcaption id="diagramCredit"></figcaption></figure>
@@ -19,6 +19,6 @@
 </section>
 <section id="activity" class="panel" hidden><h2 id="activityTitle"></h2><p id="caseCount"></p><p id="stem"></p><div id="choices" class="options"></div><p id="feedback" role="status"></p><button id="next" hidden>Next</button><p class="small" id="safetyReference" hidden>Educational exercises follow general MR safety principles. <a href="https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Radiology-Safety/MR-Safety">ACR MR Safety resources</a></p></section>
 <section id="mastery" class="panel" hidden><h2>My mastery</h2><p>Independent accuracy excludes attempts that used a location hint. Results stay on this device and are included in the study backup.</p>
-<table class="dashboard"><thead><tr><th>Study area</th><th>Independent correct</th><th>Assisted attempts</th></tr></thead><tbody id="masteryRows"></tbody></table>
+<table class="dashboard"><thead><tr><th>Study area</th><th>Independent correct</th><th>Assisted attempts</th></tr></thead><tbody id="masteryRows"></tbody></table><h3>Weak topics</h3><ul id="weakTopics"></ul>
 </section>
-</main><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-center.js"></script></body></html>
+</main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-center.js"></script></body></html>

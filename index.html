@@ -20,10 +20,24 @@
 #planner .layout{grid-template-columns:minmax(0,2fr) minmax(250px,1fr)}
 @media(max-width:820px){#planner .layout{grid-template-columns:1fr}}
 @media(max-width:520px){.plan-views{grid-template-columns:1fr}.plan-views canvas{max-width:380px}}
-</style></head><body><main class="wrap">
-<header class="mast"><div class="logo">◉</div><div><h1>MRI Study Lab</h1><p>Anatomy atlas + physics sandbox + saved study notes</p></div></header>
-<div class="tabs"><a class="tab" href="./brain-atlas.html" style="text-decoration:none;color:var(--a)">Real Brain Atlas</a><a class="tab" href="./brain-atlas.html?region=spine" style="text-decoration:none;color:var(--a)">Cervical Spine Atlas</a><a class="tab" href="./brain-atlas.html?region=knee" style="text-decoration:none;color:var(--a)">Knee MRI Atlas</a><a class="tab" href="./brain-atlas.html?region=cardiac" style="text-decoration:none;color:var(--a)">Cardiac MRI Atlas</a><a class="tab" href="./real-scans.html" style="text-decoration:none;color:var(--a)">Real MRI Library</a><button class="tab active" data-tab="planner">Slice Planner</button><button class="tab" data-tab="atlas">Anatomy Explorer</button><a class="tab" href="./study-center.html" style="text-decoration:none;color:var(--a)">Study Center</a><button class="tab" data-tab="physics">Physics Lab</button><button class="tab" data-tab="sandbox">Physics Sandbox</button><button class="tab" data-tab="protocol">Protocol Builder</button><button class="tab" data-tab="review">Pre-study Quiz</button><button class="tab" data-tab="notes">My Notes</button><button class="tab" data-tab="backup">Backup & Help</button></div>
-<section id="planner" class="page"><div class="layout"><div class="panel"><div class="split"><h2>Planning simulator</h2></div><div class="label">Anatomy</div><select id="region"><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select><div class="label">Prescription plane</div><div class="row"><button class="mini primary plane" data-plane="sagittal">Sagittal</button><button class="mini plane" data-plane="coronal">Coronal</button><button class="mini plane" data-plane="axial">Axial</button></div><p class="small" id="plannerSource" role="status">Loading real MRI localizers…</p>
+.tool-nav{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.tool-nav:empty{display:none}.tool-nav a,.tool-nav button{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;border:1px solid #405e77;border-radius:8px;text-decoration:none;color:#d8e9fa}
+.tool-nav [aria-current]{border-color:#69dfca;background:#213e4b;color:#b5f9e7}
+.anatomy-home{display:grid;grid-template-columns:1fr 1.1fr;min-height:470px;align-items:center;gap:20px;padding:clamp(15px,3vw,35px)}.anatomy-intro h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.06;margin:0 0 16px}.anatomy-intro p{font-size:1.08rem;color:var(--muted);max-width:34ch}.launch{display:inline-flex;align-items:center;min-height:48px;padding:10px 16px;border-radius:8px;background:#75dfca;color:#072721;font-weight:750;text-decoration:none}.anatomy-tools{display:flex;flex-wrap:wrap;gap:8px 18px;margin:20px 0}.anatomy-tools a{display:inline-flex;align-items:center;min-height:44px;color:#a9e9dc}.anatomy-preview{margin:0;text-align:center;color:#bed2e1}.anatomy-preview img{display:block;width:100%;height:clamp(230px,45vw,475px);object-fit:contain;background:#05090f;border:1px solid #314657;border-radius:14px}.anatomy-preview figcaption{margin-top:6px}
+@media(max-width:630px){.anatomy-home{display:flex;flex-direction:column;align-items:stretch}.anatomy-preview img{height:62vw}}
+</style><link rel="stylesheet" href="./app-navigation.css"></head><body><main class="wrap">
+<nav data-app-nav="anatomy" aria-label="Primary navigation"></nav>
+<div id="toolNav" class="tool-nav" aria-label="Section tools"></div>
+<section id="anatomyHome" class="page">
+<div class="anatomy-home panel">
+<div class="anatomy-intro"><h1>Anatomy Explorer</h1>
+<p>Study structures on linked axial, coronal and sagittal MRI. Switch to a textbook plate or compare both views in the same workspace.</p>
+<a class="launch" href="./brain-atlas.html">Open Real MRI Atlas</a>
+<div class="anatomy-tools"><a href="./study-center.html?section=systems">Browse anatomical systems</a><a href="./study-center.html?section=pathology">Pathology Explorer</a></div>
+</div>
+<figure class="anatomy-preview"><img src="./atlas/cerebra-preview.webp" alt="Axial T1-weighted slice from the symmetric MNI-ICBM152 brain volume"><figcaption>Axial T1 · MNI-ICBM152 2009c</figcaption></figure>
+</div></section>
+<section id="planner" class="page hidden"><div class="layout"><div class="panel"><div class="split"><h2>Planning simulator</h2></div><div class="label">Anatomy</div><select id="region"><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select><div class="label">Prescription plane</div><div class="row"><button class="mini primary plane" data-plane="sagittal">Sagittal</button><button class="mini plane" data-plane="coronal">Coronal</button><button class="mini plane" data-plane="axial">Axial</button></div><p class="small" id="plannerSource" role="status">Loading real MRI localizers…</p>
 <button id="planRetry" hidden>Retry MRI download</button>
 <div id="realPlanning">
 <div id="planViews" class="plan-views" hidden></div>
@@ -112,10 +126,10 @@
 <div><label for="protoSelected">Selected slice <b id="protoSelectedOut">8</b></label><input id="protoSelected" type="range" min="1" max="15" step="1" value="8"></div></div>
 <p class="small" id="protoCoverage"></p><div class="row"><button class="primary" id="protoCheck">Check this plan</button><button id="protoSave">Save plan + note</button></div><div id="protoFeedback" class="qresult">Adjust a stack and check your work.</div><label for="protoNote">My protocol notes</label><textarea id="protoNote" placeholder="Write why you selected this plane, coverage, and slice placement..." rows="3"></textarea></div></div></div></section>
 <section id="review" class="page hidden"><div class="panel"><div class="split"><h2>Pre-study Recall Quiz</h2><span class="pill">Spaced review starter</span></div><p class="small">Before studying new content, answer a short question from anatomy and MRI physics. Previously visited note topics receive extra priority. Missed questions are stored locally to be reviewed again; this is a lightweight practice mode, not a complete adaptive learning system.</p><div class="row"><button class="primary" id="quizBegin">Start / Next question</button><span id="quizScore" class="small">0 attempted</span></div><h3 id="quizQuestion">Tap Start to review what you know.</h3><div id="quizOptions"></div><div id="quizFeedback" class="qresult hidden" aria-live="polite"></div><hr class="hr"><h3>Review from your own notes</h3><p class="small">Your latest saved note becomes a recall prompt. Your notes are not automatically treated as medically verified answers.</p><div id="recallPrompt" class="qresult">Add a note in the Anatomy Explorer or Physics Lab to create a recall prompt.</div><button id="quizReveal">Reveal source note</button><div id="recallAnswer" class="qresult hidden"></div></div></section>
-<section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div></section>
-<section id="backup" class="page hidden"><div class="panel"><h2>Keep your notes safe</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">This is a single HTML file. Once downloaded to Files, you can reopen it without internet using a compatible browser or HTML viewer. On iPad, opening local HTML through the Files preview may limit JavaScript or persistent storage. For the most reliable installed-app experience, this project can be hosted as a PWA and installed using Safari's Add to Home Screen. Downloaded local pages and Safari website installs do not share the same notes database.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
-<div class="footer">MRI Study Lab • Version 4 • Offline-first beta • Educational use only • No patient data should be entered. Your notes are not uploaded to a server by this file.</div></main>
-<script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
+<section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div><div class="panel"><h2>Atlas bookmarks</h2><ul id="bookmarkList"></ul><h2>Atlas and system notes</h2><ul id="atlasNoteList"></ul></div></section>
+<section id="backup" class="page hidden"><div class="panel"><h1>Settings</h1><h2>MRI downloads and sources</h2><div class="row"><a href="./brain-atlas.html?panel=downloads">Brain pack</a><a href="./brain-atlas.html?region=spine&amp;panel=downloads">Cervical spine pack</a><a href="./brain-atlas.html?region=knee&amp;panel=downloads">Knee pack</a><a href="./brain-atlas.html?region=cardiac&amp;panel=downloads">Cardiac pack</a><a href="./real-scans.html">Sequence library</a></div><hr class="hr"><h2>Backups</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">On iPad, open the site in Safari and use Share, then Add to Home Screen. Open the installed app once online and download the MRI packs you want. Notes and image packs are stored in the browser or installed app.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
+<div class="footer">Educational use only · Study data stays in this browser</div></main>
+<script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
 (()=>{'use strict';
 const names={brain:'Brain',cspine:'Cervical spine',lspine:'Lumbar spine',knee:'Knee',shoulder:'Shoulder'};
 const prompts={brain:'Review mid-sagittal landmarks, corpus callosum, AC–PC orientation, and how the prescribed stack relates to the reference plane.',cspine:'Review the spinal canal, intervertebral discs, cord alignment, and coverage from the craniocervical junction through the lower cervical spine.',lspine:'Review disc-space alignment, vertebral coverage, and the relationship between sagittal localizers and axial disc prescriptions.',knee:'Review condylar anatomy, menisci, ACL/PCL orientation, and why the selected plane affects ligament visualization.',shoulder:'Review glenoid alignment, rotator cuff tendons, humeral head, and orientation of oblique coronal and sagittal series.'};
@@ -129,13 +143,75 @@ if(region==='cspine'||region==='lspine'){let count=region==='cspine'?7:5;a=`<pat
 if(region==='knee'){a=`<path d="M200 20 Q170 115 184 170 Q190 195 245 211 Q315 195 328 155 Q329 110 300 20Z" fill="url(#t)" stroke="#b3bfcb" stroke-width="5"/><path d="M183 235 Q172 271 188 397 L299 397 Q317 285 298 240Z" fill="url(#t)" stroke="#a6b3c2" stroke-width="5"/><path d="M176 219 Q250 240 324 215" stroke="#c3cbd3" stroke-width="15" fill="none"/><path d="M211 200 L285 265 M294 197 L210 267" stroke="#9eb8c4" stroke-width="11" opacity=".8"/>`}
 if(region==='shoulder'){a=`<circle cx="303" cy="192" r="100" fill="url(#t)" stroke="#bcc9d4" stroke-width="6"/><path d="M276 280 L290 409 L374 409 L387 240" fill="url(#t)" stroke="#b1bfcc" stroke-width="5"/><path d="M190 60 L182 273 Q206 288 239 259 L253 185 L237 101Z" fill="#687789" stroke="#a5b4c3" stroke-width="7"/><path d="M132 100 Q202 42 299 80" fill="none" stroke="#c2cbd5" stroke-width="20"/>`}
 return common+a+'</g>'}
-function render(){el('scanlabel').textContent=names[region].toUpperCase()+' · '+plane.toUpperCase();el('prompt').textContent=prompts[region];el('angleValue').textContent=el('angle').value+'°';el('fovValue').textContent=el('fov').value+' mm';el('readPlane').textContent=plane[0].toUpperCase()+plane.slice(1);el('offset').textContent=Math.round(offset*100)+'%';let angle=Number(el('angle').value),fov=Number(el('fov').value);let thickness=19000/fov;let base=plane==='axial'?90:plane==='sagittal'?0:90;let lines=[];for(let i=-2;i<=2;i++){let xx=250+offset*120+i*thickness;lines.push(`<line x1="${xx}" y1="-350" x2="${xx}" y2="770" stroke="${i===0?'#64e0c4':'#68beaf'}" stroke-width="${i===0?4:2}" stroke-dasharray="${i===0?'':'9 10'}" opacity="${i===0?1:.65}"/>`)}el('scan').innerHTML=svgShapes()+`<g transform="rotate(${base+angle} 250 210)">${lines.join('')}<circle cx="${250+offset*120}" cy="210" r="10" fill="#64e0c4" stroke="#073a40" stroke-width="3"/></g>`;document.querySelectorAll('.plane').forEach(b=>b.classList.toggle('primary',b.dataset.plane===plane));RealPlanner.update(region,plane);showRecent()}
+function render(){el('scanlabel').textContent=names[region].toUpperCase()+' · '+plane.toUpperCase();el('prompt').textContent=prompts[region];el('angleValue').textContent=el('angle').value+'°';el('fovValue').textContent=el('fov').value+' mm';el('readPlane').textContent=plane[0].toUpperCase()+plane.slice(1);el('offset').textContent=Math.round(offset*100)+'%';let angle=Number(el('angle').value),fov=Number(el('fov').value);let thickness=19000/fov;let base=plane==='axial'?90:plane==='sagittal'?0:90;let lines=[];for(let i=-2;i<=2;i++){let xx=250+offset*120+i*thickness;lines.push(`<line x1="${xx}" y1="-350" x2="${xx}" y2="770" stroke="${i===0?'#64e0c4':'#68beaf'}" stroke-width="${i===0?4:2}" stroke-dasharray="${i===0?'':'9 10'}" opacity="${i===0?1:.65}"/>`)}el('scan').innerHTML=svgShapes()+`<g transform="rotate(${base+angle} 250 210)">${lines.join('')}<circle cx="${250+offset*120}" cy="210" r="10" fill="#64e0c4" stroke="#073a40" stroke-width="3"/></g>`;document.querySelectorAll('.plane').forEach(b=>b.classList.toggle('primary',b.dataset.plane===plane));if(!el('planner').classList.contains('hidden'))RealPlanner.update(region,plane);showRecent()}
 function addNote(body,kind='note'){body=body.trim();if(!body)return false;notes.unshift({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random(),region,plane,angle:Number(el('angle').value),fov:Number(el('fov').value),offset:Math.round(offset*100),body,kind,created:new Date().toISOString()});if(!store())return false;showRecent();showAll();return true}
 function noteHTML(n){const stamp=new Date(n.created);return `<div class="note-item"><div class="split"><b>${esc(topicName(n.region))}</b><span class="time">${esc(isNaN(stamp)?'Unknown date':stamp.toLocaleString())}</span></div><div class="small">${esc(n.plane||'')} · ${Number(n.angle)||0}° · FOV ${Number(n.fov)||0} mm ${n.kind==='plan'?'· Planning snapshot':''}</div><div class="body">${esc(n.body)}</div><div class="note-tools"><button class="mini" data-edit="${esc(n.id)}">Edit</button><button class="mini" data-delete="${esc(n.id)}">Delete</button></div></div>`}
 function showRecent(){let items=notes.filter(n=>n.region===region).slice(0,3);el('recentNotes').innerHTML=items.length?items.map(noteHTML).join(''):'<div class="empty">No notes yet for this topic.</div>'}
 function showAll(){let filter=el('filter').value,q=el('search').value.toLowerCase();let items=notes.filter(n=>(filter==='all'||filter===n.region||(filter==='physics'&&n.region.startsWith('physics:'))||(filter==='structure'&&n.region.startsWith('structure:')))&&((n.body||'').toLowerCase().includes(q)||topicName(n.region).toLowerCase().includes(q)));el('allNotes').innerHTML=items.length?items.map(noteHTML).join(''):'<div class="empty">No matching notes. Start in the Slice Planner tab.</div>'}
-function tab(name){document.querySelectorAll('.page').forEach(n=>n.classList.toggle('hidden',n.id!==name));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.dataset.tab===name));if(name==='notes')showAll()}
-document.querySelectorAll('button.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));el('region').onchange=e=>{region=e.target.value;offset=0;render()};document.querySelectorAll('.plane').forEach(b=>b.onclick=()=>{plane=b.dataset.plane;render()});['angle','fov'].forEach(id=>el(id).oninput=render);el('reset').onclick=()=>{offset=0;el('angle').value=0;el('fov').value=240;RealPlanner.reset();render()};el('quickSave').onclick=()=>{if(addNote(el('quicknote').value)){el('quicknote').value='';el('quickStatus').textContent='✓ Note saved on this device';}};el('savePlan').onclick=()=>{const msg=`My planning setup: ${names[region]}, ${plane}, angle ${el('angle').value}°, FOV ${el('fov').value} mm. ${RealPlanner.summary() || ("Schematic offset "+Math.round(offset*100)+"%.")}`;if(addNote(msg,'plan')){el('quickStatus').textContent='✓ Planning setup saved in notes'}};el('viewNotes').onclick=()=>{el('filter').value=region;tab('notes')};el('filter').onchange=showAll;el('search').oninput=showAll;
+const groups={
+  anatomy:[['anatomyHome','Anatomy Explorer'],['atlas','Schematic brain exercise']],
+  clinical:[['planner','Slice Planner'],['protocol','Protocol Builder'],['./study-center.html?section=rotation','Virtual Clinical Rotation'],
+    ['./study-center.html?section=positioning','Patient Positioning'],['./study-center.html?section=safety','MRI Safety']],
+  physics:[['physics','Parameter Charts'],['sandbox','Physics Sandbox'],['./real-scans.html','MRI Sequences'],['./study-center.html?section=artifact','Artifact Simulator']],
+  practice:[['review','Pre-study Quiz & Flashcards'],['./brain-atlas.html?practice=1','Anatomy Identification'],['./study-center.html?section=sequence','Sequence Recognition'],['physics','Physics Challenges']],
+  study:[['notes','My Notes'],['./study-center.html?section=mastery','Mastery & Weak Topics']],
+  settings:[['backup','Backup & Help']]
+};
+let activeGroup='anatomy';
+function tab(name, group) {
+  const category=group??Object.keys(groups).find(key=>groups[key].some(([id])=>id===name));
+  activeGroup=category??'anatomy';
+  document.querySelectorAll('.page').forEach(node=>node.classList.toggle('hidden',node.id!==name));
+  AppNavigation.active(activeGroup);
+  const nav=el('toolNav');nav.replaceChildren();
+  for(const [id,label] of groups[activeGroup]){
+    if(id===name&&groups[activeGroup].length===1)continue;
+    const external=id.startsWith('./');
+    const control=document.createElement(external?'a':'button');
+    control.textContent=label;
+    if(external)control.href=id;
+    else {
+      control.type='button';control.onclick=()=>{
+        tab(id,activeGroup);
+        if(id==='physics'&&activeGroup==='practice')document.querySelector('[data-mode="game"]').click();
+      };
+    }
+    if(id===name)control.setAttribute('aria-current','page');
+    nav.append(control);
+  }
+  if(name==='notes'){showAll();showAtlasStudy();}
+  if(name==='planner')render();
+  if(window.location.protocol!=='file:'){
+    const params=new URLSearchParams();
+    if(activeGroup!=='anatomy'||name!=='anatomyHome')params.set('section',activeGroup);
+    if(groups[activeGroup][0][0]!==name)params.set('tool',name);
+    history.replaceState(null,'',params.size?'?'+params:location.pathname);
+  }
+}
+function showAtlasStudy(){
+  const list=el('bookmarkList'), atlasNotes=el('atlasNoteList');list.replaceChildren();atlasNotes.replaceChildren();
+  try {
+    for(const {id,name} of AtlasStudy.savedBookmarks()){
+      const item=document.createElement('li'),link=document.createElement('a');
+      link.href=AtlasStudy.link(id);link.textContent=name;item.append(link);list.append(item);
+    }
+    for(const [key,value] of Object.entries(StudyBackup.read(localStorage).scanNotes)){
+      if(!value.trim())continue;
+      const item=document.createElement('li'),body=document.createElement('p');
+      const match=key.match(/^mri[.]scan[.]note[.](cerebra1|spine1|knee1|cardiac1)[.](\d+)$/);
+      if(match){
+        const link=document.createElement('a');
+        link.href=AtlasStudy.link(match[1]+':'+match[2]);link.textContent='Open annotated MRI structure';item.append(link);
+      }
+      body.textContent=value;item.append(body);atlasNotes.append(item);
+    }
+  } catch {}
+  for(const [element,message] of [[list,'No atlas bookmarks yet.'],[atlasNotes,'No atlas or system notes yet.']]){
+    if(element.children.length)continue;
+    const item=document.createElement('li');item.textContent=message;element.append(item);
+  }
+}
+el('region').onchange=e=>{region=e.target.value;offset=0;render()};document.querySelectorAll('.plane').forEach(b=>b.onclick=()=>{plane=b.dataset.plane;render()});['angle','fov'].forEach(id=>el(id).oninput=render);el('reset').onclick=()=>{offset=0;el('angle').value=0;el('fov').value=240;RealPlanner.reset();render()};el('quickSave').onclick=()=>{if(addNote(el('quicknote').value)){el('quicknote').value='';el('quickStatus').textContent='✓ Note saved on this device';}};el('savePlan').onclick=()=>{const msg=`My planning setup: ${names[region]}, ${plane}, angle ${el('angle').value}°, FOV ${el('fov').value} mm. ${RealPlanner.summary() || ("Schematic offset "+Math.round(offset*100)+"%.")}`;if(addNote(msg,'plan')){el('quickStatus').textContent='✓ Planning setup saved in notes'}};el('viewNotes').onclick=()=>{el('filter').value=region;tab('notes')};el('filter').onchange=showAll;el('search').oninput=showAll;
 // Delegated edits and deletions work in both note lists.
 document.addEventListener('click',e=>{let edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit){let n=notes.find(n=>n.id===edit.dataset.edit);if(!n)return;const replacement=prompt('Edit your note:',n.body);if(replacement!==null&&replacement.trim()){n.body=replacement.trim();store();showRecent();showAll();showStructureRecent()}}if(del){let n=notes.find(n=>n.id===del.dataset.delete);if(n&&confirm('Delete this note permanently?')){notes=notes.filter(x=>x.id!==n.id);store();showRecent();showAll();showStructureRecent()}}});
 // Dragging adjusts the illustrative prescription offset.
@@ -180,8 +256,26 @@ let currentStructure=null,labelsShown=true,atlasQuiz=false;
 function selectStructure(id){const d=structureData[id];if(!d)return;currentStructure=id;document.querySelectorAll('.atlas-target').forEach(x=>x.classList.toggle('selected',x.dataset.structure===id));el('structureTitle').textContent=d.name;el('structureSub').textContent='Brain · Interactive anatomy card';el('structureContent').className='anatomy-detail';el('structureContent').innerHTML='<h3>Exact location</h3><p>'+esc(d.loc)+'</p><h3>What it does</h3><p>'+esc(d.fn)+'</p><h3>Common pathology</h3><p>'+esc(d.path)+'</p><h3>Relevant MRI sequences</h3><p>'+esc(d.mri)+'</p><button id="openStructureNote" class="primary">✎ Open notes for '+esc(d.name)+'</button>';el('structureNotes').classList.add('hidden');el('structureStatus').textContent='';if(atlasQuiz){el('atlasFeedback').textContent='Selected: '+d.name+' — check the description to review.'}else{el('atlasFeedback').textContent='Selected '+d.name+'.'}el('openStructureNote').onclick=()=>{el('structureNotes').classList.toggle('hidden');showStructureRecent()}}
 function showStructureRecent(){if(!currentStructure)return;const list=notes.filter(n=>n.region==='structure:'+currentStructure).slice(0,5);el('structureRecent').innerHTML=list.length?list.map(noteHTML).join(''):'<p class="small">No saved notes for this structure yet.</p>'}
 document.querySelectorAll('.atlas-target').forEach(x=>{x.setAttribute('tabindex','0');x.setAttribute('role','button');x.setAttribute('aria-label','Open anatomy information for '+(structureData[x.dataset.structure]?.name||'structure'));x.addEventListener('click',()=>selectStructure(x.dataset.structure));x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectStructure(x.dataset.structure)}})});
-el('toggleLabels').onclick=()=>{labelsShown=!labelsShown;el('atlasLabels').style.display=labelsShown?'':'none';el('toggleLabels').textContent=labelsShown?'Hide labels':'Show labels'};
-el('quizAtlas').onclick=()=>{atlasQuiz=!atlasQuiz;el('quizAtlas').textContent=atlasQuiz?'Identify mode: on':'Identify mode: off';if(atlasQuiz&&labelsShown)el('toggleLabels').click();el('atlasFeedback').textContent=atlasQuiz?'Tap any unlabeled highlighted structure and identify it before reading the card.':'Tap a highlighted region to open its anatomy card.'};
+function applySchematicLabels(){
+  el('atlasLabels').style.display=labelsShown&&!atlasQuiz?'':'none';
+  el('toggleLabels').textContent=labelsShown?'Hide labels':'Show labels';
+  el('toggleLabels').disabled=atlasQuiz;
+  document.querySelectorAll('.atlas-target').forEach((node,index)=>node.setAttribute('aria-label',
+    atlasQuiz?'Location '+(index+1):'Open anatomy information for '+(structureData[node.dataset.structure]?.name||'structure')));
+}
+el('toggleLabels').onclick=()=>{labelsShown=!labelsShown;applySchematicLabels();};
+el('quizAtlas').onclick=()=>{
+  atlasQuiz=!atlasQuiz;
+  el('quizAtlas').textContent=atlasQuiz?'Identify mode: on':'Identify mode: off';
+  applySchematicLabels();
+  if(atlasQuiz){
+    el('structureTitle').textContent='Identify a location';
+    el('structureSub').textContent='Schematic recall';
+    el('structureContent').textContent='Choose a location to reveal its anatomy card.';
+    el('structureNotes').classList.add('hidden');
+  }
+  el('atlasFeedback').textContent=atlasQuiz?'Identify a location before tapping it.':'Tap a region to open its anatomy card.';
+};
 el('saveStructureNote').onclick=()=>{if(currentStructure&&customNote('structure',currentStructure,el('structureNote').value)){el('structureNote').value='';el('structureStatus').textContent='✓ Saved to '+structureData[currentStructure].name;showStructureRecent()}};
 el('structureToNotes').onclick=()=>{el('filter').value='structure';tab('notes')};
 let physicsMode='chart',questionIndex=0,attempts=0,correct=0,solved=false;
@@ -284,7 +378,7 @@ function quizAnswer(i){if(!quizCurrent)return;const ok=i===quizCurrent.correct;q
 el('quizBegin').onclick=quizNext;
 function recallRefresh(){const n=notes[0];el('recallPrompt').textContent=n?`Without opening your notes, explain what you remember about ${topicName(n.region)}. Then reveal your most recent note and compare.`:'Save a note first to generate a personalized recall prompt.';el('recallAnswer').classList.add('hidden')}
 el('quizReveal').onclick=()=>{el('recallAnswer').textContent=notes[0]?.body||'No notes saved yet.';el('recallAnswer').classList.remove('hidden')};
-const oldTab=tab;tab=function(name){oldTab(name);if(name==='review')recallRefresh()};
+const oldTab=tab;tab=function(name,group){oldTab(name,group);if(name==='review')recallRefresh()};
 
 // V5: browser-local DICOM decoder for uncompressed, little-endian grayscale MRI.
 // This deliberately does not attempt to decode compressed transfer syntaxes.
@@ -363,6 +457,10 @@ el('dicomSaveSnapshot').onclick=async()=>{if(!dicomStack.length)return;try{const
 el('dicomDemo').onclick=()=>{const w=256,h=256,pixels=new Float32Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const dx=(x-w/2)/w,dy=(y-h/2)/h;const ell=(dx*dx/.17+dy*dy/.20);pixels[y*w+x]=ell<1?Math.round(150+90*Math.sin(x*.08)*Math.cos(y*.11)):Math.round(12+8*Math.sin(x*.09))}dicomStack=[{name:'Built-in synthetic test pattern (NOT MRI)',rows:h,cols:w,pixels,min:0,max:255,ww:230,wc:120,sort:0,series:'demo',invert:false,modality:'DEMO'}];dicomInverted=false;el('dicomControls').classList.remove('hidden');el('dicomStatus').textContent='Loaded synthetic test image. Import a real licensed DICOM series using the file selector.';updateDICOM(0,true)};
 
 setChallenge(0);loadRef();
+const initial=new URLSearchParams(location.search), requested=initial.get('section');
+const area=Object.hasOwn(groups,requested)?requested:'anatomy';
+const tool=initial.get('tool');
+tab(groups[area].some(([id])=>id===tool&&!id.startsWith('./'))?tool:groups[area][0][0],area);
 })();
 
 </script><script>if('serviceWorker' in navigator && window.isSecureContext){navigator.serviceWorker.register('./sw.js').catch(console.warn)}</script></body></html>
