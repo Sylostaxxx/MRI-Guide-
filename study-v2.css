@@ -34,3 +34,5 @@
 .lesson-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .lesson-toolbar a,.controls a{min-height:44px;display:inline-flex;align-items:center}
 @media(max-width:760px){.lesson-layout{grid-template-columns:1fr}.lesson-menu nav{max-height:28vh}}
+#practiceChoices .answer:disabled{opacity:1;cursor:default}
+#practiceChoices .answer[aria-pressed="true"]:not(:disabled){border-color:var(--accent);background:#25453f}

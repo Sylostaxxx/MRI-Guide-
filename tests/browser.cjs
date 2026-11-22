@@ -407,8 +407,14 @@ async function run() {
     const savedStudy=await page.evaluate(()=>StudyStore.snapshot());
     assert.equal(savedStudy.attempts.filter(a=>a.mode==='continuous').length,2);
     assert.equal(savedStudy.attempts.filter(a=>a.mode==='continuous' && !a.correct).length,1);
-    assert.ok(savedStudy.attempts.some(a=>a.mode==='legacy-tutor'));
+    assert.equal(savedStudy.attempts.filter(a=>a.mode==='legacy-tutor').length,1);
     assert.ok(savedStudy.records.some(row=>row.id==='lesson:t1'&&row.value.bookmarked));
+    const restoredCount=await page.evaluate(async payload=>{
+      await StudyStore.merge(payload);
+      await StudyStore.merge(payload);
+      return (await StudyStore.snapshot()).attempts.length;
+    },savedStudy);
+    assert.equal(restoredCount,savedStudy.attempts.length);
     await page.getByRole('link',{name:'Settings',exact:true}).click();
     const studyDownload = page.waitForEvent('download');
     await page.locator('#export').click();
@@ -417,7 +423,7 @@ async function run() {
     assert.equal(studyBackup.continuousStudy.attempts.length,savedStudy.attempts.length);
     assert.equal(studyBackup.notes[0].body,'Existing notebook entry');
     assert.deepEqual(errors,[]);
-    console.log(engine + ' verified GitHub Pages navigation, atlas download and offline return, notes, ink, and backup.');
+    console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');
   } finally {
     await browser?.close();
     server.kill();

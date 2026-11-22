@@ -240,7 +240,7 @@
         await StudyStore.write(record);records.set(record.id,record);renderTrouble();
       })));
       const details = node('details');
-      details.append(node('summary','Review Explanation'),node('p',q.stem));
+      details.append(node('summary','Review Explanation'));
       const lastMiss = attempts.filter(a=>a.question===q.id&&!a.correct).sort((a,b)=>b.at-a.at)[0];
       details.append(explanation(q,lastMiss));
       const note = node('details');
