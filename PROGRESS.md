@@ -18,7 +18,8 @@
 | Knee | One preprocessed 3D DESS example with femur and femoral cartilage labels. |
 | Lumbar spine, shoulder | Schematic planning practice. No bundled real-image packs. |
 | Lower thoracic spine, neck, elbow, wrist, hand, hip, ankle, foot | No verified bundled image packs. |
-| Chest, abdomen, pelvis, cardiac, breast, vascular, fetal, and other specialized exams | No verified bundled image packs. |
+| Cardiac | Cropped 3D left-atrial MRI and mask from Medical Segmentation Decathlon Task02. |
+| Chest, abdomen, pelvis, breast, vascular, fetal, and other specialized exams | No verified bundled image packs. |
 
 The brain pack documents file provenance in [atlas/manifest.json](atlas/manifest.json). It contains a population average. The original sequence examples remain downloads from the separately licensed [NiiVue demo collection](https://github.com/niivue/niivue-demo-images#licenses). Each uses its native voxel axes without verified patient orientation.
 
@@ -43,3 +44,15 @@ The current milestone reuses the scalar NIfTI-1 parser shared with the existing 
 - Expand identification practice into the memory arcade and spaced repetition. Replace the eight-question pre-study bank with original, cited ARRT and ARMRIT-aligned coverage, timed exams, review, and adaptive difficulty.
 - Add notebook tags, bookmarks, recall exercises, and persistent volume management. Current study backups exclude image downloads and the saved IndexedDB reference snapshot.
 - Extend browser automation to backup import and multi-tab use. Verify physical iPad Safari, Home Screen installation, and real Apple Pencil input.
+
+## Real MRI planning
+
+The Slice Planner loads brain, cervical spine and knee localizers from the original bundled MRI volumes. Orthogonal views share a cursor. The prescription uses millimetres from the affine for stack translation, gap, thickness, FOV and saturation slab placement. Angulation is single-axis. Lumbar spine and shoulder use the labeled schematic fallback. The Protocol Builder remains a separate exercise.
+
+## Study Center
+
+- Organ systems covers all 11 with one representative structure per system, original schematic illustrations, educational descriptions and personal notes. Brain, knee and cardiovascular sections link to real MRI. Broader structure coverage and more body-region images remain open.
+- The Artifact Simulator displays synthetic teaching examples for motion ghosts, phase wrap and chemical shift. The positioning, recognition, pathology, safety and clinical rotation modules are educational decision exercises. Sequence recognition currently uses text cues, and the virtual rotation guides one brain exam with feedback and a link to hands-on planning.
+- The mastery dashboard reports independent accuracy and assisted attempts separately. Training results and organ notes use the existing study-backup format.
+
+The [CHAOS training release](https://doi.org/10.5281/zenodo.3431873) is a candidate for abdominal MRI. Its T1 dual-echo and T2 SPIR DICOM series have liver, kidney and spleen masks. A deployable example still needs an individual series and mask alignment check.

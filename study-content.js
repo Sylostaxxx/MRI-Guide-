@@ -1,0 +1,41 @@
+globalThis.StudyContent = {
+  systems: [
+    ['Integumentary','Skin','Covers the body. The epidermis overlies the dermis and subcutaneous tissue.','Forms a barrier and helps regulate temperature and sensation.','Cellulitis, pressure injuries and skin tumors.','M22 33 Q45 18 67 33 T112 33 T155 33 L155 58 L22 58 Z M22 66 H155 V89 H22 Z M65 28 Q72 11 79 5',null],
+    ['Skeletal','Distal femur','Above the knee, with medial and lateral condyles articulating with the tibia.','Supports load and provides ligament and muscle attachments.','Marrow edema, osteonecrosis and fracture.','M68 9 H102 L105 46 Q128 62 124 83 Q112 100 89 88 Q61 104 49 83 Q46 64 66 47 Z','knee'],
+    ['Muscular','Quadriceps femoris','Four muscles on the anterior thigh converge at the quadriceps tendon above the patella.','Extends the knee. Rectus femoris also flexes the hip.','Muscle strain and quadriceps tendon rupture.','M77 7 Q43 33 57 65 L79 94 H96 L119 65 Q134 33 98 7 Z M87 12 V84 M78 88 L67 39 M97 88 L108 39',null],
+    ['Nervous','Brainstem','The midbrain, pons and medulla connect the cerebrum with the spinal cord, anterior to the cerebellum.','Conveys major neural tracts and contains cranial nerve and autonomic centers.','Brainstem infarcts, demyelination and tumors.','M42 50 Q29 12 79 10 Q140 8 142 39 Q131 55 103 55 L100 88 H78 L79 66 L68 50 Z M78 66 H100','brain'],
+    ['Endocrine','Pituitary gland','Within the sella turcica, below the optic chiasm and joined to the hypothalamus by the stalk.','Releases hormones that regulate growth, reproduction and other endocrine organs.','Pituitary adenoma and pituitary apoplexy.','M87 12 V57 M55 71 Q53 51 87 54 Q124 52 120 71 Q115 88 87 88 Q59 87 55 71 Z',null],
+    ['Cardiovascular','Left atrium','Posterior cardiac chamber that receives the pulmonary veins and opens to the left ventricle through the mitral valve.','Collects oxygenated blood and contributes to left ventricular filling.','Atrial dilation, atrial fibrillation and thrombus.','M88 90 C70 80 36 53 41 29 C45 11 76 10 88 32 C105 8 134 12 138 29 C144 52 112 79 88 90 Z M90 34 Q81 70 88 90','cardiac'],
+    ['Lymphatic and immune','Spleen','Left upper abdomen, posterolateral to the stomach and beneath the diaphragm.','Filters blood and supports immune responses.','Splenomegaly, splenic infarction and trauma.','M123 14 Q135 36 113 67 Q92 96 56 87 Q39 78 62 57 Q79 44 82 24 Q96 5 123 14 Z',null],
+    ['Respiratory','Lungs','Paired organs within the pleural cavities on either side of the mediastinum.','Exchange oxygen and carbon dioxide.','Pneumonia, pulmonary edema and lung tumors.','M84 14 V38 L70 54 M96 14 V38 L110 54 M70 26 Q43 28 34 68 Q27 92 57 84 L78 76 V42 Z M110 26 Q137 28 146 68 Q153 92 123 84 L102 76 V42 Z',null],
+    ['Digestive','Liver','Predominantly in the right upper abdomen beneath the diaphragm.','Produces bile, processes nutrients and metabolizes many substances.','Steatosis, cirrhosis and focal liver lesions.','M32 41 Q37 22 76 21 L147 27 Q155 46 118 56 Q97 76 54 76 Q28 73 32 41 Z M91 24 Q78 46 86 68',null],
+    ['Urinary','Kidney','Retroperitoneal organs beside the upper lumbar spine. The hilum faces medially.','Filters blood, balances fluid and electrolytes and produces urine.','Hydronephrosis, renal cysts and renal tumors.','M109 14 Q64 8 58 50 Q55 92 96 87 Q120 83 111 67 Q92 58 104 44 Q126 27 109 14 Z M105 56 Q132 62 131 91',null],
+    ['Reproductive','Uterus','In the pelvis between the bladder anteriorly and rectum posteriorly.','Supports implantation and pregnancy.','Leiomyomas, adenomyosis and endometrial abnormalities.','M56 23 Q80 29 89 27 Q104 29 122 23 Q117 43 105 54 L99 85 H79 L73 54 Q59 43 56 23 Z M56 25 Q40 11 24 26 M122 25 Q138 11 154 26',null]
+  ],
+  cases: {
+    sequence: [
+      ['Fluid is bright, and longitudinal contrast is minimized. Which weighting best fits a conventional spin echo with long TR and long TE?', ['T1','T2','Proton density'],1,'Long TR reduces T1 weighting and long TE accentuates T2 decay differences.'],
+      ['Brain CSF is dark while T2-sensitive lesions can remain bright. Which sequence deliberately nulls free fluid?', ['FLAIR','T2* GRE','Unweighted localizer'],0,'FLAIR uses inversion recovery to suppress CSF and retains T2-sensitive contrast.'],
+      ['Susceptibility causes conspicuous tissue signal loss. Which readout commonly emphasizes this effect?', ['Fast spin echo','Short echo spin echo','T2* gradient echo'],2,'Gradient echoes lack a 180° refocusing pulse and retain susceptibility-induced dephasing.']
+    ],
+    positioning: [
+      ['For a routine brain exam on a system with a dedicated head coil, choose the best educational setup.', ['Center the head in the coil and pad for comfort','Move the head off-center to clear the jaw','Use a loose surface coil over the chest'],0,'Centering in the dedicated coil supports coverage and signal. Confirm local coil and padding instructions.'],
+      ['A learner positions a knee for the prescribed MRI. What should they verify before scanning?', ['Let the knee rotate throughout acquisition','Correct side, coil fit, landmark and comfortable immobilization','Use the same landmark for every joint'],1,'Verify laterality and reproducible positioning. Support the joint and check the exam-specific landmark.']
+    ],
+    pathology: [
+      ['Acute focal neurologic symptoms. A lesion is bright on DWI. What accompanying finding supports restricted diffusion?', ['High ADC','Signal void on every sequence','Low ADC'],2,'High DWI and low ADC support restricted diffusion. Review the complete exam and clinical context.'],
+      ['A cervical disc abnormality narrows the canal. Which review best characterizes its relationship to the cord?', ['Correlate sagittal and axial images at the level','Estimate from the scout alone','Review only the contralateral foramina'],0,'The two planes help localize the abnormality and assess the canal and cord relationship.']
+    ],
+    safety: [
+      ['A patient reports an implanted device with unknown model and MRI conditions. What should you do?', ['Proceed at 1.5 T by default','Pause and escalate for device identification and safety review','Proceed with a short low-SAR localizer'],1,'Confirm the exact device and conditions through the authorized safety workflow before entering the scan room.'],
+      ['During setup, the patient’s bare thighs touch and form a conductive loop. What is the best action?', ['Keep the position if scan time is short','Ask the patient to report discomfort after the scan','Reposition and use suitable insulating padding per site policy'],2,'Avoid skin-to-skin loops and ensure appropriate insulation to reduce RF burn risk.']
+    ],
+    rotation: [
+      ['Screening · A brain MRI patient reports a prior procedure but is unsure whether an implant was placed.', ['Assume yesterday’s screening covers it','Pause and verify with the MR safety workflow','Begin positioning in the scan room'],1,'Resolve the implant history before proceeding with the examination.'],
+      ['Positioning · Screening is complete. Choose how to prepare the head for this example exam.', ['Use the head coil, center and comfortably immobilize the head','Turn the head sharply to the side','Omit hearing protection for the localizer'],0,'Coil setup, hearing protection and patient comfort support safe, reproducible acquisition.'],
+      ['Planning · On the localizers, how should you evaluate a whole-brain stack?', ['Infer coverage from one line in one view','Focus only on the center slice','Review coverage in orthogonal views, including vertex and inferior brain'],2,'Orthogonal localizers show angulation and extent. Confirm the intended anatomical limits.'],
+      ['Sequence selection · Which pair helps evaluate suspected acute restricted diffusion?', ['DWI and ADC','Localizer and noncontrast MRA','T1 and phase contrast'],0,'Compare DWI and ADC to distinguish restricted diffusion from T2 shine-through.'],
+      ['Image evaluation · Axial images show repeating replicas along phase encoding and partially obscure anatomy.', ['Mark the series complete without review','Check for motion, address it and assess the need for reacquisition','Assume every replica represents anatomy'],1,'Recognize phase-direction ghosting and assess diagnostic adequacy with the supervising technologist.']
+    ]
+  }
+};

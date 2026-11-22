@@ -3,24 +3,32 @@ const { parse, verifyAtlasGrid, voxelIndex } = Nifti;
 
 const el = id => document.getElementById(id);
 const status = text => { el('status').textContent = text; };
-const region = new URLSearchParams(location.search).get('region');
-const spine = region === 'spine';
-const knee = region === 'knee';
-const packId = spine ? 'spine1' : knee ? 'knee1' : 'cerebra1';
-const cacheName = spine ? 'mri-spine-atlas-1' : knee ? 'mri-knee-atlas-1' : 'mri-brain-atlas-cerebra-1';
-const manifestURL = spine ? './atlas/spine/manifest.json' : knee ? './atlas/knee/manifest.json' : './atlas/manifest.json';
-if (spine || knee) {
-  const title = spine ? 'Cervical Spine Atlas' : 'Knee MRI Atlas';
-  document.title = title + ' | MRI Study Lab';
-  el('atlasTitle').textContent = title;
-  el('intro').textContent = spine
-    ? 'Explore 12 point landmarks on a 3D T1 MRI of the cervical and upper thoracic spine.'
-    : 'Explore the femur and articular cartilage on a preprocessed 3D DESS reference scan.';
+const packs = {
+  brain:{id:'cerebra1',cache:'mri-brain-atlas-cerebra-1',path:'atlas/manifest.json',
+    coordinates:'MNI RAS',label:'CerebrA label'},
+  spine:{id:'spine1',cache:'mri-spine-atlas-1',path:'atlas/spine/manifest.json',
+    title:'Cervical Spine Atlas',intro:'Explore 12 point landmarks on a 3D T1 MRI of the cervical and upper thoracic spine.',
+    coordinates:'Scanner RAS',label:'Spine Generic point landmark',anchor:5},
+  knee:{id:'knee1',cache:'mri-knee-atlas-1',path:'atlas/knee/manifest.json',
+    title:'Knee MRI Atlas',intro:'Explore the femur and articular cartilage on a preprocessed 3D DESS reference scan.',
+    coordinates:'Standardized RAS',label:'pyKNEEr label',anchor:2},
+  cardiac:{id:'cardiac1',cache:'mri-cardiac-atlas-1',path:'atlas/cardiac/manifest.json',
+    title:'Cardiac MRI Atlas',intro:'Explore the left atrium on a 3D cardiac MRI reference from the Medical Segmentation Decathlon.',
+    coordinates:'Dataset RAS',label:'MSD left atrial mask',anchor:1}
+};
+const requested = new URLSearchParams(location.search).get('region');
+const region = Object.hasOwn(packs,requested) ? requested : 'brain';
+const pack = packs[region], spine = region === 'spine';
+const {id:packId,cache:cacheName,path:manifestURL} = pack;
+if (pack.title) {
+  document.title = pack.title + ' | MRI Study Lab';
+  el('atlasTitle').textContent = pack.title;
+  el('intro').textContent = pack.intro;
   el('status').textContent = 'Download the MRI and labels once to use them offline.';
   el('brainAttribution').hidden = true;
-  el(spine ? 'spineAttribution' : 'kneeAttribution').hidden = false;
+  el(region+'Attribution').hidden = false;
 }
-el(spine ? 'spineNav' : knee ? 'kneeNav' : 'brainNav').hidden = true;
+el(region+'Nav').hidden = true;
 const views = [
   { name: 'Axial', axis: 2, u: 0, v: 1, edges: 'APLR' },
   { name: 'Coronal', axis: 1, u: 0, v: 2, edges: 'SILR' },
@@ -105,7 +113,7 @@ function render() {
   el('practiceHint').textContent = hintOn && target ? 'Hide location hint' : 'Show location hint';
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
-  el('position').textContent = (spine ? 'Scanner RAS (mm) ' : knee ? 'Standardized RAS (mm) ' : 'MNI RAS (mm) ') + cursor.map((voxel, axis) =>
+  el('position').textContent = pack.coordinates+' (mm) ' + cursor.map((voxel, axis) =>
     (image.affine[axis*5]*voxel + image.affine[axis*4+3]).toFixed(1)).join(', ');
 }
 
@@ -113,7 +121,7 @@ function select(id) {
   selected = id;
   el('structure').textContent = labels[id]?.name ?? 'Unlabeled voxel';
   el('details').textContent = labels[id]
-    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + (spine ? 'Spine Generic point landmark ' : knee ? 'pyKNEEr label ' : 'CerebrA label ') + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
+    ? (labels[id].hemisphere ? labels[id].hemisphere + ' hemisphere · ' : '') + pack.label + ' ' + id + (labels[id].subdivision ? ' · ' + labels[id].subdivision + ' subdivision' : '')
     : 'Choose a colored region or search for a structure.';
   const baseName = labels[id]?.name.replace(/^(Left|Right) /,'');
   const reference = anatomyReference[baseName];
@@ -159,7 +167,7 @@ function tap(view, event) {
   }
   if (target) {
     const correct = id === target;
-    el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + '.' : 'Try again. Find ' + labels[target].name + '.';
+    el('feedback').textContent = correct ? 'Correct. You found ' + labels[target].name + (hintUsed ? ' with a hint.' : ' independently.') : 'Try again. Find ' + labels[target].name + '.';
     recordPractice(target, correct, hintUsed);
     if (correct) { target = 0;hintOn = false;el('cancelPractice').hidden = true;select(id);updateResults(); }
   } else {
@@ -230,7 +238,7 @@ function addView(view) {
 function updateResults() {
   const query = el('search').value.trim().toLowerCase();
   el('results').replaceChildren();
-  if ((!query && !spine && !knee) || target) return;
+  if ((!query && region==='brain') || target) return;
   for (const [id,label] of Object.entries(labels)) {
     if (!label.name.toLowerCase().includes(query) || !anchors[id]) continue;
     const button = document.createElement('button');
@@ -288,7 +296,7 @@ async function open(online) {
     const [t1, segmentation] = volumes.map(item => item.volume);
     verifyAtlasGrid(t1,segmentation);
     image = t1;mask = segmentation;labels = manifest.labels;anchors = manifest.anchors;
-    cursor = spine ? [...anchors[5]] : knee ? [...anchors[2]] : image.dim.map(n => Math.floor(n/2));
+    cursor = pack.anchor ? [...anchors[pack.anchor]] : image.dim.map(n => Math.floor(n/2));
     let offline = false;
     if (cache) {
       try {
@@ -325,7 +333,7 @@ el('practice').onclick = () => {
       if (labels[id]) visible.add(id);
     }
   }
-  if (!visible.size) {el('feedback').textContent='Scroll to a slice containing brain anatomy first.';return;}
+  if (!visible.size) {el('feedback').textContent='Scroll to a slice containing labeled anatomy first.';return;}
   const candidates = [...visible];
   el('cancelPractice').hidden = false;
   hintOn = false;hintUsed = false;
@@ -343,6 +351,7 @@ el('practiceHint').onclick = () => {
   if (!target) return;
   hintOn = !hintOn;
   if (hintOn) { hintUsed = true; if (anchors[target]) cursor = [...anchors[target]]; }
+  el('feedback').textContent = 'Find ' + labels[target].name + '. This attempt counts as assisted recall.';
   render();
 };
 el('ink').onclick = () => {
