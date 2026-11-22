@@ -39,6 +39,10 @@ async function run() {
     await page.goto(home);
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+    await page.getByRole('button',{name:'Physics Sandbox'}).click();
+    await page.locator('#sField').selectOption('3');
+    assert.match(await page.locator('#larmor').textContent(), /127.73 MHz/);
+    await page.getByRole('button',{name:'Slice Planner'}).click();
     await page.locator('#quicknote').fill('Existing notebook entry');
     await page.locator('#quickSave').click();
     await page.getByRole('link',{name:'Real Brain Atlas'}).click();
