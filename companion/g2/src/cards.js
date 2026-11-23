@@ -1,0 +1,37 @@
+const rows = [
+  ['larmor','Larmor frequency','f = (gamma/2pi) B0. For protons, about 42.58 MHz/T.','larmor'],
+  ['t1','What recovers with T1?','Longitudinal magnetization returns toward equilibrium. After saturation, about 63% has recovered at one T1.','t1'],
+  ['t2','What decays with T2?','Transverse coherence. In the simple exponential model, about 37% of the original signal remains after one T2.','t2'],
+  ['t2star','What does T2* include?','Intrinsic T2 decay plus dephasing from local field variation. Gradient echoes retain sensitivity to this extra dephasing.','t2-star'],
+  ['trte','Distinguish TR and TE.','TR is repetition time between corresponding excitations. TE is time from excitation to the echo center.'],
+  ['ti','What is TI?','Inversion time. An ideal fully recovered inverted tissue nulls at TI = T1 x ln(2).','t1'],
+  ['flip','After an ideal 90-degree pulse, where does net magnetization point?','In the transverse plane, if it started along B0.','flip-angle'],
+  ['se','What refocuses static field offsets in a spin echo?','An RF refocusing pulse. Intrinsic T2 decay still reduces echo amplitude.','t2'],
+  ['gre','How does a gradient echo refocus?','Gradient reversal refocuses phase spread caused by the gradient. Static local offsets are not refocused like an ideal spin echo.','t2-star'],
+  ['kspace','What does one k-space sample represent?','A complex spatial-frequency measurement drawn from the entire excited object. It is not a single image pixel.','k-space'],
+  ['encoding','How do gradients encode position?','A gradient changes local precession frequency. Frequency differences and accumulated phase encode position.','k-space'],
+  ['snr','Define SNR and CNR.','SNR compares signal with noise. CNR compares the difference between two tissue signals with noise.'],
+  ['fov','How do FOV and matrix determine in-plane spacing?','Divide the field of view by acquired samples in the same direction. Example: 240 mm / 240 = 1 mm.'],
+  ['nex','What happens to SNR when NEX rises from 1 to 4?','Ideal independent averaging doubles SNR and takes four times as long if other acquisition settings stay fixed.'],
+  ['bw','What is the usual SNR tradeoff of increasing receive bandwidth?','Higher bandwidth generally lowers SNR, with other factors fixed. It reduces frequency-encoding chemical-shift displacement.'],
+  ['time','Estimate basic 2D fast spin-echo acquisition time.','TR x phase steps x NEX / echo train length, ignoring overhead and other acceleration.'],
+  ['diffusion','How do DWI and ADC support identification of restricted diffusion?','True restriction commonly gives high signal on high-b DWI and low ADC. T2 shine-through can leave ADC high.'],
+  ['flow','What does VENC control in phase contrast MRI?','The encoded velocity range. Too-low VENC can cause velocity aliasing. Higher VENC reduces phase sensitivity to slow flow.'],
+  ['artifacts','What causes phase-encoding wrap?','Signal outside the unaliased FOV maps inside the image. Increase phase FOV or use phase oversampling.','k-space'],
+  ['sar','What is SAR?','Specific absorption rate estimates RF power absorbed per unit mass, in W/kg. Follow scanner and site limits.'],
+  ['conditional','What does MR Conditional mean?','An item is safe in the MR environment only when all specified conditions are met.'],
+  ['burn','Why avoid skin-to-skin loops?','A conductive loop can contribute to local RF heating. Follow facility padding and positioning procedures.'],
+  ['chiasm','What crosses in the optic chiasm?','Fibers from the nasal retina cross to the opposite side. Temporal retinal fibers remain ipsilateral.'],
+  ['thalamus','Where is the thalamus and what does it do?','Paired deep gray nuclei beside the third ventricle relay much sensory and motor information to the cortex.'],
+  ['cauda','What is the cauda equina?','Lumbar, sacral and coccygeal nerve roots descending below the conus medullaris.'],
+  ['coil','Why use a receive coil close to the anatomy?','Local receive sensitivity often improves SNR near the coil, with signal falling off farther away.'],
+  ['tse','What does echo train length describe?','The number of echoes in an echo train. In FSE each acquired echo can fill another phase-encoding line.'],
+  ['stir','How does STIR suppress fat?','It samples near the zero crossing of short-T1 fat after inversion. It can suppress other short-T1 tissue too.','t1'],
+  ['flair','How does FLAIR help in brain MRI?','A long inversion time suppresses CSF so nearby T2-bright lesions may stand out.','t1'],
+  ['zipper','What commonly produces a zipper artifact?','External RF interference can create a line or band. Check shielding and possible RF sources.']
+];
+export const cards = rows.map(([id,prompt,answer,lesson],index)=>({
+  id:'go-card-'+id,prompt,answer,
+  physics:index<20 || ['coil','tse','stir','flair','zipper'].includes(id),
+  lesson:lesson?'./academy.html?lesson='+lesson:'./?section=physics'
+}));

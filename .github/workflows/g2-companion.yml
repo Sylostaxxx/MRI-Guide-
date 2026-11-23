@@ -1,0 +1,76 @@
+name: G2 companion checks
+on:
+  pull_request:
+    paths:
+      - 'companion/g2/**'
+      - '.github/workflows/g2-companion.yml'
+      - 'registry-*.js'
+      - 'study-content-map.js'
+      - 'study-review.js'
+      - 'study-store.js'
+  push:
+    branches: [codex/even-g2-companion]
+    paths:
+      - 'companion/g2/**'
+      - '.github/workflows/g2-companion.yml'
+
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: companion/g2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: companion/g2/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mri-study-lab-go-private-test
+          path: companion/g2/mri-study-lab-go.ehpk
+          retention-days: 14
+  simulator:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: companion/g2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: companion/g2/package-lock.json
+      - run: npm ci
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xauth libwebkit2gtk-4.1-0 libhidapi-hidraw0 python3-pil
+      - run: |
+          npm run dev -- --port 5173 --strictPort > /tmp/mri-go-dev.log 2>&1 &
+          for n in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          xvfb-run -a env GDK_BACKEND=x11 WEBKIT_DISABLE_DMABUF_RENDERER=1 ./node_modules/.bin/evenhub-simulator 'http://127.0.0.1:5173/?sim=1' --automation-port 9898 > /tmp/mri-go-simulator.log 2>&1 &
+          for n in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:9898/api/ping >/dev/null; then break; fi
+            sleep 1
+          done
+          /usr/bin/python3 tests/simulator.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mri-study-lab-go-simulator
+          path: |
+            /tmp/mri-go-screens
+            /tmp/mri-go-dev.log
+            /tmp/mri-go-simulator.log
+          retention-days: 14

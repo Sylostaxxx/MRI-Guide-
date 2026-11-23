@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MRI Study Lab Go</title>
+<link rel="stylesheet" href="./src/phone.css">
+</head>
+<body>
+<main>
+<h1>MRI Study Lab Go</h1>
+<p id="status" role="status">Connecting to Even Hub…</p>
+<p id="screen"></p>
+<p><a id="lesson" hidden target="_blank" rel="noopener noreferrer">Open lesson in MRI Study Lab</a></p>
+<section aria-labelledby="progress-title">
+<h2 id="progress-title">Study progress</h2>
+<p id="counts"></p>
+<label class="button">Import study backup<input id="import" type="file" accept=".json,application/json"></label>
+<button id="export" type="button">Export study backup</button>
+<details id="manual"><summary>Transfer as text</summary>
+<label for="backup-text">Backup JSON</label>
+<textarea id="backup-text" rows="6" spellcheck="false"></textarea>
+<div><button id="make-text">Show export text</button><button id="load-text">Import pasted backup</button></div></details>
+<p id="transfer" role="status"></p>
+</section>
+<p class="small">The Even app runs the lesson and sends it to your paired G2. Study attempts are stored locally. Transfer JSON with MRI Study Lab Settings to share progress across devices.</p>
+</main>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
