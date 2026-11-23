@@ -88,7 +88,7 @@ function updatePlate() {
   const thalamus=region==='brain'&&name?.endsWith('Thalamus');
   const match=thalamus?'diencephalon':sectionMatch?cross:illustrated;
   const key=mode==='cross'?(thalamus?'diencephalon':cross):match;
-  setPracticePlate(key);drawPlate(key);
+  if(!setPracticePlate(key))drawPlate(key);
 }
 
 function drawPlate(key, question=false) {

@@ -103,7 +103,11 @@
   }
   function correction(host,question,answer,options={}) {
     const node=(tag,text)=>{const item=document.createElement(tag);if(text)item.textContent=text;return item;};
-    const link=(label,url)=>{const item=node('a',label);item.href=url;return item;};
+    const link=(label,url)=>{
+      const item=node('a',label);
+      try{const destination=new URL(url,location.href);if(['http:','https:'].includes(destination.protocol))item.href=destination.href;}catch{}
+      return item;
+    };
     const block=(title,text)=>{if(text)host.append(node('h3',title),node('p',text));};
     const selected=answer.map(i=>question.options[i]).filter(Boolean);
     const correct=question.key.map(i=>question.options[i]).filter(Boolean);

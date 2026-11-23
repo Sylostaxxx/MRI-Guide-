@@ -170,7 +170,7 @@ export function platePractice(el, ui, display, layout, done) {
     shuffle(items).slice(0,2).map(item=>[key,item]))));
   return next=>{
     source=next;
-    if(deck.length){display(deck[index][0],true);layout(true);return;}
+    if(deck.length){layout(true);return true;}
     if(next&&!restored&&['resumePlate','plateCorrection'].some(flag=>new URLSearchParams(location.search).has(flag))){
       restored=true;
       try{
@@ -179,7 +179,7 @@ export function platePractice(el, ui, display, layout, done) {
           const matches=value.deck.map(([region,name])=>[region,illustrationTargets[region]?.find(item=>item[0]===name)]);
           if(matches[value.index]&&matches.every(([region,item])=>item&&Object.hasOwn(QuizAssets,region))){
             deck=matches;index=value.index;total=matches.length;scores=value.scores;
-            layout(true);show(value);return;
+            layout(true);show(value);return true;
           }
         }
       }catch{}

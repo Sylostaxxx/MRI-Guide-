@@ -478,7 +478,7 @@ el('recallHide').onclick=()=>{recall={...recall,hidden:!recall.hidden};renderRec
 el('recallTeach').onclick=()=>{AppNavigation.navigate(recallUrl(true),false,{mriRecallCorrection:true});renderRecall();};
 function recallRefresh(){const n=notes[0];el('recallPrompt').textContent=n?`Without opening your notes, explain what you remember about ${topicName(n.region)}. Then reveal your most recent note and compare.`:'Save a note first to generate a personalized recall prompt.';el('recallAnswer').classList.add('hidden')}
 el('quizReveal').onclick=()=>{el('recallAnswer').textContent=notes[0]?.body||'No notes saved yet.';el('recallAnswer').classList.remove('hidden')};
-const oldTab=tab;tab=function(name,group,write){oldTab(name,group,write);if(name==='review'){recallRefresh();renderRecall();}};
+const oldTab=tab;tab=function(name,group,write){oldTab(name,group,write);if(name==='review'){recallRefresh();renderRecall();}else if(name==='physics'&&group==='practice'){document.querySelector('[data-mode="game"]').click();}};
 
 // V5: browser-local DICOM decoder for uncompressed, little-endian grayscale MRI.
 // This deliberately does not attempt to decode compressed transfer syntaxes.
