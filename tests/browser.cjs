@@ -317,7 +317,7 @@ async function run() {
     assert.equal(backup.bookmarks['mri.atlas.bookmark.cerebra1:91'],'Left Thalamus');
     assert.equal(backup.history.filter(attempt=>attempt.topic==='training:rotation').length,5);
     await page.goto(home+'registry.html');
-    await page.getByText(/232 original study items/).waitFor();
+    await page.getByText(/293 original study items/).waitFor();
     await page.locator('#profile').selectOption('armrit');
     await page.locator('#kind').selectOption('calc');
     await page.locator('#startTutor').click();
@@ -361,11 +361,40 @@ async function run() {
     await page.locator('#kind').selectOption('image');
     await page.locator('#startTutor').click();
     await page.waitForFunction(()=>document.querySelector('#questionImage').naturalWidth>0);
+    const imageWidth=await page.locator('#questionImage').evaluate(img=>img.width);
     await page.locator('#imageZoom').fill('2');
-    assert.ok(await page.locator('#questionImage').evaluate(img=>img.width>530));
+    assert.ok(await page.locator('#questionImage').evaluate(img=>img.width)>imageWidth);
+    // Every marked asset uses a real 2D overlay at the registered native resolution.
+    const visualAudit=await page.evaluate(async()=>{
+      const failures=[];
+      for(const q of RegistryContent.bank.filter(q=>q.image)){
+        const asset=RegistryImages[q.image];
+        if(!await RegistryImageView.ready(q)){failures.push(q.id+' missing');continue;}
+        const canvas=document.createElement('canvas');
+        RegistryImageView.paint(canvas,asset,false);
+        const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+        let bright=0,dark=0;
+        for(let i=0;i<pixels.length;i+=4){
+          if(pixels[i+3]>180&&pixels[i]>230)bright++;
+          if(pixels[i+3]>180&&pixels[i]<12)dark++;
+        }
+        if(asset.marked&&(!bright||!dark)||!asset.marked&&(bright||dark))failures.push(q.id+' contrast');
+        if(asset.marker&&asset.marker.type!=='segmentation'){
+          const [x,y]=asset.marker.target.map(Math.round);
+          const spot=canvas.getContext('2d').getImageData(x-5,y-5,11,11).data;
+          if(!spot.some((v,i)=>i%4===3&&v>180))failures.push(q.id+' missing endpoint');
+        }
+      }
+      return failures;
+    });
+    assert.deepEqual(visualAudit,[]);
+    await page.locator('#review').click();
+    page.once('dialog',dialog=>dialog.accept());
+    await page.locator('#submit').click();
+    await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/249 practice questions/).waitFor();
+    await page.getByText(/310 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -489,6 +518,44 @@ async function run() {
     await reopened.reload();
     assert.equal(await reopened.locator('#quizQuestion').textContent(),recallQuestion);
     assert.match(await reopened.locator('#recallHints').textContent(),/Hint 1/);
+    await reopened.goto(home+'practice.html?retry=n10');
+    await reopened.locator('#start').click();
+    await reopened.waitForFunction(()=>document.querySelector('#practiceImage').naturalWidth>0);
+    const marker=await reopened.locator('.mri-marker').getAttribute('data-target');
+    assert.ok(marker);
+    const aligned=()=>reopened.evaluate(()=>{
+      const image=document.querySelector('#practiceImage').getBoundingClientRect();
+      const overlay=document.querySelector('.mri-marker').getBoundingClientRect();
+      return ['x','y','width','height'].every(key=>Math.abs(image[key]-overlay[key])<1);
+    });
+    assert.ok(await aligned());
+    await reopened.locator('#practiceImageFrame').evaluate(frame=>{
+      function pinch(type,width){
+        const event=new Event(type,{bubbles:true,cancelable:true});
+        Object.defineProperty(event,'touches',{value:[{clientX:0,clientY:0},{clientX:width,clientY:0}]});
+        frame.dispatchEvent(event);
+      }
+      pinch('touchstart',100);pinch('touchmove',200);
+    });
+    assert.equal(await reopened.locator('#practiceImageZoom').inputValue(),'2');
+    await reopened.setViewportSize({width:1180,height:820});
+    assert.ok(await aligned());
+    assert.equal(await reopened.locator('.mri-marker').getAttribute('data-target'),marker);
+    await reopened.goto(home+'practice.html?retry=le-k-img02');
+    await reopened.locator('#start').click();
+    await reopened.waitForFunction(()=>[...document.querySelectorAll('#practiceImageFrame img')].length===2&&
+      [...document.querySelectorAll('#practiceImageFrame img')].every(img=>img.naturalWidth>0));
+    assert.deepEqual(await reopened.locator('#practiceImageFrame [data-panel]').evaluateAll(items=>items.map(item=>item.dataset.panel)),['Image A','Image B']);
+    await reopened.goto(home+'study-center.html?section=lower&region=hip');
+    await reopened.getByRole('heading',{name:'Lower-extremity MRI library'}).waitFor();
+    assert.match(await reopened.locator('#lowerStatus').textContent(),/12 of 55/);
+    await reopened.locator('#libraryRegion').selectOption('knee');
+    assert.match(await reopened.locator('#lowerStatus').textContent(),/23 of 100/);
+    await reopened.getByRole('link',{name:'Custom quiz or short timed test'}).click();
+    await reopened.getByRole('button',{name:/Start 10-question timed lower-extremity test/}).click();
+    await reopened.locator('#questionCount').waitFor();
+    assert.equal(await reopened.locator('#questionCount').textContent(),'Question 1 of 10');
+    assert.equal(await reopened.locator('#hint').isVisible(),false);
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');

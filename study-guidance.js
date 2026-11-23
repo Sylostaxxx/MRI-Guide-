@@ -79,10 +79,10 @@
     if(question.formula&&formulas[question.formula.name])return formulas[question.formula.name].slice(0,3);
     if(/^larmor-field-/.test(question.id))return formulas.larmor.slice(0,3);
     const asset=question.image&&globalThis.RegistryImages?.[question.image];
-    if(asset?.marked)return [
+    if(!question.hints&&asset?.marked)return [
       {brain:'Orient the slice using the midline, ventricular spaces and outer cortex.',spine:'Orient the spine using the vertebral bodies and the spinal canal.',knee:'Identify the distal femur, tibia and joint space first.',heart:'Orient the chamber in relation to the other chambers and adjacent vessels.'}[asset.region],
-      'Use the neutral pointer tip to compare the target with surrounding boundaries on this slice.',
-      'The pointer on this MRI now shows the source-verified location.'
+      'Compare the visual indicator with the surrounding anatomical boundaries on this slice.',
+      'The indicator now emphasizes the location verified against the published source labels.'
     ].filter(Boolean);
     const tips=question.hints??itemHints[question.id]??concepts.find(([pattern])=>pattern.test(question.topic))?.[1];
     if(!tips)return [];
@@ -142,8 +142,9 @@
     const f=formulas[question.formula?.name];
     if(f)block('Worked calculation',f[3]+'. '+f[2]+' Given values in question order are '+question.formula.args.join(', ')+'. The answer is '+correct[0][0]+'.');
     const asset=question.image&&globalThis.RegistryImages?.[question.image];
-    if(asset){
-      const image=node('img');image.src=asset.path;image.alt='MRI review image with source-verified marker when available';host.append(image);
+    if(asset&&globalThis.RegistryImageView){
+      const frame=node('div');frame.className='image-scroll';
+      RegistryImageView.mount(RegistryImageView.layout(frame),question,{revealed:true});host.append(frame);
     }
     const source=node('p');for(const [label,url] of question.references??[])source.append(link(label,url),document.createTextNode(' '));
     host.append(source);
@@ -179,7 +180,8 @@
     const id=globalThis.StudyContentMap?.lessonFor(question);
     const candidates=bank.filter(item=>item.id!==question.id&&!item.pilot);
     const exact=candidates.find(item=>item.topic===question.topic||id&&globalThis.StudyContentMap.lessonFor(item)===id);
-    const other=exact??candidates.find(item=>item.category===question.category);
+    const region=globalThis.LowerExtremity?.regionOf(question);
+    const other=exact??(region?candidates.find(item=>globalThis.LowerExtremity.regionOf(item)===region):null)??candidates.find(item=>item.category===question.category);
     return other?{id:other.id,exact:Boolean(exact)}:null;
   }
   globalThis.StudyGuidance={hints,renderHints,correction,follow};

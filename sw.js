@@ -1,15 +1,15 @@
-const CACHE = 'mri-study-lab-shell-14';
+const CACHE = 'mri-study-lab-shell-15';
 const ROOT = new URL(self.registration.scope);
 importScripts('./anatomy-plates.js','./quiz-assets.js','./registry-images.js');
 const FILES = [
-  './study-resume.js', './study-guidance.js',
+  './study-resume.js', './study-guidance.js', './lower-extremity.js', './registry-bank-lower.js', './study-coverage.js', './lower-library.js',
   './academy.html', './physics-lessons.js', './physics-diagrams.js', './physics-videos.js', './physics-academy.js',
   './practice.html', './study-practice.js', './study-review.js', './study-store.js', './study-v2.css',
   './study-content-map.js', './study-variants.js', './registry-bank-academy.js',
   './registry.html', './registry.css', './registry.js', './registry-blueprints.js', './registry-core.js',
-  './registry-content.js', './registry-images.js', './registry-bank-physics.js', './registry-calculations.js',
+  './registry-content.js', './registry-image-view.js', './registry-images.js', './registry-bank-physics.js', './registry-calculations.js',
   './registry-bank-acquisition.js', './registry-bank-procedures.js', './registry-bank-safety.js', './registry-bank-pilot.js',
-  ...Object.values(self.RegistryImages).flatMap(asset=>asset.promptPath?[asset.path,asset.promptPath]:[asset.path]),
+  ...Object.values(self.RegistryImages).map(asset=>asset.path),
   './app-navigation.js', './app-navigation.css', './anatomy-quiz-ui.js', './atlas-study.js',
   './quiz-assets.js', './atlas/quiz/LICENSE-BY-SA.txt', './atlas/cerebra-preview.webp',
   ...Object.values(self.QuizAssets).map(asset=>asset.asset),

@@ -1,5 +1,5 @@
 (() => {
-  const version='registry-bank-1';
+  const version='registry-bank-2';
   const storageKey='mri.registry.v1';
   const day=86400000;
   const shuffle=(values,random=Math.random)=>{
@@ -18,6 +18,7 @@
       return state/4294967296;
     };
   }
+  const eligibleImage = q => globalThis.RegistryImageView?.valid(q)??true;
   function buildForm(bank,blueprint,form='A') {
     const random=seeded(blueprint.id+':'+form);
     const randomForm=form==='random';
@@ -25,12 +26,12 @@
     const offset=randomForm?0:form.charCodeAt(0)-65;
     const items=[];
     for(const [category,[,count]] of Object.entries(blueprint.categories)){
-      const pool=bank.filter(q=>q.category===category&&!q.pilot&&!q.studyOnly&&blueprint.formats.includes(q.type));
+      const pool=bank.filter(q=>q.category===category&&eligibleImage(q)&&!q.pilot&&!q.studyOnly&&blueprint.formats.includes(q.type));
       const eligible=randomForm?shuffle(pool):pool.slice(offset*count);
       if(eligible.length<count||(randomForm&&pool.length===count))return null;
       items.push(...eligible.slice(0,count).map(({id})=>({id,scored:true})));
     }
-    const pilots=bank.filter(q=>q.pilot&&!q.studyOnly&&blueprint.formats.includes(q.type));
+    const pilots=bank.filter(q=>q.pilot&&eligibleImage(q)&&!q.studyOnly&&blueprint.formats.includes(q.type));
     const pool=randomForm?shuffle(pilots):pilots.slice(offset*blueprint.pilot);
     if(pool.length<blueprint.pilot)return null;
     items.push(...pool.slice(0,blueprint.pilot).map(({id})=>({id,scored:false})));
@@ -100,7 +101,7 @@
       }
       outcomes.set(item.id,{streak,missed:!independent,due:Date.parse(entry.date)+Math.min(30,2**streak)*day});
     }
-    const pool=bank.filter(q=>!q.pilot&&(!category||q.category===category)&&(!subject||q.armritSubject===subject)&&
+    const pool=bank.filter(q=>!q.pilot&&eligibleImage(q)&&(!category||q.category===category)&&(!subject||q.armritSubject===subject)&&
       (!armrit||q.type==='single')&&
       (kind!=='image'||q.image)&&(kind!=='calc'||q.formula)&&
       (kind!=='missed'||outcomes.get(q.id)?.missed)&&

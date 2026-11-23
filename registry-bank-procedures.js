@@ -63,7 +63,7 @@
   ]){
     const target=RegistryImages[id];
     if(target.labelName!==level+' disc')throw Error('Unexpected spine landmark');
-    visual('neuro',id,'Vertebral level identification','Which disc level is indicated by the arrow on this sagittal spine localizer?',
+    visual('neuro',id,'Vertebral level identification','Which disc level is indicated by the arrow on this sagittal T1 spine image?',
       [[level,context],...wrong.map(name=>[name,(name==='C1–C2'?'The atlas and axis articulate without a normal intervertebral disc.':name.localeCompare(level)<0?'This is a more cranial interspace than the labeled landmark.':'This is a more caudal interspace than the labeled landmark.')])]);
   }
   visual('neuro','n14','Orthogonal brain planes','What plane is shown in this MR image of the brain?',[

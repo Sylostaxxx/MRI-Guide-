@@ -1,6 +1,6 @@
 (() => {
   const el=id=>document.getElementById(id), {cases}=StudyContent;
-  const sections={systems:'Organ systems',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
+  const sections={systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
     positioning:'Patient Positioning',pathology:'Pathology Explorer',safety:'MRI Safety',
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
   const historyKey='mri-study-lab-review-v1';
@@ -26,11 +26,11 @@
       if(previous?.version===1&&Number.isInteger(previous.step)&&previous.step>=0&&previous.step<=cases[section]?.length)
         ({step,score,selected,hintLevel=0,hintsHidden=false}=previous);
     }catch{}
-    const area={systems:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
+    const area={systems:'anatomy',lower:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
     AppNavigation.active(area[section]??'clinical');
     el('studyTitle').textContent=section==='systems'?'Anatomy Explorer':'Study Center';
 
-    for (const key of ['systems','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
+    for (const key of ['systems','lower','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
     for (const node of el('sections').children) node.setAttribute('aria-current',String(node.dataset.section===section));
     if (section==='artifact') artifact();
     if (section==='mastery') mastery();

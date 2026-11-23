@@ -226,7 +226,7 @@ test('identification assets use the verified unlabeled allowlist, separate from 
   }
 });
 
-for (const name of ['blueprints','core','content','images','bank-physics','calculations','bank-acquisition','bank-procedures','bank-safety','bank-pilot']) {
+for (const name of ['blueprints','core','content','images','image-view','bank-physics','calculations','bank-acquisition','bank-procedures','bank-safety','bank-pilot']) {
   require('../registry-'+name+'.js');
 }
 
@@ -308,8 +308,8 @@ require('../physics-videos.js');
 
 test('academy content is complete for each published lesson and isolated from Exam A', () => {
   const bank=RegistryContent.bank;
-  assert.equal(bank.length,279);
-  assert.equal(bank.filter(q=>!q.pilot).length,249);
+  assert.equal(bank.filter(q=>!q.id.startsWith('le-')).length,279);
+  assert.equal(bank.filter(q=>!q.pilot&&!q.id.startsWith('le-')).length,249);
   assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
   const exact = new Set();
   for(const q of bank){
@@ -330,11 +330,7 @@ test('academy content is complete for each published lesson and isolated from Ex
     assert.ok(ids.every(id=>bank.some(q=>q.id===id&&StudyContentMap.lessonFor(q)===lesson.id)));
     assert.ok(PhysicsVideos[lesson.id].every(video=>/^https:\/\//.test(video.url)&&video.creator&&video.verified));
   }
-  for (const [id,image] of Object.entries(RegistryImages)) {
-    if(!image.marked)continue;
-    assert.equal(createHash('sha256').update(fs.readFileSync(image.promptPath)).digest('hex'),image.promptSha256,id);
-    assert.notEqual(image.sha256,image.promptSha256,id);
-  }
+
 });
 
 test('review preserves mistakes, rejects assisted mastery, and counts independent success across days', () => {
@@ -413,5 +409,65 @@ test('each clinical study case has authored guidance for its exact distractors',
       assert.ok(hints.length>0);
       assert.ok(hints.every(hint=>!hint.includes(choices[correct])));
     }
+  }
+});
+
+require('../lower-extremity.js');
+require('../registry-bank-lower.js');
+require('../study-coverage.js');
+test('all new lower-extremity items have sourced answers, nonleaking hints and unchanged official forms',()=>{
+  const bank=RegistryContent.bank;
+  const all=bank.filter(q=>LowerExtremity.matches(q,'all'));
+  assert.equal(all.length,71);
+  assert.equal(all.filter(q=>q.image).length,7);
+  assert.equal(all.filter(q=>q.id.startsWith('le-')).length,61);
+  assert.deepEqual(RegistryCore.buildForm(bank,RegistryBlueprints.arrt),
+    RegistryCore.buildForm(bank.filter(q=>!q.id.startsWith('le-')),RegistryBlueprints.arrt));
+  const counts={'Hip':'hip','Thigh':'thigh','Knee':'knee','Lower leg':'leg','Ankle':'ankle','Foot':'foot'};
+  for (const [name,region] of Object.entries(counts)) {
+    const questions=all.filter(q=>LowerExtremity.matches(q,region));
+    const row=StudyCoverage.rows.find(row=>row[0]===name);
+    assert.equal(row[5],questions.filter(q=>q.image).length);
+    assert.equal(row[6],questions.filter(q=>!q.image).length);
+  }
+  for(const q of all.filter(q=>q.id.startsWith('le-'))){
+    assert.ok(q.studyOnly&&q.references.length&&q.related);
+    assert.equal(q.options.length,4,q.id);
+    assert.ok(q.options.every(([answer,why])=>answer&&why),q.id);
+    assert.ok(StudyGuidance.hints(q).length>=2,q.id);
+  }
+});
+
+test('registry image overlays match the original RAS source voxels, answer keys and verified checksums',async()=>{
+  const packs={brain:'atlas/manifest.json',spine:'atlas/spine/manifest.json',knee:'atlas/knee/manifest.json',heart:'atlas/cardiac/manifest.json'};
+  const grids={};
+  for(const [region,path] of Object.entries(packs)){
+    const manifest=JSON.parse(fs.readFileSync(path));
+    const [volume,mask]=await Promise.all(manifest.volumes.map(entry=>parse(fs.readFileSync(entry.path))));
+    verifyAtlasGrid(volume,mask);grids[region]={manifest,volume,mask};
+  }
+  const visual=RegistryContent.bank.filter(q=>q.image);
+  assert.equal(visual.length,24);
+  const comparison=RegistryImages['le-k-img02'];
+  assert.equal(comparison.plane,'Coronal');
+  assert.equal(RegistryImages[comparison.comparison].plane,'Axial');
+  assert.deepEqual(RegistryImageView.disabled,[]);
+  for(const q of visual){
+    const asset=RegistryImages[q.image];
+    const {manifest,mask}=grids[asset.region];
+    const [u,v]=[0,1,2].filter(axis=>axis!==asset.axis);
+    const dims=mask.dim;
+    assert.ok(RegistryImageView.valid(q),q.id);
+    assert.equal(asset.sequence,manifest.sequence,q.id);
+    assert.equal(asset.labelName,manifest.labels[asset.label].name,q.id);
+    assert.equal(mask.p[voxelIndex(dims,asset.voxel)],asset.label,q.id);
+    assert.equal(createHash('sha256').update(fs.readFileSync(asset.path)).digest('hex'),asset.sha256,q.id);
+    if(asset.marker){
+      assert.ok(Math.abs(asset.marker.target[0]-(asset.voxel[u]+.5)*asset.width/dims[u])<0.001,q.id);
+      assert.ok(Math.abs(asset.marker.target[1]-(dims[v]-asset.voxel[v]-.5)*asset.height/dims[v])<0.001,q.id);
+      assert.ok(!RegistryImageView.valid(q,{...asset,marker:{...asset.marker,target:[-1,0]}}),q.id);
+      assert.ok(!RegistryImageView.valid(q,{...asset,marker:null}),q.id);
+    }
+    assert.ok(!RegistryImageView.valid(q,{...asset,verification:'pending'}),q.id);
   }
 });
