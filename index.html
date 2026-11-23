@@ -126,11 +126,11 @@
 <div><label for="protoGap">Gap <b id="protoGapOut">0%</b></label><input id="protoGap" type="range" min="0" max="40" step="5" value="0"></div>
 <div><label for="protoSelected">Selected slice <b id="protoSelectedOut">8</b></label><input id="protoSelected" type="range" min="1" max="15" step="1" value="8"></div></div>
 <p class="small" id="protoCoverage"></p><div class="row"><button class="primary" id="protoCheck">Check this plan</button><button id="protoSave">Save plan + note</button></div><div id="protoFeedback" class="qresult">Adjust a stack and check your work.</div><label for="protoNote">My protocol notes</label><textarea id="protoNote" placeholder="Write why you selected this plane, coverage, and slice placement..." rows="3"></textarea></div></div></div></section>
-<section id="review" class="page hidden"><div class="panel"><div class="split"><h2>Pre-study Recall Quiz</h2><span class="pill">Spaced review starter</span></div><p class="small">Before studying new content, answer a short question from anatomy and MRI physics. Previously visited note topics receive extra priority. Missed questions are stored locally to be reviewed again; this is a lightweight practice mode, not a complete adaptive learning system.</p><div class="row"><button class="primary" id="quizBegin">Start / Next question</button><span id="quizScore" class="small">0 attempted</span></div><h3 id="quizQuestion">Tap Start to review what you know.</h3><div id="quizOptions"></div><div id="quizFeedback" class="qresult hidden" aria-live="polite"></div><hr class="hr"><h3>Review from your own notes</h3><p class="small">Your latest saved note becomes a recall prompt. Your notes are not automatically treated as medically verified answers.</p><div id="recallPrompt" class="qresult">Add a note in the Anatomy Explorer or Physics Lab to create a recall prompt.</div><button id="quizReveal">Reveal source note</button><div id="recallAnswer" class="qresult hidden"></div></div></section>
+<section id="review" class="page hidden"><div class="panel"><div class="split"><h2>Pre-study Recall Quiz</h2><span class="pill">Spaced review starter</span></div><p class="small">Before studying new content, answer a short question from anatomy and MRI physics. Previously visited note topics receive extra priority. Missed questions are stored locally to be reviewed again; this is a lightweight practice mode, not a complete adaptive learning system.</p><div class="row"><button class="primary" id="quizBegin">Start / Next question</button><span id="quizScore" class="small">0 attempted</span></div><h3 id="quizQuestion">Tap Start to review what you know.</h3><div id="quizOptions"></div><div id="recallHints" class="study-guidance" hidden></div><button id="recallHint" hidden>Show Hint</button><button id="recallHide" hidden>Hide Hints</button><button id="recallTeach" hidden>Teach Me Why I Was Wrong</button><article id="recallCorrection" class="study-guidance" hidden></article><div id="quizFeedback" class="qresult hidden" aria-live="polite"></div><hr class="hr"><h3>Review from your own notes</h3><p class="small">Your latest saved note becomes a recall prompt. Your notes are not automatically treated as medically verified answers.</p><div id="recallPrompt" class="qresult">Add a note in the Anatomy Explorer or Physics Lab to create a recall prompt.</div><button id="quizReveal">Reveal source note</button><div id="recallAnswer" class="qresult hidden"></div></div></section>
 <section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div><div class="panel"><h2>Atlas bookmarks</h2><ul id="bookmarkList"></ul><h2>Atlas and system notes</h2><ul id="atlasNoteList"></ul></div></section>
 <section id="backup" class="page hidden"><div class="panel"><h1>Settings</h1><h2>MRI downloads and sources</h2><div class="row"><a href="./brain-atlas.html?panel=downloads">Brain pack</a><a href="./brain-atlas.html?region=spine&amp;panel=downloads">Cervical spine pack</a><a href="./brain-atlas.html?region=knee&amp;panel=downloads">Knee pack</a><a href="./brain-atlas.html?region=cardiac&amp;panel=downloads">Cardiac pack</a><a href="./real-scans.html">Sequence library</a></div><hr class="hr"><h2>Backups</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, registry sessions, continuous practice, lesson progress, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">On iPad, open the site in Safari and use Share, then Add to Home Screen. Open the installed app once online and download the MRI packs you want. Notes and image packs are stored in the browser or installed app.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
 <div class="footer">Educational use only · Study data stays in this browser</div></main>
-<script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
+<script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./study-guidance.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
 (()=>{'use strict';
 const names={brain:'Brain',cspine:'Cervical spine',lspine:'Lumbar spine',knee:'Knee',shoulder:'Shoulder'};
 const prompts={brain:'Review mid-sagittal landmarks, corpus callosum, AC–PC orientation, and how the prescribed stack relates to the reference plane.',cspine:'Review the spinal canal, intervertebral discs, cord alignment, and coverage from the craniocervical junction through the lower cervical spine.',lspine:'Review disc-space alignment, vertebral coverage, and the relationship between sagittal localizers and axial disc prescriptions.',knee:'Review condylar anatomy, menisci, ACL/PCL orientation, and why the selected plane affects ligament visualization.',shoulder:'Review glenoid alignment, rotator cuff tendons, humeral head, and orientation of oblique coronal and sagittal series.'};
@@ -378,13 +378,107 @@ const reviewQs=[
 {topic:'structure:cerebellum',q:'Which function is most associated with the cerebellum?',a:['Coordination of movement','CSF production','Olfactory transduction','Blood oxygenation'],correct:0,why:'The cerebellum supports coordination, balance and motor learning.'},
 {topic:'physics:matrix',q:'At constant FOV, increasing the acquisition matrix generally:',a:['Improves in-plane spatial resolution','Makes pixels larger','Shortens scan time in all sequences','Eliminates motion artifacts'],correct:0,why:'A larger matrix creates smaller pixels for a fixed FOV, at possible SNR/time costs.'}
 ];
-let quizCurrent=null,quizCount=0,quizCorrect=0;const qKey='mri-study-lab-review-v1';let qHistory=[];try{qHistory=JSON.parse(localStorage.getItem(qKey)||'[]');if(!Array.isArray(qHistory))qHistory=[]}catch(e){}
-function quizNext(){const topics=new Set(notes.map(n=>n.region));const weighted=reviewQs.map((q,i)=>({i,w:(topics.has(q.topic)?3:1)+(qHistory.some(x=>x.topic===q.topic&&!x.ok)?2:0)}));const total=weighted.reduce((s,x)=>s+x.w,0);let rand=Math.random()*total;let idx=0;for(const x of weighted){rand-=x.w;if(rand<=0){idx=x.i;break}}quizCurrent=reviewQs[idx];const opts=quizCurrent.a.map((a,i)=>({a,i}));for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}el('quizQuestion').textContent=quizCurrent.q;el('quizOptions').innerHTML=opts.map(o=>`<button class="quizopt" data-choice="${o.i}">${esc(o.a)}</button>`).join('');el('quizFeedback').classList.add('hidden');el('quizOptions').querySelectorAll('button').forEach(b=>b.onclick=()=>quizAnswer(Number(b.dataset.choice)));}
-function quizAnswer(i){if(!quizCurrent)return;const ok=i===quizCurrent.correct;quizCount++;if(ok)quizCorrect++;qHistory.unshift({topic:quizCurrent.topic,ok,date:new Date().toISOString()});try{localStorage.setItem(qKey,JSON.stringify(qHistory))}catch(e){}el('quizScore').textContent=`${quizCorrect}/${quizCount} correct this session`;el('quizOptions').querySelectorAll('button').forEach(b=>{b.disabled=true;if(Number(b.dataset.choice)===quizCurrent.correct)b.classList.add('selected')});el('quizFeedback').textContent=(ok?'✓ Correct. ':'Review: ')+quizCurrent.why;el('quizFeedback').classList.remove('hidden')}
+const recallKey='mri.recall.session.v1',qKey='mri-study-lab-review-v1';
+let qHistory=[], recall={version:1,index:null,order:[],selected:null,number:0,count:0,correct:0,hintLevel:0,hidden:false};
+try{
+  const saved=JSON.parse(localStorage.getItem(recallKey));
+  if(saved?.version===1&&reviewQs[saved.index]&&Array.isArray(saved.order))recall=saved;
+  const log=JSON.parse(localStorage.getItem(qKey)||'[]');if(Array.isArray(log))qHistory=log;
+}catch{}
+const recallRationales=[
+  ['The thalamus is part of the diencephalon above the brainstem.','The lateral ventricle is a CSF space, not a segment of the brainstem.','The occipital lobes lie superior and posterior to the brainstem.'],
+  ['More time between excitations allows the tissues to approach equilibrium.','A later echo changes the influence of transverse decay.','Additional averages primarily change the noise and acquisition time.'],
+  ['Short TR imposes longitudinal recovery differences, and short TE limits transverse decay contrast.','Long TE permits transverse contrast, but short TR retains longitudinal weighting.','Long TR reduces longitudinal weighting, while short TE limits transverse contrast.'],
+  ['A fourfold increase is the amount of averaging, rather than the gain in ideal SNR.','Independent averages reduce random noise, so the SNR changes.','Averaging independent samples improves the effective SNR.'],
+  ['The same matrix samples a smaller covered distance, giving a smaller pitch.','Changing the covered distance changes the pitch if sample count stays fixed.','TE is a timing parameter and does not prescribe the in-plane pixel pitch.'],
+  ['CSF is produced mainly by the choroid plexus.','Spinal nerve roots emerge from the spinal cord.','The lens is accommodated by the ciliary muscle and its neural control.'],
+  ['The choroid plexus produces most CSF.','Olfactory receptors transduce odor stimuli.','Gas exchange occurs in the lungs.'],
+  ['More samples across the same field reduce the spacing.','Time depends on the direction and other acquisition settings.','Motion can still corrupt data regardless of the increased matrix.']
+];
+const recallCues=[
+  ['Locate the brainstem on a midsagittal section.','Distinguish its middle segment from the diencephalon and the structures of the posterior fossa.'],
+  ['Track recovery of the component parallel to the main field.','Compare a short recovery interval with a delay that lets both tissues nearly recover.'],
+  ['Consider the time available for transverse decay after excitation.','Which combination limits longitudinal recovery differences while letting transverse decay differences develop?'],
+  ['Separate the increase in scan time from the change in random noise.','Use the square root of the ratio of signal averages.'],
+  ['Compare the covered width and the number of acquired samples.','Use the width per sample while holding the sample count fixed.'],
+  ['Think about information traveling from sensory pathways to the cortex.','Separate a deep gray matter relay from fluid production and peripheral nerve anatomy.'],
+  ['Distinguish the coordination of an action from production of fluid or sensory transduction.','Consider the posterior fossa structure involved in timing and balance.'],
+  ['Hold the area covered fixed when comparing two acquired matrices.','Compare the distance represented by each sample when there are more samples along the same axis.']
+];
+function saveRecall(){
+  if(recall.index===null)return;
+  try{localStorage.setItem(recallKey,JSON.stringify(recall));}catch{}
+  StudyResume.save('Pre-study Review','Recall quiz',topicName(reviewQs[recall.index].topic),'Question '+recall.number);
+}
+function recallUrl(correction){
+  const url=new URL(location.href);url.searchParams.set('section','practice');
+  if(correction)url.searchParams.set('recallCorrection','1');else url.searchParams.delete('recallCorrection');
+  return url;
+}
+function renderRecall(){
+  if(recall.index===null)return;
+  const q=reviewQs[recall.index],answered=recall.selected!==null;
+  const wrong=answered&&recall.selected!==q.correct;
+  el('quizScore').textContent=recall.correct+'/'+recall.count+' independent correct';
+  el('quizQuestion').textContent=q.q;
+  el('quizOptions').replaceChildren(...recall.order.map(i=>{
+    const b=document.createElement('button');b.type='button';b.className='quizopt';b.textContent=q.a[i];
+    b.disabled=answered;if(answered&&i===q.correct)b.classList.add('selected');
+    b.onclick=()=>quizAnswer(i);return b;
+  }));
+  el('quizFeedback').classList.toggle('hidden',!answered);
+  el('quizFeedback').textContent=answered?(wrong?'Review. ':recall.hintLevel?'Correct with Hint '+recall.hintLevel+'. ':'Correct. ')+q.why:'';
+  el('recallHint').hidden=answered||recall.hintLevel>=2;
+  el('recallHint').textContent=recall.hintLevel?'Give Me a Stronger Hint':'Show Hint';
+  el('recallHide').hidden=answered||!recall.hintLevel;
+  el('recallHide').textContent=recall.hidden?'Show Revealed Hints':'Hide Hints';
+  el('recallHints').hidden=answered||!recall.hintLevel||recall.hidden;
+  el('recallHints').textContent=recallCues[recall.index].slice(0,recall.hintLevel).map((tip,i)=>'Hint '+(i+1)+' · '+tip).join(' ');
+  el('recallTeach').hidden=!wrong;
+  const lesson=el('recallCorrection');
+  lesson.hidden=!wrong||!new URLSearchParams(location.search).has('recallCorrection');
+  if(!lesson.hidden){
+    const reference=q.topic.startsWith('structure:')?'./brain-atlas.html':'./academy.html?lesson='+(q.topic==='physics:TE'?'t2':q.topic==='physics:TR'?'t1':'k-space');
+    StudyGuidance.correction(lesson,{id:'recall-'+recall.index,topic:topicName(q.topic),stem:q.q,type:'single',key:[q.correct],related:reference,
+      options:q.a.map((answer,i)=>[answer,i===q.correct?q.why:recallRationales[recall.index][i-1]])
+    },[recall.selected],{back:()=>{
+      if(history.state?.mriRecallCorrection)history.back();
+      else {AppNavigation.navigate(recallUrl(false),true,{mriRecallCorrection:false});renderRecall();saveRecall();}
+    }});
+  }
+  saveRecall();
+}
+function quizNext(){
+  const topics=new Set(notes.map(n=>n.region));
+  const weighted=reviewQs.map((q,i)=>({i,w:(topics.has(q.topic)?3:1)+(qHistory.some(x=>x.topic===q.topic&&!x.ok)?2:0)}))
+    .filter(item=>item.i!==recall.index);
+  let pick=Math.random()*weighted.reduce((total,item)=>total+item.w,0);
+  const found=weighted.find(item=>(pick-=item.w)<=0)??weighted.at(-1);
+  const order=reviewQs[found.i].a.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  recall={...recall,index:found.i,order,number:recall.number+1,selected:null,hintLevel:0,hidden:false};
+  if(new URLSearchParams(location.search).has('recallCorrection'))AppNavigation.navigate(recallUrl(false),true,{mriRecallCorrection:false});
+  renderRecall();
+}
+function quizAnswer(i){
+  const q=reviewQs[recall.index];
+  if(!q||recall.selected!==null)return;
+  const correct=i===q.correct,assisted=recall.hintLevel>0,ok=correct&&!assisted;
+  recall={...recall,selected:i,count:recall.count+1,correct:recall.correct+Number(ok)};
+  try{
+    const log=JSON.parse(localStorage.getItem(qKey)||'[]');
+    qHistory=[{topic:q.topic,ok,correct,assisted,hintLevel:recall.hintLevel,response:i,date:new Date().toISOString()},...log];
+    localStorage.setItem(qKey,JSON.stringify(qHistory));
+  }catch{}
+  renderRecall();
+}
 el('quizBegin').onclick=quizNext;
+el('recallHint').onclick=()=>{recall={...recall,hintLevel:Math.min(2,recall.hintLevel+1),hidden:false};renderRecall();};
+el('recallHide').onclick=()=>{recall={...recall,hidden:!recall.hidden};renderRecall();};
+el('recallTeach').onclick=()=>{AppNavigation.navigate(recallUrl(true),false,{mriRecallCorrection:true});renderRecall();};
 function recallRefresh(){const n=notes[0];el('recallPrompt').textContent=n?`Without opening your notes, explain what you remember about ${topicName(n.region)}. Then reveal your most recent note and compare.`:'Save a note first to generate a personalized recall prompt.';el('recallAnswer').classList.add('hidden')}
 el('quizReveal').onclick=()=>{el('recallAnswer').textContent=notes[0]?.body||'No notes saved yet.';el('recallAnswer').classList.remove('hidden')};
-const oldTab=tab;tab=function(name,group,write){oldTab(name,group,write);if(name==='review')recallRefresh()};
+const oldTab=tab;tab=function(name,group,write){oldTab(name,group,write);if(name==='review'){recallRefresh();renderRecall();}};
 
 // V5: browser-local DICOM decoder for uncompressed, little-endian grayscale MRI.
 // This deliberately does not attempt to decode compressed transfer syntaxes.

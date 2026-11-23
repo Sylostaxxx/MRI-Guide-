@@ -560,6 +560,8 @@ el('practice').onclick = () => {
   beginQuiz(questions);
 };
 function beginQuiz(ids,returnMode=mode) {
+  const route=new URL(location.href);route.searchParams.set('resumeQuiz','1');
+  AppNavigation.navigate(route,true);
   priorView={mode:returnMode,selected,cursor:[...cursor],zoom:el('zoom').value,offsets:views.map(view=>[...view.offset])};
   round=ids;roundIndex=0;quizScore={correct:0,assisted:0};
   el('studyMessage').textContent='';
@@ -617,7 +619,8 @@ function endPractice() {
   try{localStorage.removeItem(quizKey);}catch{}
   if(StudyResume.read()?.href?.includes('region='+region+'&'))StudyResume.clear('Anatomy Explorer');
   quizUI.close();
-  if(new URLSearchParams(location.search).has('anatomyCorrection'))AppNavigation.navigate(anatomyUrl(false),true,{mriAnatomyCorrection:false});
+  const route=anatomyUrl(false);route.searchParams.delete('resumeQuiz');
+  AppNavigation.navigate(route,true,{mriAnatomyCorrection:false});
   cursor=priorView.cursor;el('zoom').value=priorView.zoom;
   views.forEach((view,i)=>{view.offset=priorView.offsets[i];applyTransform(view);});
   select(priorView.selected);setMode(priorView.mode);updateResults();render();

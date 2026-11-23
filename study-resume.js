@@ -3,6 +3,7 @@
   const root=new URL('./',document.baseURI);
   function safe(href) {
     const url=new URL(href,root);
+    if(url.origin===root.origin&&[root.pathname,new URL('index.html',root).pathname].includes(url.pathname)&&url.searchParams.get('section')==='practice')return true;
     return url.origin===root.origin && ['practice.html','registry.html','academy.html','brain-atlas.html','study-center.html'].some(page=>url.pathname===new URL(page,root).pathname);
   }
   function read() {
