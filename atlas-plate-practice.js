@@ -24,7 +24,7 @@ function shuffle(values) {
 }
 
 export function platePractice(el, ui, display, layout, done) {
-  let source, deck=[], index=0, assisted=false, hinted=false, locked=false, total=0, scores;
+  let source, deck=[], index=0, assisted=false, hinted=false,hintLevel=0,hintsHidden=false, locked=false, total=0, scores;
   const stage=el('platePoints');
   function finish() {
     deck=[];stage.replaceChildren();ui.close();layout(false);display(source);
@@ -36,7 +36,7 @@ export function platePractice(el, ui, display, layout, done) {
   }
   function show() {
     const [key,expected]=deck[index], [name]=expected;
-    assisted=false;hinted=false;locked=false;
+    assisted=false;hinted=false;hintLevel=0;hintsHidden=false;locked=false;
     display(key,true);
     stage.replaceChildren();
     let correctPoint;
@@ -46,7 +46,7 @@ export function platePractice(el, ui, display, layout, done) {
       try {
         const storageKey='mri-study-lab-review-v1';
         const history=JSON.parse(localStorage.getItem(storageKey)??'[]');
-        history.unshift({topic:'illustrated:'+key+':'+name,structureId:expected[3],ok:correct&&!assisted,assisted,correct,date:new Date().toISOString()});
+        history.unshift({topic:'illustrated:'+key+':'+name,structureId:expected[3],ok:correct&&!assisted,assisted,hintLevel,correct,date:new Date().toISOString()});
         localStorage.setItem(storageKey,JSON.stringify(history));
       } catch {}
       if(!correct&&el('retry').checked){ui.feedback('Incorrect. Try another location.','incorrect');return;}
@@ -69,10 +69,19 @@ export function platePractice(el, ui, display, layout, done) {
       if(choice===expected)correctPoint=point;
       stage.append(point);
     }
-    ui.show({name,number:index+1,total,drag:true,next,exit:finish,hint(){
-      hinted=!hinted;assisted=true;
-      correctPoint.classList.toggle('hinted',hinted);ui.hint(hinted);
-    }});
+    const cues={
+      brain:['Use the sagittal midline to distinguish the forebrain from the posterior fossa.','Use the ventricular spaces and brainstem as references for the neighboring structures.'],
+      heart:['Orient the upper chambers and the ventricles first.','Trace the chambers relative to the atrioventricular valves and ventricular septum.'],
+      knee:['Locate the thigh, lower leg and front of the knee.','Use the joint line to separate the ends of the bones and the surfaces lining the joint.']
+    }[key];
+    const hints=[...cues,'The verified illustration hotspot is highlighted.'];
+    function toggle(hide){
+      if(hide)hintsHidden=!hintsHidden;
+      else {hintLevel=Math.min(3,hintLevel+1);hintsHidden=false;}
+      assisted=hintLevel>0;hinted=hintLevel===3&&!hintsHidden;
+      correctPoint.classList.toggle('hinted',hinted);ui.hints(hints,hintLevel,hintsHidden);
+    }
+    ui.show({name,number:index+1,total,drag:true,next,exit:finish,hint:()=>toggle(false),hideHint:()=>toggle(true)});
   }
   function start(items) {
     if(!items.length||items.some(([key])=>!Object.hasOwn(QuizAssets,key)))return;

@@ -64,7 +64,7 @@
       const question=item.question, answer=run.answers[i]??[];
       const succeeded=isCorrect(question,answer), helped=Boolean(run.assisted[i]);
       items.push({id:question.id,question,answer,correct:succeeded,assisted:helped,
-        scored:item.scored,ms:run.elapsed[i]??0});
+        hintLevel:run.hintLevels?.[i]??Number(helped),checkedAt:run.checkedAt?.[i],scored:item.scored,ms:run.elapsed[i]??0});
       if(!item.scored)continue;
       eligible++;skipped+=Number(!answer.length);
       assisted+=Number(helped);

@@ -5,12 +5,27 @@
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
   const historyKey='mri-study-lab-review-v1';
   const read=()=>JSON.parse(localStorage.getItem(historyKey)??'[]');
-  let course='systems', step=0, score=0;
+  let course='systems',step=0,score=0,selected=null;
+  const key=section=>'mri.clinical.session.v1:'+section;
+  function saveActivity(){
+    try{localStorage.setItem(key(course),JSON.stringify({version:1,step,score,selected}));}catch{}
+    if(step<cases[course].length)StudyResume.save('Study Center',sections[course],sections[course],
+      'Question '+(step+1)+' of '+cases[course].length);
+    else StudyResume.clear('Study Center',sections[course]);
+  }
   function button(text,click) {
     const b=document.createElement('button');b.textContent=text;b.onclick=click;return b;
   }
-  function show(section) {
-    course=section;step=0;score=0;
+  function show(section,write=false) {
+    if(write)AppNavigation.navigate('?section='+section);
+    if(course===section&&el('studyTitle').dataset.initialized)return;
+    el('studyTitle').dataset.initialized='true';
+    course=section;step=0;score=0;selected=null;
+    try{
+      const previous=JSON.parse(localStorage.getItem(key(section)));
+      if(previous?.version===1&&Number.isInteger(previous.step)&&previous.step>=0&&previous.step<=cases[section]?.length)
+        ({step,score,selected}=previous);
+    }catch{}
     const area={systems:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
     AppNavigation.active(area[section]??'clinical');
     el('studyTitle').textContent=section==='systems'?'Anatomy Explorer':'Study Center';
@@ -22,7 +37,7 @@
     if (cases[section]) exercise();
   }
   for (const [key,name] of Object.entries(sections)) {
-    const control=button(name,()=>show(key));control.dataset.section=key;el('sections').append(control);
+    const control=button(name,()=>show(key,true));control.dataset.section=key;el('sections').append(control);
   }
 
   const regions=[...new Set(OrganCatalog.flatMap(system=>system.entries.map(entry=>entry.region)))].sort();
@@ -90,11 +105,13 @@
     el('choices').replaceChildren();
     el('next').hidden=true;
     el('feedback').textContent='';
+    el('clinicalTeach').hidden=true;
+    el('clinicalCorrection').hidden=true;
     el('safetyReference').hidden=course!=='rotation'&&course!=='safety';
     if (step===items.length) {
       el('caseCount').textContent='Complete';
       el('stem').textContent=score+' of '+items.length+' correct on this run.';
-      el('choices').append(button('Practice again',()=>show(course)));
+      el('choices').append(button('Practice again',()=>{step=0;score=0;selected=null;saveActivity();exercise();}));
       if (course==='rotation') {
         const link=document.createElement('a');link.href='./';link.textContent='Open Slice Planner for hands-on practice';
         el('choices').append(link);
@@ -104,21 +121,55 @@
     const [question,options,correct,explanation]=items[step];
     el('caseCount').textContent=(step+1)+' of '+items.length;
     el('stem').textContent=question;
-    options.forEach((option,index)=>el('choices').append(button(option,()=>{
-      const ok=index===correct;
-      score+=Number(ok);
-      for (const choice of el('choices').children) choice.disabled=true;
+    function feedback(){
+      const ok=selected===correct;
+      for(const choice of el('choices').children)choice.disabled=true;
       el('feedback').textContent=(ok?'Correct. ':'Review. ')+explanation;
-      try {
-        const attempts=read();
-        attempts.unshift({topic:'training:'+course,ok,date:new Date().toISOString()});
-        localStorage.setItem(historyKey,JSON.stringify(attempts));
-      } catch { el('feedback').textContent+=' Progress could not be saved.'; }
+      el('clinicalTeach').hidden=ok;
       el('next').hidden=false;
       el('next').textContent=step===items.length-1?'See results':'Next';
+    }
+    options.forEach((option,index)=>el('choices').append(button(option,()=>{
+      if(selected!==null)return;
+      selected=index;const ok=index===correct;
+      score+=Number(ok);
+      try {
+        const attempts=read();
+        attempts.unshift({topic:'training:'+course,ok,correct:ok,response:index,question:step,date:new Date().toISOString()});
+        localStorage.setItem(historyKey,JSON.stringify(attempts));
+      } catch {}
+      saveActivity();feedback();
     })));
+    if(selected!==null)feedback();
+    saveActivity();
+    routeCorrection();
   }
-  el('next').onclick=()=>{step++;exercise();};
+  el('next').onclick=()=>{
+    step++;selected=null;
+    if(new URLSearchParams(location.search).has('correction'))AppNavigation.navigate('?section='+course,true,{mriClinicalCorrection:false});
+    saveActivity();exercise();
+  };
+  el('clinicalTeach').onclick=()=>{
+    AppNavigation.navigate('?section='+course+'&correction='+step,false,{mriClinicalCorrection:true});
+    routeCorrection();
+  };
+  function routeCorrection(){
+    const host=el('clinicalCorrection'),item=cases[course]?.[step];
+    host.hidden=!item||selected===null||selected===item[2]||new URLSearchParams(location.search).get('correction')!==String(step);
+    if(host.hidden)return;
+    const [stem,choices,correct,why]=item;
+    StudyGuidance.correction(host,{id:'clinical-'+course+'-'+step,topic:sections[course],stem,type:'single',key:[correct],
+      category:course==='safety'||course==='rotation'?'safety':course,
+      options:choices.map((text,index)=>[text,index===correct?why:'Compare this choice with the condition that the case requires. '+why]),
+      references:course==='safety'||course==='rotation'?[['ACR MR Safety resources','https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Radiology-Safety/MR-Safety']]:[],
+      related:course==='sequence'?'./academy.html':'./?section=clinical'
+    },[selected],{back:()=>{
+      if(history.state?.mriClinicalCorrection)history.back();
+      else {AppNavigation.navigate('?section='+course,true,{mriClinicalCorrection:false});routeCorrection();}
+    }});
+    saveActivity();
+  }
+
 
   function mastery() {
     const totals=new Map(), recent=el('studyHistory');
@@ -192,6 +243,8 @@
     }[type];
   }
   for (const id of ['severity','artifactType','artifactAxis']) el(id).oninput=artifact;
-  updateSystems();const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');
+  updateSystems();
+  function route(){const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');routeCorrection();}
+  route();window.addEventListener('popstate',route);
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
 })();

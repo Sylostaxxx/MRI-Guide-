@@ -55,8 +55,10 @@ async function run() {
       });
       assert.equal(gray,true);
       if(!independent){
-        await page.locator('#quizHint').click();
-        assert.match(await page.locator('#quizFeedback').textContent(),/assisted/);
+        for(let level=1;level<=3;level++){
+          await page.locator('#quizHint').click();
+          assert.match(await page.locator('#quizFeedback').textContent(),new RegExp('Hint '+level+' shown'));
+        }
       }else await page.locator('#zoom').fill('1');
       const view = page.getByRole('img',{name:'Axial MRI slice'});
       const rendered = await view.evaluate((canvas,{x,y})=>{
@@ -88,6 +90,7 @@ async function run() {
       assert.equal(attempt.ok,independent);
       assert.equal(attempt.correct,true);
       assert.equal(attempt.assisted,!independent);
+      assert.equal(attempt.hintLevel,independent?0:3);
       await page.locator('#quizExit').click();
     }
     const ready=()=>page.waitForFunction(()=>document.querySelector('#status').textContent.includes('MRI and labels saved for offline use.'),{},{timeout:60000});
@@ -164,12 +167,15 @@ async function run() {
         assert.equal(await page.locator('#quizFeedback').getAttribute('data-tone'),'incorrect');
         assert.equal(await page.locator('.plate-point.hinted').count(),0);
       }
-      await page.locator('#quizHint').click();
+      for(let level=1;level<=3;level++){
+        await page.locator('#quizHint').click();
+        assert.equal(await page.locator('.plate-point.hinted').count(),level===3?1:0);
+      }
       const hint=page.locator('.plate-point.hinted');
       assert.equal(await hint.count(),1);
       if(question===0){
         const location=await hint.textContent();
-        await page.locator('#quizHint').click();
+        await page.locator('#quizHideHint').click();
         assert.equal(await hint.count(),0);
         await page.getByRole('button',{name:'Location '+location,exact:true}).click();
         assert.match(await page.locator('#quizFeedback').textContent(),/with a hint/);
@@ -313,6 +319,7 @@ async function run() {
     await page.goto(home+'registry.html');
     await page.getByText(/232 original study items/).waitFor();
     await page.locator('#profile').selectOption('armrit');
+    await page.locator('#kind').selectOption('calc');
     await page.locator('#startTutor').click();
     await page.locator('#hint').click();
     await page.locator('#choices input').first().click();
@@ -331,6 +338,7 @@ async function run() {
     assert.match(await page.locator('#questionCount').textContent(),/230/);
     assert.equal(await page.locator('#hint').isVisible(),false);
     assert.equal(await page.locator('#check').isVisible(),false);
+    assert.equal(await page.locator('#teachRegistry').isVisible(),false);
     assert.equal(await page.evaluate(()=>{
       const {active}=JSON.parse(localStorage.getItem('mri.registry.v1'));
       return active.deadline-active.started;
@@ -422,6 +430,46 @@ async function run() {
     assert.equal(studyBackup.continuousStudy.version,1);
     assert.equal(studyBackup.continuousStudy.attempts.length,savedStudy.attempts.length);
     assert.equal(studyBackup.notes[0].body,'Existing notebook entry');
+    await page.goto(home+'practice.html?retry=p31');
+    await page.locator('#start').click();
+    await page.getByText('Question 1',{exact:true}).waitFor();
+    const larmor=await page.evaluate(()=>RegistryContent.bank.find(q=>q.id==='p31'));
+    const wrongChoice=page.locator('#practiceChoices button').filter({hasText:larmor.options[1][0]});
+    await wrongChoice.click();
+    for(let level=1;level<=3;level++){
+      await page.locator('#practiceHint').click();
+      await page.waitForFunction(level=>document.querySelector('#practiceHints').children.length===level,level);
+      assert.ok(!(await page.locator('#practiceHints').textContent()).includes(larmor.options[0][0]));
+    }
+    await page.locator('#hidePracticeHint').click();
+    await page.locator('#practiceHints').waitFor({state:'hidden'});
+    await page.close();
+    const reopened=await context.newPage();
+    await reopened.goto(home);
+    await reopened.getByRole('link',{name:'Resume Studying',exact:true}).click();
+    await reopened.locator('#practiceStem').waitFor();
+    assert.equal(await reopened.locator('#practiceStem').textContent(),larmor.stem);
+    assert.equal(await reopened.locator('#practiceChoices button').filter({hasText:larmor.options[1][0]}).getAttribute('aria-pressed'),'true');
+    await reopened.locator('#checkPractice').click();
+    await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
+    await reopened.locator('#teachPractice').click();
+    await reopened.locator('#practiceCorrection').waitFor();
+    assert.match(await reopened.locator('#practiceCorrection').textContent(),/Worked calculation/);
+    await reopened.getByRole('link',{name:'Open Full Lesson',exact:true}).click();
+    await reopened.getByRole('heading',{name:'Precession and Larmor frequency',exact:true}).waitFor();
+    await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Back',exact:true}).click();
+    await reopened.locator('#practiceCorrection').waitFor();
+    await reopened.getByRole('button',{name:'Return to Original Question',exact:true}).click();
+    await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
+    await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Forward',exact:true}).click();
+    await reopened.locator('#practiceCorrection').waitFor();
+    await reopened.getByRole('button',{name:'Return to Original Question',exact:true}).click();
+    await reopened.reload();
+    await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
+    const retryAttempts=await reopened.evaluate(async()=>(await StudyStore.snapshot()).attempts.filter(a=>a.mode==='retry'&&a.question==='p31'));
+    assert.equal(retryAttempts.length,1);
+    assert.deepEqual([retryAttempts[0].correct,retryAttempts[0].hint,retryAttempts[0].hintLevel],[false,true,3]);
+    await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');
   } finally {

@@ -29,6 +29,7 @@
 <nav data-app-nav="anatomy" aria-label="Primary navigation"></nav>
 <div id="toolNav" class="tool-nav" aria-label="Section tools"></div>
 <section id="anatomyHome" class="page">
+<div id="resumeStudy" class="panel"></div>
 <div class="anatomy-home panel">
 <div class="anatomy-intro"><h1>Anatomy Explorer</h1>
 <p>Study structures on linked axial, coronal and sagittal MRI. Switch to a textbook plate or compare both views in the same workspace.</p>
@@ -129,7 +130,7 @@
 <section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div><div class="panel"><h2>Atlas bookmarks</h2><ul id="bookmarkList"></ul><h2>Atlas and system notes</h2><ul id="atlasNoteList"></ul></div></section>
 <section id="backup" class="page hidden"><div class="panel"><h1>Settings</h1><h2>MRI downloads and sources</h2><div class="row"><a href="./brain-atlas.html?panel=downloads">Brain pack</a><a href="./brain-atlas.html?region=spine&amp;panel=downloads">Cervical spine pack</a><a href="./brain-atlas.html?region=knee&amp;panel=downloads">Knee pack</a><a href="./brain-atlas.html?region=cardiac&amp;panel=downloads">Cardiac pack</a><a href="./real-scans.html">Sequence library</a></div><hr class="hr"><h2>Backups</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, registry sessions, continuous practice, lesson progress, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">On iPad, open the site in Safari and use Share, then Add to Home Screen. Open the installed app once online and download the MRI packs you want. Notes and image packs are stored in the browser or installed app.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
 <div class="footer">Educational use only · Study data stays in this browser</div></main>
-<script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
+<script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
 (()=>{'use strict';
 const names={brain:'Brain',cspine:'Cervical spine',lspine:'Lumbar spine',knee:'Knee',shoulder:'Shoulder'};
 const prompts={brain:'Review mid-sagittal landmarks, corpus callosum, AC–PC orientation, and how the prescribed stack relates to the reference plane.',cspine:'Review the spinal canal, intervertebral discs, cord alignment, and coverage from the craniocervical junction through the lower cervical spine.',lspine:'Review disc-space alignment, vertebral coverage, and the relationship between sagittal localizers and axial disc prescriptions.',knee:'Review condylar anatomy, menisci, ACL/PCL orientation, and why the selected plane affects ligament visualization.',shoulder:'Review glenoid alignment, rotator cuff tendons, humeral head, and orientation of oblique coronal and sagittal series.'};
@@ -158,7 +159,7 @@ const groups={
   settings:[['backup','Backup & Help']]
 };
 let activeGroup='anatomy';
-function tab(name, group) {
+function tab(name, group, write=true) {
   const category=group??Object.keys(groups).find(key=>groups[key].some(([id])=>id===name));
   activeGroup=category??'anatomy';
   document.querySelectorAll('.page').forEach(node=>node.classList.toggle('hidden',node.id!==name));
@@ -181,11 +182,11 @@ function tab(name, group) {
   }
   if(name==='notes'){showAll();showAtlasStudy();}
   if(name==='planner')render();
-  if(window.location.protocol!=='file:'){
+  if(write&&window.location.protocol!=='file:'){
     const params=new URLSearchParams();
     if(activeGroup!=='anatomy'||name!=='anatomyHome')params.set('section',activeGroup);
     if(groups[activeGroup][0][0]!==name)params.set('tool',name);
-    history.replaceState(null,'',params.size?'?'+params:location.pathname);
+    AppNavigation.navigate(params.size?'?'+params:location.pathname);
   }
 }
 function showAtlasStudy(){
@@ -383,7 +384,7 @@ function quizAnswer(i){if(!quizCurrent)return;const ok=i===quizCurrent.correct;q
 el('quizBegin').onclick=quizNext;
 function recallRefresh(){const n=notes[0];el('recallPrompt').textContent=n?`Without opening your notes, explain what you remember about ${topicName(n.region)}. Then reveal your most recent note and compare.`:'Save a note first to generate a personalized recall prompt.';el('recallAnswer').classList.add('hidden')}
 el('quizReveal').onclick=()=>{el('recallAnswer').textContent=notes[0]?.body||'No notes saved yet.';el('recallAnswer').classList.remove('hidden')};
-const oldTab=tab;tab=function(name,group){oldTab(name,group);if(name==='review')recallRefresh()};
+const oldTab=tab;tab=function(name,group,write){oldTab(name,group,write);if(name==='review')recallRefresh()};
 
 // V5: browser-local DICOM decoder for uncompressed, little-endian grayscale MRI.
 // This deliberately does not attempt to decode compressed transfer syntaxes.
@@ -462,10 +463,16 @@ el('dicomSaveSnapshot').onclick=async()=>{if(!dicomStack.length)return;try{const
 el('dicomDemo').onclick=()=>{const w=256,h=256,pixels=new Float32Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const dx=(x-w/2)/w,dy=(y-h/2)/h;const ell=(dx*dx/.17+dy*dy/.20);pixels[y*w+x]=ell<1?Math.round(150+90*Math.sin(x*.08)*Math.cos(y*.11)):Math.round(12+8*Math.sin(x*.09))}dicomStack=[{name:'Built-in synthetic test pattern (NOT MRI)',rows:h,cols:w,pixels,min:0,max:255,ww:230,wc:120,sort:0,series:'demo',invert:false,modality:'DEMO'}];dicomInverted=false;el('dicomControls').classList.remove('hidden');el('dicomStatus').textContent='Loaded synthetic test image. Import a real licensed DICOM series using the file selector.';updateDICOM(0,true)};
 
 setChallenge(0);loadRef();
-const initial=new URLSearchParams(location.search), requested=initial.get('section');
-const area=Object.hasOwn(groups,requested)?requested:'anatomy';
-const tool=initial.get('tool');
-tab(groups[area].some(([id])=>id===tool&&!id.startsWith('./'))?tool:groups[area][0][0],area);
+function routeHome(){
+  const route=new URLSearchParams(location.search),requested=route.get('section');
+  const area=Object.hasOwn(groups,requested)?requested:'anatomy';
+  const tool=route.get('tool');
+  tab(groups[area].some(([id])=>id===tool&&!id.startsWith('./'))?tool:groups[area][0][0],area,false);
+  StudyResume.card(el('resumeStudy'));
+}
+routeHome();
+window.addEventListener('popstate',routeHome);
+window.addEventListener('pageshow',()=>StudyResume.card(el('resumeStudy')));
 })();
 
 </script><script>if('serviceWorker' in navigator && window.isSecureContext){navigator.serviceWorker.register('./sw.js').catch(console.warn)}</script></body></html>

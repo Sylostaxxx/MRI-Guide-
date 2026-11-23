@@ -6,3 +6,6 @@
 .primary-links a:hover,.primary-links a:focus-visible{background:#263b51;color:#fff}
 .primary-links .settings-link{margin-left:auto;font-size:.9rem}
 @media(max-width:650px){.primary-links{flex-basis:100%}.primary-links a{padding:0 8px}.primary-links .settings-link{margin-left:0}}
+.history-controls{display:flex;gap:6px}.history-controls button{min-height:44px}.history-controls button:disabled{opacity:.48}
+.study-guidance{padding:12px;border:1px solid #55758d;border-radius:8px;margin:12px 0}.study-guidance p{margin:6px 0}.study-guidance img{display:block;max-width:min(100%,420px);margin:10px 0}.study-guidance textarea{display:block;width:min(100%,460px);min-height:70px;color:inherit;background:#172638;font:inherit;padding:8px}
+.correction-plot{display:block;max-width:min(100%,650px);height:auto;background:#0e1927;border-radius:8px}

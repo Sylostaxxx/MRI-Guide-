@@ -16,6 +16,16 @@
   const lesson=lessons[position];
   const url=id=>'./academy.html?lesson='+id;
   const key='lesson:'+lesson.id;
+  const readingKey='mri.academy.read.v1:'+lesson.id;
+  function remember() {
+    const height=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+    StudyResume.save('Physics Academy','Lesson',lesson.title,Math.min(100,Math.round(100*scrollY/height))+'% through lesson',url(lesson.id)+'&resume=1');
+    try{localStorage.setItem(readingKey,String(scrollY));}catch{}
+  }
+  window.addEventListener('pagehide',remember);
+  if(query.has('resume'))requestAnimationFrame(()=>{
+    try{scrollTo(0,Number(localStorage.getItem(readingKey))||0);}catch{}
+  });
   for (const item of lessons) {
     const link=anchor(item.title,url(item.id));
     if (item===lesson) link.setAttribute('aria-current','page');
@@ -95,5 +105,6 @@
       get('lessonNoteStatus').textContent='Saved in My Study Space.';
     } catch {get('lessonNoteStatus').textContent='Note could not be saved.';}
   };
+  if(!query.has('resume'))StudyResume.save('Physics Academy','Lesson',lesson.title,'Chapter '+(position+1),url(lesson.id)+'&resume=1');
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
 })();

@@ -385,3 +385,17 @@ test('generated Larmor variations have stable unique options and verified arithm
     assert.ok(!RegistryContent.bank.some(item=>item.id===q.id));
   }
 });
+
+require('../study-guidance.js');
+test('calculation hints progress to the relationship without printing the keyed answer',()=>{
+  const calculations=RegistryContent.bank.filter(q=>q.formula);
+  assert.ok(calculations.length>0);
+  for(const q of calculations){
+    const tips=StudyGuidance.hints(q);
+    assert.equal(tips.length,3,q.id);
+    assert.equal(new Set(tips).size,3,q.id);
+    assert.ok(tips.every(tip=>!tip.includes(q.options[q.key[0]][0])),q.id);
+  }
+  const question=RegistryContent.bank.find(item=>item.id==='p31');
+  assert.ok(StudyGuidance.follow(question,RegistryContent.bank)?.exact);
+});

@@ -97,3 +97,10 @@ The [CHAOS training release](https://doi.org/10.5281/zenodo.3431873) is a candid
 | Physics Academy | First ten chapters plus a K-space chapter. Each has dual explanations, interactive visual, clinical example, pitfalls, glossary terms, authoritative references, external video links, and a five-item quiz drawn from the shared practice bank. Each lesson can be bookmarked, marked complete, and linked to a note. |
 | Remaining curriculum | 30 additional assigned chapters, broader visual coverage, and further video curation remain. Current links open the verified publisher pages. Playback is external and requires an internet connection. |
 | Analytics and storage | Separate study dashboard with subject accuracy, weak topics, due counts, recent daily performance, streak and independently mastered concepts. Mastery reset leaves the attempt log in place. Version 3 Settings backups include version 1 Study Center data and still import older backups. |
+
+## Navigation and guided study recovery
+
+- The website uses global Back and Forward controls and restores the in-page route for home tools, Practice tabs, clinical activities and guided corrections.
+- The home recovery card links to saved practice, tutor, timed exam, Academy reading, clinical cases or a real-MRI identification round. Practice drafts, checked answers and hint levels stay with the current question. Timed exams continue to use their saved deadline and expiration policy.
+- Study Center and Registry tutor corrections use existing distractor explanations, Academy content, worked calculation steps and verified MRI references where available. Incorrect attempts are already recorded or available to Trouble Questions through the tutor log. The follow-up stays in a separate retry so the original session remains recoverable.
+- Numerical questions and selected conceptual families use progressive hints. A question without an applicable authored hint has no hint control. The MRI and verified illustration quizzes reserve the exact target highlight for the final hint. Assisted credit and highest hint level are recorded even after hints are hidden.

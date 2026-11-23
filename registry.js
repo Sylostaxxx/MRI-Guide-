@@ -20,7 +20,12 @@
   }
   function save() {
     if(storageError)return;
-    try { data.active=active;core.save(localStorage,data);notice(''); }
+    try { data.active=active;core.save(localStorage,data);notice('');
+      if(active&&active.mode!=='tutorial'){
+        const item=active.items[active.index]?.question;
+        StudyResume.save('Registry Preparation',active.mode==='exam'?'Timed examination':'Tutor',active.mode==='exam'?active.title:item?.topic,
+          'Question '+(active.index+1)+' of '+active.items.length);
+      }else if(!active)StudyResume.clear('Registry Preparation'); }
     catch { notice('Registry changes could not be saved. Keep this page open while studying.'); }
   }
   const link=(text,href)=>{
@@ -36,7 +41,7 @@
   };
   const categoryName=key=>arrt.categories[key]?.[0]??key;
   function view(name){
-    for(const id of ['setup','session','reviewPage','result','tutorialDone'])el(id).hidden=id!==name;
+    for(const id of ['setup','session','registryCorrection','reviewPage','result','tutorialDone'])el(id).hidden=id!==name;
     document.body.classList.toggle('exam-active',(name==='session'||name==='reviewPage')&&active?.mode==='exam');
   }
   function lazyForm(id){
@@ -239,6 +244,17 @@
       choices.append(confirmOrder);
     }
   }
+  function correctionUrl(id){
+    const url=new URL(location.href);
+    if(id)url.searchParams.set('correction',id);
+    else url.searchParams.delete('correction');
+    return url;
+  }
+  function closeCorrection(id){
+    if(history.state?.mriCorrectionFor===id)history.back();
+    else {AppNavigation.navigate(correctionUrl(null),true,{mriCorrectionFor:null});render();}
+  }
+  window.addEventListener('popstate',()=>{if(active)render(false);});
   function render(focus=true){
     if(!active){setup();return;}
     if(expire())return;
@@ -246,6 +262,15 @@
     view('session');
     const i=active.index,item=active.items[i],q=item.question,answer=active.answers[i]??[];
     const timedExam=active.mode==='exam', checked=Boolean(active.checked[i]);
+    const hintLevel=active.hintLevels?.[i]??Number(Boolean(active.assisted[i]));
+    const hintHidden=Boolean(active.hiddenHints?.[i]);
+    const attemptId=active.id+':'+i;
+    const canTeach=active.mode==='tutor'&&checked&&!core.isCorrect(q,answer);
+    if(canTeach&&new URLSearchParams(location.search).get('correction')===attemptId){
+      view('registryCorrection');
+      StudyGuidance.correction(el('registryCorrection'),q,answer,{back:()=>closeCorrection(attemptId),follow:StudyGuidance.follow(q,bank),save:true});
+      return;
+    }
     el('sessionTitle').textContent=active.title;
     el('questionCount').textContent='Question '+(i+1)+' of '+active.items.length;
     el('countdown').textContent=active.deadline===null?'Tutor':clock(active.deadline-Date.now());
@@ -254,21 +279,22 @@
     if(focus){el('stem').focus({preventScroll:true});el('imageZoom').value=1;el('questionImage').style.width='';}
     const image=q.image&&RegistryImages[q.image];
     el('imagePanel').hidden=!image;
-    if(image&&el('questionImage').getAttribute('src')!==image.path)el('questionImage').src=image.path;
+    if(image)el('questionImage').src=timedExam||checked||hintLevel>=3&&!hintHidden?image.path:image.promptPath??image.path;
     if(!image)el('questionImage').removeAttribute('src');
     choices(item,answer,checked);
     el('prev').disabled=i===0;
     el('next').textContent=i===active.items.length-1?'Review answers':'Next';
     el('flag').setAttribute('aria-pressed',String(Boolean(active.flags[i])));
     el('flag').textContent=active.flags[i]?'Flagged':'Flag';
-    el('hint').hidden=timedExam||checked||active.mode==='tutorial';
+    StudyGuidance.renderHints(el('registryHints'),el('hint'),el('hideRegistryHint'),q,hintLevel,hintHidden,timedExam||checked||active.mode==='tutorial');
+    el('teachRegistry').hidden=!canTeach;
     el('check').hidden=timedExam||checked;
     el('check').disabled=!answer.length;
     const assisted=active.assisted[i];
     const correct=core.isCorrect(q,answer);
     el('message').className=checked?(correct?'correct':'wrong'):'';
-    el('message').textContent=checked?(correct?(assisted?'Correct with a hint.':'Correct.'):'Review the explanation.')
-      :assisted&&!timedExam?'Focus on '+q.topic+'. This attempt is assisted.':'';
+    el('message').textContent=checked?(correct?(assisted?'Correct with Hint '+hintLevel+'.':'Correct.'):'Review the explanation.')
+      :'';
     el('explanation').hidden=timedExam||!checked;
     el('explanation').replaceChildren();
     if(!timedExam&&checked)el('explanation').append(rationale(q));
@@ -285,11 +311,30 @@
   };
   el('hint').onclick=()=>{
     if(expire()||active.mode==='exam')return;
-    active.assisted[active.index]=true;save();render(false);
+    const i=active.index;
+    const level=(active.hintLevels?.[i]??Number(Boolean(active.assisted[i])))+1;
+    if(level>StudyGuidance.hints(active.items[i].question).length)return;
+    (active.hintLevels??={})[i]=level;
+    (active.hiddenHints??={})[i]=false;
+    active.assisted[i]=true;save();render(false);
+  };
+  el('hideRegistryHint').onclick=()=>{
+    if(!active||active.mode!=='tutor')return;
+    const hidden=active.hiddenHints??={};
+    hidden[active.index]=!hidden[active.index];save();render(false);
+  };
+  el('teachRegistry').onclick=()=>{
+    if(!active||active.mode!=='tutor'||!active.checked[active.index])return;
+    const id=active.id+':'+active.index;
+    AppNavigation.navigate(correctionUrl(id),false,{mriCorrectionFor:id});render(false);save();
   };
   el('check').onclick=()=>{
     if(expire()||active.mode==='exam'||!active.answers[active.index]?.length)return;
-    active.checked[active.index]=true;save();render(false);
+    const i=active.index;
+    if(active.checked[i])return;
+    active.checked[i]=true;
+    (active.checkedAt??={})[i]=Date.now();
+    save();render(false);
   };
   el('review').onclick=()=>reviewPage();
   el('back').onclick=()=>{showingReview=false;render();};

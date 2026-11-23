@@ -9,15 +9,15 @@
 <label>Subject <select id="subject"></select></label>
 <label>Difficulty <select id="difficulty"><option>Any</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Registry</option></select></label>
 </div><label class="check"><input id="useVariants" type="checkbox"> Include calculation variations</label><p id="selectionScope"></p><button id="clearFocus" hidden>Clear lesson filter</button>
-<div class="controls"><button id="start" class="primary" disabled>Start practice</button><button id="pause" hidden>Pause</button><button id="end" hidden>End session</button><a href="./?section=practice">More practice tools</a></div>
+<div class="controls"><button id="start" class="primary" disabled>Start practice</button><button id="pause" hidden>Pause</button><button id="restartPractice" hidden>Start New Session</button><button id="end" hidden>End session</button><a href="./?section=practice">More practice tools</a></div>
 <p id="sessionStats"></p></div>
 <article id="practiceCard" class="card" hidden>
 <p id="practiceNumber"></p><h2 id="practiceStem" tabindex="-1"></h2>
 <div id="practiceImageFrame" class="image-scroll" hidden><img id="practiceImage" alt="MRI reference slice for this item"></div>
-<p id="practiceInstruction"></p><fieldset id="practiceAnswers"><legend class="sr-only">Answer choices</legend><div id="practiceChoices"></div></fieldset>
+<p id="practiceInstruction"></p><aside class="study-guidance" id="practiceHints" aria-live="polite" hidden></aside><fieldset id="practiceAnswers"><legend class="sr-only">Answer choices</legend><div id="practiceChoices"></div></fieldset>
 <div id="practiceFeedback" aria-live="polite"></div>
-<div class="controls"><button id="practiceHint">Hint</button><button id="checkPractice" class="primary">Check answer</button><button id="nextPractice" class="primary" hidden>Next Question</button></div>
-</article></section>
+<div class="controls"><button id="practiceHint">Show Hint</button><button id="hidePracticeHint" hidden>Hide Hints</button><button id="teachPractice" hidden>Teach Me Why I Was Wrong</button><button id="checkPractice" class="primary">Check answer</button><button id="nextPractice" class="primary" hidden>Next Question</button></div>
+</article><article class="card study-guidance" id="practiceCorrection" hidden></article></section>
 <section id="trouble" hidden class="card"><h2>Trouble Questions</h2>
 <div class="study-filters">
 <label>Review queue <select id="queueMode"><option>All Missed Questions</option><option>Recently Missed</option><option>Repeatedly Missed</option><option>Severe Weaknesses</option><option>Due for Review</option><option>Mastered Questions</option><option>Bookmarked Questions</option></select></label>
@@ -31,6 +31,6 @@
 <p id="suggestion"></p><div class="controls"><a id="duePractice" hidden>Review due questions</a><button id="weakPractice" class="primary">Start Weak-Area Practice</button><button id="resetMastery">Reset Mastery Progress</button></div>
 <details><summary>How review works</summary><p>Wrong responses become due in four hours. A correct answer with a hint becomes due in one day. Independent recall on separate study days schedules reviews after 1, 3, 7, 14, and up to 30 days. Three successful days qualify an item as mastered. Three recorded misses with weak current recall qualify as a severe weakness. Earlier mistakes stay in the record.</p></details></section>
 </main>
-<script src="./app-navigation.js"></script><script src="./registry-blueprints.js"></script><script src="./registry-core.js"></script>
+<script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./registry-blueprints.js"></script><script src="./registry-core.js"></script>
 <script src="./registry-content.js"></script><script src="./registry-images.js"></script><script src="./registry-bank-physics.js"></script><script src="./registry-calculations.js"></script><script src="./registry-bank-acquisition.js"></script><script src="./registry-bank-procedures.js"></script><script src="./registry-bank-safety.js"></script><script src="./registry-bank-pilot.js"></script><script src="./registry-bank-academy.js"></script>
-<script src="./study-content-map.js"></script><script src="./study-variants.js"></script><script src="./study-review.js"></script><script src="./study-store.js"></script><script src="./study-practice.js"></script></body></html>
+<script src="./study-content-map.js"></script><script src="./study-variants.js"></script><script src="./study-review.js"></script><script src="./study-store.js"></script><script src="./physics-lessons.js"></script><script src="./mri-physics.js"></script><script src="./physics-diagrams.js"></script><script src="./study-guidance.js"></script><script src="./study-practice.js"></script></body></html>

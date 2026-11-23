@@ -35,7 +35,7 @@ el('atlasRegion').value=region;
 el('atlasRegion').onchange=()=>{
   const next=el('atlasRegion').value, params=new URLSearchParams({region:next});
   if(mode!=='mri')params.set('mode',mode);
-  location.href='./brain-atlas.html?'+params;
+  AppNavigation.open('./brain-atlas.html?'+params);
 };
 const views = [
   { name: 'Axial', axis: 2, u: 0, v: 1, edges: 'APLR' },
@@ -43,7 +43,7 @@ const views = [
   { name: 'Sagittal', axis: 0, u: 1, v: 2, edges: 'SIPA' }
 ];
 let image, mask, labels, anchors, cursor;
-let hintOn = false, hintUsed = false;
+let hintOn = false, hintUsed = false, hintLevel=0, hintsHidden=false;
 let selected = 0, target = 0, activeView = views[0], drawing = false;
 
 let layers, enabled = new Set(), isolated = 0, mode = 'mri', panning = false, timeout;
@@ -56,7 +56,28 @@ const setPracticePlate=platePractice(el,quizUI,drawPlate,active=>{
   el('atlasLayout').classList.toggle('compare',!active&&mode==='compare');
 },message=>{el('studyMessage').textContent=message;});
 let round=[],roundIndex=0,locked=false,priorView,hintCursor=null;
-let quizScore={correct:0,assisted:0};
+let quizScore={correct:0,assisted:0}, quizDeadline=0, quizResult=null, lastPick=null;
+const quizKey='mri.atlas.session.v1:'+packId;
+function persistQuiz(){
+  if(!target)return;
+  const value={version:1,round,roundIndex,locked,priorView,hintCursor,quizScore,hintLevel,hintsHidden,cursor,quizDeadline,quizResult,lastPick,zoom:el('zoom').value,offsets:views.map(view=>view.offset)};
+  try{localStorage.setItem(quizKey,JSON.stringify(value));}catch{}
+  StudyResume.save('Anatomy Explorer','MRI identification',pack.title??'Brain MRI','Question '+(roundIndex+1)+' of '+round.length,
+    './brain-atlas.html?region='+region+'&resumeQuiz=1'+(new URLSearchParams(location.search).has('anatomyCorrection')?'&anatomyCorrection=1':''));
+}
+window.addEventListener('pagehide',persistQuiz);
+function restoreQuiz(){
+  if(!['resumeQuiz','anatomyCorrection'].some(key=>new URLSearchParams(location.search).has(key)))return;
+  let saved;
+  try{saved=JSON.parse(localStorage.getItem(quizKey));}catch{return;}
+  if(saved?.version!==1||!Array.isArray(saved.round)||!saved.round.every(id=>anchors[id])||!saved.round[saved.roundIndex])return;
+  ({round,roundIndex,priorView,quizScore,cursor}=saved);
+  el('zoom').value=saved.zoom;
+  views.forEach((view,i)=>{view.offset=saved.offsets[i];applyTransform(view);});
+  el('atlasPlate').hidden=true;
+  el('atlasLayout').classList.remove('compare');
+  showQuestion(saved);routeAnatomyCorrection();
+}
 
 const plates = {brain:['brainstem','brain-cross'],spine:['cervical',null],knee:['knee','knee-cross'],cardiac:['heart','heart-cross']};
 
@@ -107,7 +128,17 @@ function setMode(next) {
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
   if(mode!=='mri')updatePlate();else setPracticePlate(null);
 }
-for(const button of document.querySelectorAll('[data-mode]')) button.onclick=()=>setMode(button.dataset.mode);
+for(const button of document.querySelectorAll('[data-mode]')) button.onclick=()=>{
+  if(target||button.dataset.mode===mode)return;
+  const route=new URL(location.href);
+  route.searchParams.set('mode',button.dataset.mode);
+  AppNavigation.navigate(route);
+  setMode(button.dataset.mode);
+};
+window.addEventListener('popstate',()=>{
+  const previous=new URLSearchParams(location.search).get('mode')??'mri';
+  if(!target&&['mri','illustrated','cross','compare'].includes(previous)&&previous!==mode)setMode(previous);
+});
 el('focusView').onclick=()=>{
   const active=document.body.classList.toggle('focused');
   el('focusView').setAttribute('aria-pressed',String(active));
@@ -324,7 +355,7 @@ function tap(view, event) {
     if (id) cursor = [...anchors[id]];
   }
   if (target) {
-    const correct=id===target;
+    const correct=id===target;lastPick=id;
     recordPractice(target,correct,hintUsed);
     if(!correct&&el('retry').checked){
       quizUI.feedback('Incorrect. Try another location.','incorrect');
@@ -343,7 +374,7 @@ function recordPractice(id, correct, assisted = false) {
   try {
     const key = 'mri-study-lab-review-v1';
     const history = JSON.parse(localStorage.getItem(key) ?? '[]');
-    history.unshift({ topic:packId + ':' + id, ok:correct && !assisted, assisted, correct, date:new Date().toISOString() });
+    history.unshift({ topic:packId + ':' + id, ok:correct && !assisted, assisted, hintLevel, correct, date:new Date().toISOString() });
     localStorage.setItem(key,JSON.stringify(history));
   } catch { status('This practice response could not be saved.'); }
 }
@@ -492,7 +523,7 @@ async function open(online) {
     el('workspace').hidden = false;el('load').hidden = true;el('remove').hidden = !offline;
     status(offline ? 'Atlas ready. MRI and labels saved for offline use.' : 'Atlas ready for this session. Browser storage could not save an offline copy.');
     el('downloads').open=new URLSearchParams(location.search).get('panel')==='downloads';
-    setMode(mode);updateResults();render();
+    setMode(mode);updateResults();render();restoreQuiz();
   } catch(error) { status(error.message); }
   finally { el('load').disabled = false; }
 }
@@ -536,18 +567,24 @@ function beginQuiz(ids,returnMode=mode) {
   el('atlasLayout').classList.remove('compare');
   showQuestion();
 }
-function showQuestion() {
+function showQuestion(saved) {
   clearTimeout(timeout);
-  target=round[roundIndex];locked=false;hintOn=false;hintUsed=false;hintCursor=null;
+  target=round[roundIndex];locked=Boolean(saved?.locked);
+  hintLevel=saved?.hintLevel??0;hintsHidden=Boolean(saved?.hintsHidden);
+  hintOn=hintLevel===3&&!hintsHidden&&!locked;hintUsed=hintLevel>0;hintCursor=saved?.hintCursor??null;
+  quizResult=saved?.quizResult??null;lastPick=saved?.lastPick??null;
   el('explorePanel').hidden=true;
   quizUI.show({name:labels[target].name,number:roundIndex+1,total:round.length,
-    next:nextQuestion,exit:endPractice,hint:toggleHint,details:()=>{
+    next:nextQuestion,exit:endPractice,hint:()=>toggleHint(false),hideHint:()=>toggleHint(true),teach:openAnatomyCorrection,details:()=>{
       select(target);el('explorePanel').hidden=false;el('structureDrawer').open=true;
     }});
-  const seconds=Number(el('timer').value), deadline=Date.now()+seconds*1000;
-  if(seconds) {
+  const seconds=Number(el('timer').value);
+  quizDeadline=saved?.quizDeadline??(seconds?Date.now()+seconds*1000:0);
+  if(hintLevel)quizUI.hints(anatomyHints(),hintLevel,hintsHidden);
+  if(locked&&quizResult)quizUI.result(quizResult.message,quizResult.tone);
+  if(quizDeadline&&!locked) {
     function tick() {
-      const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));
+      const left=Math.max(0,Math.ceil((quizDeadline-Date.now())/1000));
       quizUI.time(left?left+' s':'');
       if(left){timeout=setTimeout(tick,250);return;}
       recordPractice(target,false,hintUsed);
@@ -555,7 +592,7 @@ function showQuestion() {
     }
     tick();
   }
-  render();
+  render();persistQuiz();
 }
 function finishQuestion(correct,message) {
   clearTimeout(timeout);quizUI.time('');
@@ -563,10 +600,12 @@ function finishQuestion(correct,message) {
   if(anchors[target])cursor=[...anchors[target]];
   quizScore.correct+=Number(correct&&!hintUsed);quizScore.assisted+=Number(hintUsed);
   resetViewportForTarget();
-  quizUI.result(message??(correct?(hintUsed?'Correct with a hint.':'Correct. Independent recall.'):'Incorrect. The target is marked.'),correct?'correct':'incorrect');
-  render();
+  quizResult={message:message??(correct?(hintUsed?'Correct with a hint (Hint '+hintLevel+').':'Correct. Independent recall.'):'Incorrect. The target is marked.'),tone:correct?'correct':'incorrect'};
+  quizUI.result(quizResult.message,quizResult.tone);
+  render();persistQuiz();
 }
 function nextQuestion() {
+  if(new URLSearchParams(location.search).has('anatomyCorrection'))AppNavigation.navigate(anatomyUrl(false),true,{mriAnatomyCorrection:false});
   if(++roundIndex<round.length){showQuestion();return;}
   el('studyMessage').textContent='Quiz complete · '+quizScore.correct+' of '+round.length+
     ' correct without a hint · '+quizScore.assisted+' assisted.';
@@ -575,7 +614,10 @@ function nextQuestion() {
 function endPractice() {
   clearTimeout(timeout);
   target=0;hintOn=false;locked=false;
+  try{localStorage.removeItem(quizKey);}catch{}
+  if(StudyResume.read()?.href?.includes('region='+region+'&'))StudyResume.clear('Anatomy Explorer');
   quizUI.close();
+  if(new URLSearchParams(location.search).has('anatomyCorrection'))AppNavigation.navigate(anatomyUrl(false),true,{mriAnatomyCorrection:false});
   cursor=priorView.cursor;el('zoom').value=priorView.zoom;
   views.forEach((view,i)=>{view.offset=priorView.offsets[i];applyTransform(view);});
   select(priorView.selected);setMode(priorView.mode);updateResults();render();
@@ -584,14 +626,70 @@ function resetViewportForTarget() {
   el('zoom').value=1;
   views.forEach(view=>{view.offset=[0,0];applyTransform(view);});
 }
-function toggleHint() {
-  hintOn=!hintOn;
-  if(hintOn){
-    hintUsed=true;hintCursor=[...cursor];
-    if(anchors[target])cursor=[...anchors[target]];
+function anatomyUrl(open){
+  const url=new URL(location.href);
+  if(open)url.searchParams.set('anatomyCorrection','1');
+  else url.searchParams.delete('anatomyCorrection');
+  return url;
+}
+function openAnatomyCorrection(){
+  if(!locked||quizResult?.tone!=='incorrect')return;
+  AppNavigation.navigate(anatomyUrl(true),false,{mriAnatomyCorrection:true});
+  routeAnatomyCorrection();
+}
+function routeAnatomyCorrection(){
+  const host=el('atlasCorrection');
+  const open=locked&&quizResult?.tone==='incorrect'&&new URLSearchParams(location.search).has('anatomyCorrection');
+  host.hidden=!open;
+  if(!open)return;
+  const name=labels[target].name;
+  const base=name.replace(/^(Left|Right) /,'');
+  const reference=spine&&base.endsWith(' disc')?discReference:anatomyReference[base];
+  const picked=labels[lastPick]?.name??'Unlabeled location';
+  const locationNote=reference?.location??anatomyHints()[1];
+  StudyGuidance.correction(host,{
+    id:packId+'-'+target,topic:name,stem:'Locate '+name+'.',type:'single',key:[0],
+    options:[[name,locationNote],[picked,'This location falls outside the verified target. Compare the highlighted target with the neighboring anatomy.']],
+    related:'./brain-atlas.html?region='+region+'&label='+target
+  },lastPick===null?[]:[1],{back:()=>{
+    if(history.state?.mriAnatomyCorrection)history.back();
+    else {AppNavigation.navigate(anatomyUrl(false),true,{mriAnatomyCorrection:false});routeAnatomyCorrection();}
+  }});
+  persistQuiz();
+}
+window.addEventListener('popstate',routeAnatomyCorrection);
+function anatomyHints(){
+  const name=labels[target].name;
+  let cues;
+  if(region==='spine')cues=['Orient yourself on the sagittal view using the vertebral bodies and the spinal canal.',
+    /disc/i.test(name)?'Count intervertebral spaces from the C2–C3 disc below the axis or from the junction between C7 and T1.':'Use the skull base and the upper cervical vertebrae as landmarks.'];
+  else if(region==='knee')cues=['Find the tibiofemoral joint between the distal thigh and proximal lower leg.',
+    /cartilage/i.test(name)?'Look for the thin articular lining between the bone and the joint space.':'Look above the tibial plateau at the distal bone that forms the upper side of the joint.'];
+  else if(region==='cardiac')cues=['Orient the heart using the ventricles and posterior mediastinum.',
+    'Identify the upper cardiac chamber that receives pulmonary venous blood, behind the left ventricle.'];
+  else if(/ventricle|caudate|thalamus|putamen|pallidum|internal capsule/i.test(name))cues=[
+    'Locate the deep central structures using the midline and the ventricular system.',
+    'Distinguish deep gray matter, white matter and ventricular spaces on the adjacent orthogonal view.'];
+  else if(/cerebell|brain stem|pons|medulla|vermis|brainstem/i.test(name))cues=[
+    'Orient the posterior fossa below the tentorium.',
+    'Distinguish the anterior brainstem from the cerebellar tissue posterior to the fourth ventricle.'];
+  else if(/hippocamp|amygdala/i.test(name))cues=['Locate the medial temporal lobe on a coronal view.',
+    'Use the temporal horn as a landmark and compare the anterior and posterior medial temporal structures.'];
+  else cues=['Find the midsagittal midline first and orient the anterior and posterior sides of the brain.',
+    'Cross-check the target’s named subdivision across the axial, coronal and sagittal views before choosing.'];
+  return [...cues,'The source-verified target is highlighted on its matching slice.'];
+}
+function toggleHint(hide){
+  if(hide)hintsHidden=!hintsHidden;
+  else {hintLevel=Math.min(3,hintLevel+1);hintsHidden=false;}
+  hintUsed=hintLevel>0;
+  const visual=hintLevel===3&&!hintsHidden;
+  if(visual&&!hintOn){
+    hintCursor=[...cursor];if(anchors[target])cursor=[...anchors[target]];
     resetViewportForTarget();
-  }else if(hintCursor)cursor=hintCursor;
-  quizUI.hint(hintOn);render();
+  } else if(!visual&&hintOn&&hintCursor)cursor=hintCursor;
+  hintOn=visual;
+  quizUI.hints(anatomyHints(),hintLevel,hintsHidden);render();persistQuiz();
 }
 el('practiceSelected').onclick=()=>{
   if(!selected||!visibleLabel(selected))return;
