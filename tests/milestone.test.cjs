@@ -399,3 +399,19 @@ test('calculation hints progress to the relationship without printing the keyed 
   const question=RegistryContent.bank.find(item=>item.id==='p31');
   assert.ok(StudyGuidance.follow(question,RegistryContent.bank)?.exact);
 });
+
+require('../study-content.js');
+test('each clinical study case has authored guidance for its exact distractors',()=>{
+  for(const [mode,cases] of Object.entries(StudyContent.cases)){
+    assert.equal(StudyContent.coaching[mode].length,cases.length);
+    for(const [i,[,choices,correct]] of cases.entries()){
+      const coaching=StudyContent.coaching[mode][i];
+      assert.equal(coaching.why.length,choices.length);
+      assert.ok(coaching.why.every((reason,index)=>index===correct||reason.length>15));
+      const hints=StudyGuidance.hints({id:mode+i,topic:mode,hints:coaching.hints,key:[correct],
+        options:choices.map(text=>[text,''])});
+      assert.ok(hints.length>0);
+      assert.ok(hints.every(hint=>!hint.includes(choices[correct])));
+    }
+  }
+});

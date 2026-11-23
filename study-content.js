@@ -37,5 +37,31 @@ globalThis.StudyContent = {
       ['Sequence selection · Which pair helps evaluate suspected acute restricted diffusion?', ['DWI and ADC','Localizer and noncontrast MRA','T1 and phase contrast'],0,'Compare DWI and ADC to distinguish restricted diffusion from T2 shine-through.'],
       ['Image evaluation · Axial images show repeating replicas along phase encoding and partially obscure anatomy.', ['Mark the series complete without review','Check for motion, address it and assess the need for reacquisition','Assume every replica represents anatomy'],1,'Recognize phase-direction ghosting and assess diagnostic adequacy with the supervising technologist.']
     ]
+  },
+  coaching: {
+    sequence: [
+      {why:['Long TR allows longitudinal recovery and limits this weighting.','', 'A long TE makes transverse decay differences substantial rather than minimizing them.'], hints:['Track the recovery during TR and the decay during TE separately.','When longitudinal differences are minimized, ask which tissue property still affects the later echo.'], lesson:'t2'},
+      {why:['','Susceptibility-sensitive gradient echoes do not use a fluid-specific inversion time.','A scout is prescribed mainly for localization and does not deliberately null free CSF.'],hints:['Consider magnetization recovery after inversion.','A tissue can be suppressed if excitation occurs while its longitudinal component crosses zero.'],lesson:'t1'},
+      {why:['The RF refocusing used in this acquisition reduces dephasing from static offsets.','A short echo leaves less time for different local frequencies to accrue phase.',''],hints:['Track the phase dispersion caused by local field variations.','Check whether the readout includes an RF refocusing pulse that can reverse static frequency offsets.'],lesson:'t2-star'}
+    ],
+    positioning: [
+      {why:['','Off-centering can reduce consistent sensitivity and make head coverage harder to prescribe.','A coil positioned over the chest does not receive efficiently from the intended target.'],hints:['Match the receive coil to the target anatomy.','Compare the options for sensitivity, positioning consistency, and patient support.']},
+      {why:['Motion changes the anatomy’s position during encoding and may cause artifact.','','The anatomical reference depends on the joint and prescribed examination.'],hints:['Separate selecting the correct anatomy from minimizing movement.','Read the options for a reproducible patient-to-coil position and a check of the side being imaged.']}
+    ],
+    pathology: [
+      {why:['Elevated ADC may indicate facilitated diffusion or T2 shine-through in a bright DWI lesion.','Signal void has several causes and does not establish reduced diffusivity.',''],hints:['A bright diffusion image can reflect both diffusivity and T2 contrast.','Look at the derived map for evidence of reduced water mobility.']},
+      {why:['','A scout lacks the resolution and contrast for confident characterization of the canal and cord.','A contralateral foraminal view misses the central canal question.'],hints:['Identify which structures and which level need to be compared.','One plane can localize the level while an orthogonal plane shows the remaining canal cross-section.']}
+    ],
+    safety: [
+      {why:['Lower field alone cannot establish the required device conditions.','','A short localizer is still MR exposure, and a limited RF setting cannot replace device identification.'],hints:['Identify what is missing from the device history.','A shorter exposure or lower field does not resolve conditions of use for an unidentified device.']},
+      {why:['Short acquisition does not eliminate concentrated local heating at the contact.','Reporting after acquisition does not prevent heating during exposure.',''],hints:['Find the physical path where the skin touches itself.','The preventive action should interrupt conductive contact before exposure.']}
+    ],
+    rotation: [
+      {why:['The current device status and related surgical history still need to be verified.','','Entering the scan room may already expose the patient to the static magnetic field.'],hints:['Distinguish screening history from verified device identity.','Consider when static-field exposure begins, even without an active sequence.']},
+      {why:['','Sharp rotation can increase discomfort and impair consistent planning.','Gradient acoustic exposure can occur even on a short localization sequence.'],hints:['Consider head stability and reasonable coverage in the dedicated coil.','The setup must also account for acoustic exposure and patient comfort.']},
+      {why:['A single line in one view can miss the out-of-plane position or angle.','A central slice does not demonstrate full superior or inferior extent.',''],hints:['Check both ends of the intended anatomical coverage.','Consider how to verify angulation and extent in more than one projection.']},
+      {why:['','The localizer and angiogram address planning and vascular signal, rather than apparent diffusivity.','These sequences show structure or flow without supplying the required diffusivity map.'],hints:['Distinguish bright signal on diffusion weighting from underlying transverse contrast.','Pair a diffusion-sensitive acquisition with a derived estimate of water mobility.']},
+      {why:['Diagnostic adequacy needs assessment before accepting data with important obscuration.','','The repeated pattern along the phase-encoding axis suggests encoding inconsistency rather than repeated anatomy.'],hints:['Use the direction and repetition of the replicas to identify the source.','Consider a patient-related change that can introduce inconsistent phase across repeated encodes.']}
+    ]
   }
 };

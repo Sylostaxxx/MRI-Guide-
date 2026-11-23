@@ -84,7 +84,7 @@
       'Use the neutral pointer tip to compare the target with surrounding boundaries on this slice.',
       'The pointer on this MRI now shows the source-verified location.'
     ].filter(Boolean);
-    const tips=itemHints[question.id]??concepts.find(([pattern])=>pattern.test(question.topic))?.[1];
+    const tips=question.hints??itemHints[question.id]??concepts.find(([pattern])=>pattern.test(question.topic))?.[1];
     if(!tips)return [];
     const normalize=value=>value.toLowerCase().replace(/[^a-z0-9]/g,'');
     const keys=question.key.map(i=>normalize(question.options[i][0])).filter(value=>value.length>=4);
@@ -112,7 +112,9 @@
     const selected=answer.map(i=>question.options[i]).filter(Boolean);
     const correct=question.key.map(i=>question.options[i]).filter(Boolean);
     const pick=selected.filter(pair=>!correct.includes(pair));
-    const lessonId=globalThis.StudyContentMap?.lessonFor(question);
+    let lessonId=globalThis.StudyContentMap?.lessonFor(question);
+    if(!lessonId&&question.related?.startsWith('./academy.html?'))
+      lessonId=new URL(question.related,location.href).searchParams.get('lesson');
     const lesson=globalThis.PhysicsLessons?.lessons.find(item=>item.id===lessonId);
     host.replaceChildren(node('h2','Teach Me Why I Was Wrong'),node('p',question.stem));
     block('Your response',selected.map(pair=>pair[0]).join(question.type==='order'?' → ':' · '));

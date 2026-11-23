@@ -385,7 +385,7 @@
   }
   function itemReview(item,i){
     const group=node('details');group.className='review-item';
-    const mark=!item.answer.length?'Skipped':item.correct?item.assisted?'Correct with a hint':'Correct':'Incorrect';
+    const mark=!item.answer.length?'Skipped':item.correct?item.assisted?'Correct with Hint '+(item.hintLevel??1):'Correct':'Incorrect';
     const q=item.question??data.archive[item.ref]??questions.get(item.id);
     group.append(node('summary',(i+1)+'. '+mark+' · '+(q?.topic??item.id)+' · '+Math.round(item.ms/1000)+' s'+(item.scored?'':' · simulated pilot')));
     if(q){
