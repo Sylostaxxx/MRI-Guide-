@@ -46,6 +46,7 @@
     records.set(record.id,record);
     session = value;
     if (attempt) {attempts.push(attempt);recalculate();}
+    updateResume();
   }
   function run(task) {
     return async () => {
@@ -60,7 +61,7 @@
   function fresh(plan = {}) {
     return {id:crypto.randomUUID(),mode:quiz?'lesson':retry?'retry':'continuous',number:1,
       recent:[],queue:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
-      result:null,hint:false,paused:false,ended:false,elapsed:0,
+      result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,ended:false,elapsed:0,
       subject:get('subject').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
   }
   function clocked() {
@@ -79,7 +80,7 @@
       plan.mode === 'continuous' ? select(filtered(plan),attempts,plan,stats) : null;
     if (!question) {
       if (plan.mode !== 'continuous') {
-        await save({...plan,ended:true});
+        await save({...plan,ended:true});StudyResume.clear('Study Center');
       } else {
         state.textContent = 'No items match these filters. Choose a different subject or difficulty.';
         if (session && plan.id === session.id) await save({...plan,paused:true});
@@ -90,7 +91,7 @@
     const window = Math.max(1,Math.min(16,filtered(plan).length-1));
     const recent = [...plan.recent,question.id].slice(-window);
     const order = RegistryCore.shuffle(question.options.map((_,i)=>i));
-    await save({...plan,current:question.id,result:null,hint:false,paused:false,elapsed:0,recent,order,draft:[],
+    await save({...plan,current:question.id,result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,elapsed:0,recent,order,draft:[],
       queue:requested?plan.queue.slice(1):plan.queue});
     response = [];
     shownAt = Date.now();
@@ -148,10 +149,35 @@
     if (related(question)) div.append(link('Review Topic',related(question)));
     return div;
   }
+  let currentView='session';
+  function updateResume() {
+    if(!session||session.ended||!session.current||currentView!=='session')return;
+    const href=new URL(location.href);
+    href.searchParams.set('recover','1');
+    StudyResume.save('Study Center',quiz?'Academy quiz':retry?'Question retry':'Continuous practice',
+      catalog.get(session.current)?.topic??session.subject,'Question '+session.number,href.href);
+  }
+  function correctionRoute(id) {
+    const url=new URL(location.href);
+    if(id)url.searchParams.set('correction',id);
+    else url.searchParams.delete('correction');
+    return url;
+  }
+  function closeCorrection(){
+    const id=session?.result?.id;
+    if(history.state?.mriCorrectionFor===id)history.back();
+    else {AppNavigation.navigate(correctionRoute(null),true,{mriCorrectionFor:null});render();}
+  }
   function render(focus = false) {
     const live = Boolean(session && !session.ended);
     const q = live && !session.paused ? catalog.get(session.current) : null;
-    get('practiceCard').hidden = !q;
+    const correcting=q&&session.result&&!session.result.correct&&
+      new URLSearchParams(location.search).get('correction')===session.result.id;
+    get('practiceCard').hidden = !q||Boolean(correcting);
+    const correction=get('practiceCorrection');
+    correction.hidden=!correcting;
+    if(correcting)StudyGuidance.correction(correction,q,session.result.response,{back:closeCorrection,follow:StudyGuidance.follow(q,pool),save:true});
+    get('restartPractice').hidden=!live;
     get('pause').hidden = !live;
     get('end').hidden = !live;
     get('start').hidden = live && !session.paused;
@@ -174,7 +200,8 @@
     if (focus) get('practiceStem').focus();
     const asset = q.image && RegistryImages[q.image];
     get('practiceImageFrame').hidden = !asset;
-    if (asset) get('practiceImage').src = session.hint || session.result ? asset.path : asset.promptPath??asset.path;
+    const hintLevel=session.hintLevel??Number(Boolean(session.hint));
+    if (asset) get('practiceImage').src = hintLevel>=3&&!session.hintsHidden || session.result ? asset.path : asset.promptPath??asset.path;
     else get('practiceImage').removeAttribute('src');
     renderAnswerChoices(q);
     const feedback = get('practiceFeedback');
@@ -183,18 +210,17 @@
     if (session.result) {
       feedback.className = 'feedback '+(session.result.correct?'good':'bad');
       feedback.append(node('h3',session.result.correct?'✓ CORRECT!':'✕ INCORRECT'));
-      if (session.result.hint) feedback.append(node('p','Assisted attempt. Independent mastery credit requires recall without a hint.'));
+      if (session.result.hint) feedback.append(node('p',(session.result.correct?'Correct with Hint ':'Highest hint used: ')+(session.result.hintLevel??1)+'. Assisted recall.'));
       feedback.append(explanation(q,session.result));
-    } else if (session.hint) {
-      feedback.append(node('p',asset?.marked?'The source-verified marker is now visible.':
-        'Focus on '+q.topic+'. This attempt will be recorded as assisted.'));
     }
-    get('practiceHint').hidden = Boolean(session.result || session.hint);
+    StudyGuidance.renderHints(get('practiceHints'),get('practiceHint'),get('hidePracticeHint'),q,hintLevel,session.hintsHidden,Boolean(session.result));
+    get('teachPractice').hidden=!session.result||session.result.correct;
     get('checkPractice').hidden = Boolean(session.result);
     get('nextPractice').hidden = !session.result;
     get('nextPractice').textContent = session.mode!=='continuous' && !session.queue.length ? 'Finish review' : 'Next Question';
   }
   function show(name) {
+    currentView=name;
     for (const id of ['session','trouble','dashboard']) get(id).hidden = id !== name;
     for (const tab of document.querySelectorAll('[data-view]')) {
       if (tab.dataset.view === name) tab.setAttribute('aria-current','page');
@@ -296,13 +322,22 @@
     let saved;
     try {saved = RegistryCore.read(localStorage);}
     catch {return [];}
-    return saved.history.filter(session=>session.mode==='tutor').flatMap(legacy=>legacy.items.flatMap((item,index)=>{
-      const q = catalog.get(item.id);
-      const at = Date.parse(legacy.date);
-      if (!q || !item.answer?.length || !Number.isFinite(at)) return [];
+    const previous=saved.history.filter(entry=>entry.mode==='tutor');
+    const current=saved.active;
+    if(current?.mode==='tutor')previous.push({
+      id:current.id,date:new Date().toISOString(),
+      items:current.items.map(({question},index)=>({
+        id:question.id,question,answer:current.checked[index]?current.answers[index]:null,
+        correct:RegistryCore.isCorrect(question,current.answers[index]),assisted:current.assisted[index],
+        hintLevel:current.hintLevels?.[index],checkedAt:current.checkedAt?.[index],ms:current.elapsed[index]
+      }))
+    });
+    return previous.flatMap(legacy=>legacy.items.flatMap((item,index)=>{
+      const q=catalog.get(item.id),at=item.checkedAt??Date.parse(legacy.date);
+      if(!q||!item.answer?.length||!Number.isFinite(at))return [];
       return [{id:'legacy:'+legacy.id+':'+index,question:q.id,version:(item.question??saved.archive?.[item.ref])?.version??'1',
-        at, topic:q.topic,subject:subject(q),session:legacy.id,mode:'legacy-tutor',response:item.answer,
-        correct:Boolean(item.correct),hint:Boolean(item.assisted),ms:item.ms??0}];
+        at,topic:q.topic,subject:subject(q),session:legacy.id,mode:'legacy-tutor',response:item.answer,
+        correct:Boolean(item.correct),hint:Boolean(item.assisted),hintLevel:item.hintLevel??Number(Boolean(item.assisted)),ms:item.ms??0}];
     }));
   }
   try {
@@ -323,7 +358,20 @@
     recalculate();
   } catch (error) {reportError(error);get('start').disabled=true;return;}
   get('start').disabled=false;
-  for (const tab of document.querySelectorAll('[data-view]')) tab.onclick = ()=>show(tab.dataset.view);
+  function routePractice(){
+    const route=new URLSearchParams(location.search).get('view');
+    show(['trouble','dashboard'].includes(route)?route:'session');
+    render();
+    updateResume();
+  }
+  window.addEventListener('popstate',routePractice);
+  for (const tab of document.querySelectorAll('[data-view]')) tab.onclick = ()=>{
+    const url=correctionRoute(null);
+    if(tab.dataset.view==='session')url.searchParams.delete('view');
+    else url.searchParams.set('view',tab.dataset.view);
+    AppNavigation.navigate(url,false,{mriCorrectionFor:null});
+    routePractice();
+  };
   for (const id of ['queueMode','troubleSubject','since','minMisses','troubleDifficulty','troubleTopic']) {
     get(id).oninput = () => {troubleLimit=25;renderTrouble();};
   }
@@ -347,16 +395,33 @@
   get('pause').onclick = run(async()=>{await save({...session,elapsed:clocked(),paused:true});render();});
   get('end').onclick = run(async()=>{
     if (confirm('End this practice session? Answered questions will stay in your history.')) {
-      await save({...session,ended:true});render();
+      await save({...session,ended:true});StudyResume.clear('Study Center');render();
     }
   });
-  get('practiceHint').onclick = run(async()=>{await save({...session,hint:true});render();});
+  get('practiceHint').onclick = run(async()=>{
+    const level=(session.hintLevel??Number(Boolean(session.hint)))+1;
+    if(level>StudyGuidance.hints(catalog.get(session.current)).length)return;
+    await save({...session,hint:true,hintLevel:level,hintsHidden:false});render();
+  });
+  get('hidePracticeHint').onclick=run(async()=>{await save({...session,hintsHidden:!session.hintsHidden});render();});
+  get('teachPractice').onclick=()=>{
+    const id=session?.result?.id;
+    if(id&&!session.result.correct){
+      AppNavigation.navigate(correctionRoute(id),false,{mriCorrectionFor:id});
+      render();updateResume();get('practiceCorrection').scrollIntoView({block:'start'});
+    }
+  };
+  get('restartPractice').onclick=run(async()=>{
+    if(!confirm('Start a new session? Answer history will be kept.'))return;
+    AppNavigation.navigate(correctionRoute(null),true,{mriCorrectionFor:null});
+    await next(fresh({topic:clearTopic?null:topicLesson}));
+  });
   get('checkPractice').onclick = run(async()=>{
     if (session.result || !response.length) return;
     const q = catalog.get(session.current);
     const attempt = {id:session.id+':'+session.number,question:q.id,version:q.version,at:Date.now(),
       topic:q.topic,subject:subject(q),response:[...response],correct:RegistryCore.isCorrect(q,response),
-      hint:session.hint,ms:clocked(),session:session.id,mode:session.mode};
+      hint:session.hint,hintLevel:session.hintLevel??Number(Boolean(session.hint)),ms:clocked(),session:session.id,mode:session.mode};
     await save({...session,result:attempt},attempt);
     render();
   });
@@ -367,7 +432,8 @@
   });
   get('weakPractice').onclick = run(async()=>{
     if (quiz || retry) {location.href='./practice.html?weak=1';return;}
-    show('session');
+    const route=correctionRoute(null);route.searchParams.delete('view');
+    AppNavigation.navigate(route);show('session');
     get('subject').value = 'Mixed Practice';
     get('difficulty').value = 'Any';
     if (session && !session.ended) {
@@ -389,8 +455,9 @@
     } else if (document.visibilityState==='visible') shownAt=Date.now();
   });
   if (query.get('filter')==='due')get('queueMode').value='Due for Review';
-  show(query.get('view')==='trouble'?'trouble':query.get('view')==='dashboard'?'dashboard':'session');
-  render();
+  routePractice();
+  if(query.has('recover')&&session?.paused&&!session.ended)await get('start').onclick();
+  window.addEventListener('pageshow',event=>{if(event.persisted)updateResume();});
   if (incomingPlan) state.textContent='The linked lesson focus will start on your next question.';
   if (query.has('weak')) await get('weakPractice').onclick();
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);

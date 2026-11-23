@@ -25,6 +25,57 @@
       else link.removeAttribute('aria-current');
     }
   }
-  active(nav.dataset.appNav);
-  globalThis.AppNavigation={active};
+  const key='mri.navigation.v1';
+  const get=name=>{try{return JSON.parse(sessionStorage.getItem(key+name));}catch{return null;}};
+  const put=(name,value)=>{try{sessionStorage.setItem(key+name,JSON.stringify(value));}catch{}};
+  const route=url=>url.pathname+url.search+url.hash;
+  const locationRoute=()=>route(new URL(location.href));
+  const pending=get('.pending');
+  put('.pending',null);
+  if (!Number.isInteger(history.state?.mriPosition)) {
+    history.replaceState({...history.state,mriPosition:pending?.url===locationRoute()?pending.position:0},'');
+    put('.limit',history.state.mriPosition);
+  }
+  const direction=document.createElement('div');
+  direction.className='history-controls';
+  direction.setAttribute('role','group');
+  direction.setAttribute('aria-label','Page history');
+  const controls=['Back','Forward'].map((label,i)=>{
+    const button=document.createElement('button');
+    button.type='button';button.textContent=label;button.onclick=()=>history.go(i?1:-1);
+    direction.append(button);return button;
+  });
+  nav.append(direction);
+  function refresh() {
+    const index=history.state?.mriPosition??0;
+    controls[0].disabled=index<=0;
+    controls[1].disabled=index>=(get('.limit')??index);
+  }
+  function navigate(url,replace=false,extra={}) {
+    const resolved=new URL(url,location.href);
+    if(route(resolved)===locationRoute()&&!replace)return false;
+    const index=(history.state?.mriPosition??0)+(replace?0:1);
+    history[replace?'replaceState':'pushState']({...history.state,...extra,mriPosition:index},'',resolved);
+    if(!replace)put('.limit',index);
+    refresh();
+    return true;
+  }
+  document.addEventListener('click',event=>{
+    const anchor=event.target.closest?.('a[href]');
+    if(!anchor||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||
+      anchor.download||anchor.target&&anchor.target!=='_self')return;
+    const url=new URL(anchor.href);
+    if(url.origin!==location.origin||!url.pathname.startsWith(new URL('./',document.baseURI).pathname)||
+      url.pathname===location.pathname&&url.search===location.search)return;
+    put('.pending',{url:route(url),position:(history.state?.mriPosition??0)+1});
+  });
+  function open(url) {
+    const next=new URL(url,location.href);
+    put('.pending',{url:route(next),position:(history.state?.mriPosition??0)+1});
+    location.assign(next);
+  }
+  window.addEventListener('popstate',refresh);
+  window.addEventListener('pageshow',refresh);
+  active(nav.dataset.appNav);refresh();
+  globalThis.AppNavigation={active,navigate,open};
 })();

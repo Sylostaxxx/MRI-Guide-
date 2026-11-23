@@ -1,7 +1,8 @@
-const CACHE = 'mri-study-lab-shell-13';
+const CACHE = 'mri-study-lab-shell-14';
 const ROOT = new URL(self.registration.scope);
 importScripts('./anatomy-plates.js','./quiz-assets.js','./registry-images.js');
 const FILES = [
+  './study-resume.js', './study-guidance.js',
   './academy.html', './physics-lessons.js', './physics-diagrams.js', './physics-videos.js', './physics-academy.js',
   './practice.html', './study-practice.js', './study-review.js', './study-store.js', './study-v2.css',
   './study-content-map.js', './study-variants.js', './registry-bank-academy.js',

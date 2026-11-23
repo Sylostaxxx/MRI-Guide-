@@ -48,7 +48,8 @@
     return object(a) && [a.id,a.question,a.version,a.topic,a.subject,a.session].every(str) &&
       modes.includes(a.mode) && Number.isFinite(a.at) && a.at >= 0 &&
       Number.isFinite(a.ms) && a.ms >= 0 && indexes(a.response) &&
-      typeof a.correct === 'boolean' && typeof a.hint === 'boolean';
+      typeof a.correct === 'boolean' && typeof a.hint === 'boolean' &&
+      (a.hintLevel == null || Number.isInteger(a.hintLevel) && a.hintLevel>=0 && a.hintLevel<=3 && Boolean(a.hintLevel)===a.hint);
   }
   function validate(data) {
     if (!object(data) || data.version !== version || !Array.isArray(data.attempts) || !Array.isArray(data.records)) throw Error('Invalid continuous study backup.');

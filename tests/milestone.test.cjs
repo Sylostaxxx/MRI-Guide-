@@ -385,3 +385,33 @@ test('generated Larmor variations have stable unique options and verified arithm
     assert.ok(!RegistryContent.bank.some(item=>item.id===q.id));
   }
 });
+
+require('../study-guidance.js');
+test('calculation hints progress to the relationship without printing the keyed answer',()=>{
+  const calculations=RegistryContent.bank.filter(q=>q.formula);
+  assert.ok(calculations.length>0);
+  for(const q of calculations){
+    const tips=StudyGuidance.hints(q);
+    assert.equal(tips.length,3,q.id);
+    assert.equal(new Set(tips).size,3,q.id);
+    assert.ok(tips.every(tip=>!tip.includes(q.options[q.key[0]][0])),q.id);
+  }
+  const question=RegistryContent.bank.find(item=>item.id==='p31');
+  assert.ok(StudyGuidance.follow(question,RegistryContent.bank)?.exact);
+});
+
+require('../study-content.js');
+test('each clinical study case has authored guidance for its exact distractors',()=>{
+  for(const [mode,cases] of Object.entries(StudyContent.cases)){
+    assert.equal(StudyContent.coaching[mode].length,cases.length);
+    for(const [i,[,choices,correct]] of cases.entries()){
+      const coaching=StudyContent.coaching[mode][i];
+      assert.equal(coaching.why.length,choices.length);
+      assert.ok(coaching.why.every((reason,index)=>index===correct||reason.length>15));
+      const hints=StudyGuidance.hints({id:mode+i,topic:mode,hints:coaching.hints,key:[correct],
+        options:choices.map(text=>[text,''])});
+      assert.ok(hints.length>0);
+      assert.ok(hints.every(hint=>!hint.includes(choices[correct])));
+    }
+  }
+});

@@ -16,7 +16,7 @@
       [(42.58*field*2).toFixed(2)+' MHz','This is the frequency at twice the given field strength.'],
       [(42.58*field*0.001).toFixed(2)+' MHz','This scales the MHz result by an unnecessary factor of a thousand.']
     ],
-    expected,related:'./academy.html?lesson=larmor',references:[RegistryContent.sources.physics]
+    formula:{name:'larmor',args:[field],digits:2,expected},expected,related:'./academy.html?lesson=larmor',references:[RegistryContent.sources.physics]
   }));
   globalThis.StudyVariants={variants};
 })();

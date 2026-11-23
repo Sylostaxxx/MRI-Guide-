@@ -62,8 +62,8 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <section id="quizPanel" class="quiz-panel" aria-label="Anatomy question" hidden>
 <div class="quiz-progress"><span id="quizCount"></span><progress id="quizProgress" aria-label="Quiz progress"></progress><output id="quizTime"></output></div>
 <p id="quizInstruction"></p><h2 id="quizTarget" tabindex="-1"></h2>
-<div class="quiz-actions"><button id="quizHint" aria-pressed="false">Show location hint</button><button id="quizNext" hidden>Next question</button><button id="quizDetails" hidden>Show structure details</button><button id="quizExit">End quiz</button></div>
-<p id="quizFeedback" role="status"></p>
+<div class="quiz-actions"><button id="quizHint" aria-pressed="false">Show Hint</button><button id="quizHideHint" hidden>Hide Hints</button><button id="quizTeach" hidden>Teach Me Why I Was Wrong</button><button id="quizNext" hidden>Next question</button><button id="quizDetails" hidden>Show structure details</button><button id="quizExit">End quiz</button></div>
+<div id="quizHints" class="study-guidance" hidden aria-live="polite"></div><p id="quizFeedback" role="status"></p><article id="atlasCorrection" class="study-guidance" hidden></article>
 </section>
 <div class="atlas-layout" id="atlasLayout">
 <div id="mriPanel">
@@ -113,5 +113,5 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <p id="spineAttribution" hidden><small>MRI by Julien Cohen-Adad and Spine Generic contributors. Manual landmarks by Sandrine Bedard. Cropped for study. <a href="https://github.com/spine-generic/data-single-subject">Source dataset</a> · <a href="./atlas/spine/LICENSE.txt">CC BY 4.0</a></small></p>
 <p id="kneeAttribution" hidden><small>pyKNEEr demo images v4 by Serena Bonaretti. Converted and downsampled for study. <a href="https://doi.org/10.5281/zenodo.3820248">Source dataset</a> · <a href="./atlas/knee/LICENSE.txt">CC BY-NC-SA 4.0</a></small></p>
 <p id="cardiacAttribution" hidden><small>Medical Segmentation Decathlon Task02 Heart, King’s College London. Cropped around the left atrium. <a href="https://medicaldecathlon.com/">Source dataset</a> · <a href="./atlas/cardiac/LICENSE.txt">CC BY-SA 4.0</a></small></p>
-</details></main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./anatomy-plates.js"></script><script src="./quiz-assets.js"></script><script type="module" src="./brain-atlas.js"></script></body>
+</details></main><script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./study-guidance.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./anatomy-plates.js"></script><script src="./quiz-assets.js"></script><script type="module" src="./brain-atlas.js"></script></body>
 </html>
