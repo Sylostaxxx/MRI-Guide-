@@ -799,7 +799,8 @@ globalThis.RegistryImages = {
     "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
     "source": "https://doi.org/10.5281/zenodo.3820248",
     "attribution": "Serena Bonaretti. pyKNEEr demo images, version 4.",
-    "sha256": "c6c0a33aba92321c35accd8a1cf5960140dcf208cbb16a501394be9ba303b1fa"
+    "sha256": "c6c0a33aba92321c35accd8a1cf5960140dcf208cbb16a501394be9ba303b1fa",
+    "comparison": "m04"
   },
   "le-k-img03": {
     "path": "./atlas/registry/le-k-img03-base.webp",

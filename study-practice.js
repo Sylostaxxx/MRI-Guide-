@@ -20,6 +20,7 @@
   const {bank} = RegistryContent;
   const pool = await RegistryImageView.available(bank.filter(q=>!q.pilot));
   RegistryImageView.layout(get('practiceImageFrame'),'practiceImage');
+  RegistryImageView.enablePinch(get('practiceImageFrame'),get('practiceImageZoom'));
   const catalog = new Map([...bank,...StudyVariants.variants].map(q=>[q.id,q]));
   const {subject,summarize,select,dashboard,day,severeThreshold,dateKey} = StudyReview;
   const {difficulty,related,lessons} = StudyContentMap;

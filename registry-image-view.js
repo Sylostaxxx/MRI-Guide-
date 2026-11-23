@@ -146,6 +146,23 @@
       }
     }
   }
+  function enablePinch(root,zoom){
+    let gesture=null;
+    const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
+    root.addEventListener('touchstart',event=>{
+      if(event.touches.length===2)gesture={distance:distance(event.touches),zoom:Number(zoom.value)};
+    },{passive:true});
+    root.addEventListener('touchmove',event=>{
+      if(!gesture?.distance||event.touches.length!==2)return;
+      if(event.cancelable)event.preventDefault();
+      const step=Number(zoom.step);
+      const value=Math.round(gesture.zoom*distance(event.touches)/gesture.distance/step)*step;
+      zoom.value=Math.max(Number(zoom.min),Math.min(Number(zoom.max),value));
+      zoom.dispatchEvent(new Event('input',{bubbles:true}));
+    },{passive:false});
+    root.addEventListener('touchend',event=>{if(event.touches.length<2)gesture=null;});
+    root.addEventListener('touchcancel',()=>{gesture=null;});
+  }
   function layout(root,imageId) {
     const wrapper=document.createElement('div');wrapper.className='registered-image';
     const image=document.createElement('img');image.alt='MRI for this question';
@@ -156,5 +173,5 @@
     root.append(wrapper,status);
     return image;
   }
-  globalThis.RegistryImageView={disabled,valid,ready,available,paint,mount,layout};
+  globalThis.RegistryImageView={disabled,valid,ready,available,paint,mount,layout,enablePinch};
 })();

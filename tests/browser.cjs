@@ -529,7 +529,15 @@ async function run() {
       return ['x','y','width','height'].every(key=>Math.abs(image[key]-overlay[key])<1);
     });
     assert.ok(await aligned());
-    await reopened.locator('#practiceImageZoom').fill('2');
+    await reopened.locator('#practiceImageFrame').evaluate(frame=>{
+      function pinch(type,width){
+        const event=new Event(type,{bubbles:true,cancelable:true});
+        Object.defineProperty(event,'touches',{value:[{clientX:0,clientY:0},{clientX:width,clientY:0}]});
+        frame.dispatchEvent(event);
+      }
+      pinch('touchstart',100);pinch('touchmove',200);
+    });
+    assert.equal(await reopened.locator('#practiceImageZoom').inputValue(),'2');
     await reopened.setViewportSize({width:1180,height:820});
     assert.ok(await aligned());
     assert.equal(await reopened.locator('.mri-marker').getAttribute('data-target'),marker);

@@ -26,5 +26,7 @@
     ['Vascular','—','—','—','—',0,3,'Lower-extremity vascular overview','Flow and velocity practice','Text'],
     ['Specialized examinations','—','—','—','—',0,2,'Direct hip arthrogram reference','IR and perfusion lessons','Text']
   ];
-  globalThis.StudyCoverage = {version:1,reviewed:'2026-11-23',rows};
+  globalThis.StudyCoverage = {version:1,reviewed:'2026-11-23',rows:rows.map(row=>[
+    ...row,row[1]!=='—'?'Partial MRI coverage':row[6]?'Reference coverage':'Coverage gap'
+  ])};
 })();

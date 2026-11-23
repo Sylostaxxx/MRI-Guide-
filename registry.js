@@ -2,6 +2,7 @@
   const el=id=>document.getElementById(id);
   const {arrt,armrit}=RegistryBlueprints;
   RegistryImageView.layout(el('registryImageScroll'),'questionImage');
+  RegistryImageView.enablePinch(el('registryImageScroll'),el('imageZoom'));
   const bank=await RegistryImageView.available(RegistryContent.bank);
   const questions=new Map(bank.map(q=>[q.id,q]));
   const core=RegistryCore;

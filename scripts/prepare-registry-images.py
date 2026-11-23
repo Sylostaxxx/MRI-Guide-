@@ -92,4 +92,6 @@ for id,(region,code,axis,mark) in cases.items():
         'marker':marker,'expectedAnswer':expected[id],'verification':'source-verified','reviewed':'2026-11-23',
         'license':manifest['license'],'licenseUrl':manifest['licenseUrl'],'source':manifest['source'],
         'attribution':manifest['attribution'],'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+    if id == 'le-k-img02':
+        records[id]['comparison'] = 'm04'
 Path('registry-images.js').write_text('globalThis.RegistryImages = '+json.dumps(records,ensure_ascii=False,indent=2)+';\n')

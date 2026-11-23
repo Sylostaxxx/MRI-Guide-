@@ -448,6 +448,9 @@ test('registry image overlays match the original RAS source voxels, answer keys 
   }
   const visual=RegistryContent.bank.filter(q=>q.image);
   assert.equal(visual.length,24);
+  const comparison=RegistryImages['le-k-img02'];
+  assert.equal(comparison.plane,'Coronal');
+  assert.equal(RegistryImages[comparison.comparison].plane,'Axial');
   assert.deepEqual(RegistryImageView.disabled,[]);
   for(const q of visual){
     const asset=RegistryImages[q.image];
