@@ -1,7 +1,8 @@
-(() => {
+(async () => {
   const el=id=>document.getElementById(id);
   const {arrt,armrit}=RegistryBlueprints;
-  const bank=RegistryContent.bank;
+  RegistryImageView.layout(el('registryImageScroll'),'questionImage');
+  const bank=await RegistryImageView.available(RegistryContent.bank);
   const questions=new Map(bank.map(q=>[q.id,q]));
   const core=RegistryCore;
   let storageError=false, data, active, pending=null, showingReview=false;
@@ -60,7 +61,7 @@
     const option=new Option(label+(enabled?'':' · awaiting items'),id);
     option.disabled=!enabled;el('form').add(option);
   }
-  if(!el('form').value)el('startExam').disabled=true;
+  el('startExam').disabled=!el('form').value;
   function formStatus(){
     const [id,label]=forms.find(([key])=>key===el('form').value)??[];
     el('formStatus').textContent=id==='half'
@@ -86,6 +87,19 @@
     if(isArmrit)info.append('ARMRIT publishes 225 single-best-answer questions over 210 minutes. Subject practice is available here. ',link('Official ARMRIT overview',armrit.source));
   }
   el('profile').onchange=profileOptions;profileOptions();
+  LowerExtremity.fill(el('registryLower'),true);
+  const urlRegion=new URLSearchParams(location.search).get('region');
+  if(urlRegion==='all'||Object.hasOwn(LowerExtremity.regions,urlRegion)){
+    el('registryLower').value=urlRegion;el('kind').value='mixed';
+  }
+  function shortStatus(){
+    const region=el('registryLower').value;
+    const count=Math.min(10,bank.filter(q=>!q.pilot&&LowerExtremity.matches(q,region)).length);
+    const control=el('startShortLower');control.hidden=!region;control.disabled=count<5;
+    control.textContent='Start '+count+'-question timed lower-extremity test';
+  }
+  el('registryLower').onchange=shortStatus;shortStatus();
+  el('startTutor').disabled=false;
   function setup(){
     view('setup');showingReview=false;
     const history=el('history');history.replaceChildren();
@@ -105,7 +119,7 @@
   function startTutor(kind=el('kind').value){
     const armritSelected=el('profile').value==='armrit';
     const topic=el('category').value;
-    const selected=core.selectTutor(bank,data.history,{
+    const selected=core.selectTutor(bank.filter(q=>LowerExtremity.matches(q,el('registryLower').value)),data.history,{
       count:kind==='daily'?10:Number(el('count').value),
       category:armritSelected?'':topic,subject:armritSelected?topic:'',
       kind,armrit:armritSelected
@@ -117,6 +131,14 @@
       armritSelected?armrit.id:arrt.id);
   }
   el('startTutor').onclick=()=>startTutor();
+  el('startShortLower').onclick=()=>{
+    const region=el('registryLower').value;
+    const selected=core.selectTutor(bank.filter(q=>LowerExtremity.matches(q,region)),data.history,
+      {count:10,armrit:el('profile').value==='armrit'});
+    if(selected.length<5){notice('There are too few verified questions for a timed test in this region.');return;}
+    const name=LowerExtremity.regions[region]?.label??'All Lower Extremity';
+    launch('exam',name+' · timed study test',selected.map(question=>({question,scored:true})),null,selected.length);
+  };
   const tutorial=[
     {id:'tutorial-single',type:'single',stem:'Select the abbreviation for magnetic resonance imaging.',
       key:[0],options:[['MRI','MRI is the standard abbreviation.'],['MRN','MRN commonly identifies a medical record number.'],['PACS','PACS is an imaging archive and communication system.'],['RF','RF stands for radiofrequency.']]},
@@ -276,11 +298,9 @@
     el('countdown').textContent=active.deadline===null?'Tutor':clock(active.deadline-Date.now());
     el('itemType').textContent={single:'Select one answer',multiple:'Select all that apply',order:'Arrange in order'}[q.type];
     el('stem').textContent=q.stem;
-    if(focus){el('stem').focus({preventScroll:true});el('imageZoom').value=1;el('questionImage').style.width='';}
-    const image=q.image&&RegistryImages[q.image];
-    el('imagePanel').hidden=!image;
-    if(image)el('questionImage').src=timedExam||checked||hintLevel>=3&&!hintHidden?image.path:image.promptPath??image.path;
-    if(!image)el('questionImage').removeAttribute('src');
+    if(focus){el('stem').focus({preventScroll:true});el('imageZoom').value=1;}
+    el('imagePanel').hidden=!q.image;
+    if(q.image)RegistryImageView.mount(el('questionImage'),q,{revealed:checked||hintLevel>=3&&!hintHidden,zoom:Number(el('imageZoom').value)});
     choices(item,answer,checked);
     el('prev').disabled=i===0;
     el('next').textContent=i===active.items.length-1?'Review answers':'Next';
@@ -340,8 +360,9 @@
   el('back').onclick=()=>{showingReview=false;render();};
   el('submit').onclick=()=>submit(false);
   el('imageZoom').oninput=()=>{
-    const zoom=Number(el('imageZoom').value);
-    el('questionImage').style.width=zoom===1?'':Math.round(Math.min(el('questionImage').parentElement.clientWidth,530)*zoom)+'px';
+    const i=active.index,q=active.items[i].question;
+    RegistryImageView.mount(el('questionImage'),q,{revealed:Boolean(active.checked[i])||
+      active.hintLevels?.[i]>=3&&!active.hiddenHints?.[i],zoom:Number(el('imageZoom').value)});
   };
   el('calculate').onclick=()=>{
     const a=el('first').valueAsNumber,b=el('second').valueAsNumber;
@@ -392,8 +413,7 @@
       group.append(node('p',q.stem),node('p','Your response: '+(item.answer.map(index=>q.options[index]?.[0]??'').join(' → ')||'Skipped')));
       if(q.image&&RegistryImages[q.image]){
         const frame=node('div');frame.className='image-scroll';
-        const img=node('img');img.src=RegistryImages[q.image].path;img.alt='MRI reference with verified geometry';img.loading='lazy';
-        frame.append(img);group.append(frame);
+        RegistryImageView.mount(RegistryImageView.layout(frame),q,{revealed:true});group.append(frame);
       }
       group.append(rationale(q));
     }

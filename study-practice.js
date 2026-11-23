@@ -18,20 +18,29 @@
     return element;
   };
   const {bank} = RegistryContent;
-  const pool = bank.filter(q=>!q.pilot);
+  const pool = await RegistryImageView.available(bank.filter(q=>!q.pilot));
+  RegistryImageView.layout(get('practiceImageFrame'),'practiceImage');
   const catalog = new Map([...bank,...StudyVariants.variants].map(q=>[q.id,q]));
   const {subject,summarize,select,dashboard,day,severeThreshold,dateKey} = StudyReview;
   const {difficulty,related,lessons} = StudyContentMap;
-  const subjects = ['Mixed Practice','Physics','Anatomy','Safety','Procedures','Patient Care','Artifacts','Image Production'];
+  const subjects = ['Mixed Practice','Lower Extremity','Physics','Anatomy','Safety','Procedures','Patient Care','Artifacts','Image Production'];
   for (const id of ['subject','troubleSubject']) {
     for (const name of subjects) get(id).add(new Option(name,name));
   }
   get('bankInfo').textContent = pool.length+' practice questions · '+bank.length+' authored items including simulated pilots · questions cycle after the pool is used';
   const query = new URLSearchParams(location.search);
   const requestedLesson = query.get('quiz');
+  const requestedRegion = query.get('region');
+  const lowerRequested = requestedRegion==='all'||Object.hasOwn(LowerExtremity.regions,requestedRegion);
+  LowerExtremity.fill(get('lowerRegion'));
+  LowerExtremity.fill(get('troubleLower'));
+  if(lowerRequested){
+    get('subject').value='Lower Extremity';get('lowerRegion').value=requestedRegion;
+    get('troubleSubject').value='Lower Extremity';get('troubleLower').value=requestedRegion;
+  }
   const topicLesson = Object.hasOwn(lessons,query.get('topic')) ? query.get('topic') : null;
   const quiz = Object.hasOwn(lessons,requestedLesson) ? requestedLesson : null;
-  const retry = catalog.has(query.get('retry')) ? query.get('retry') : null;
+  const retry = pool.some(q=>q.id===query.get('retry'))||StudyVariants.variants.some(q=>q.id===query.get('retry')) ? query.get('retry') : null;
   const recordKey = quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : 'session';
   let attempts = [], records = new Map(), stats = new Map(), session, response = [], busy = false;
   let shownAt = Date.now(), troubleLimit = 25, incomingPlan = false, clearTopic = false;
@@ -62,7 +71,7 @@
     return {id:crypto.randomUUID(),mode:quiz?'lesson':retry?'retry':'continuous',number:1,
       recent:[],queue:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
       result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,ended:false,elapsed:0,
-      subject:get('subject').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
+      subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
   }
   function clocked() {
     return session.elapsed + (session.paused || session.result ? 0 : Math.max(0,Date.now()-shownAt));
@@ -71,7 +80,7 @@
     const questions = plan.variants ? [...pool,...StudyVariants.variants] : pool;
     return questions.filter(q =>
       (!plan.topic || StudyContentMap.lessonFor(q) === plan.topic) &&
-      (plan.subject === 'Mixed Practice' || subject(q) === plan.subject) &&
+      (plan.subject === 'Mixed Practice' || (plan.subject==='Lower Extremity'?LowerExtremity.matches(q,plan.lowerRegion??'all'):subject(q)===plan.subject)) &&
       (plan.difficulty === 'Any' || difficulty(q) === plan.difficulty));
   }
   async function next(plan) {
@@ -184,8 +193,13 @@
     get('start').textContent = live ? 'Resume' : quiz ? 'Start five-question lesson quiz' : retry ? 'Retry question' : 'Start practice';
     get('pause').hidden = !live || session.paused;
     for (const id of ['subject','difficulty','useVariants']) get(id).disabled = Boolean(quiz || retry);
-    const plan = {subject:get('subject').value,difficulty:get('difficulty').value,topic:clearTopic?null:session?.topic??topicLesson,variants:get('useVariants').checked};
+    const plan = {subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:clearTopic?null:session?.topic??topicLesson,variants:get('useVariants').checked};
     get('clearFocus').hidden = !plan.topic || Boolean(quiz || retry);
+    const lower=plan.subject==='Lower Extremity';
+    get('lowerFilter').hidden=!lower;
+    get('lowerRegion').disabled=Boolean(quiz||retry);
+    get('shortLowerTest').hidden=!lower;
+    get('shortLowerTest').href='./registry.html?timed=1&region='+encodeURIComponent(plan.lowerRegion);
     const limit = filtered(plan).length;
     get('selectionScope').textContent = quiz ? 'Five lesson questions. Results feed Trouble Questions.' : retry
       ? 'Focused review of one question.' : (plan.topic ? 'Lesson focus · ' : '')+
@@ -198,11 +212,15 @@
     get('practiceNumber').textContent = 'Question '+session.number+(quiz?' of 5':'');
     get('practiceStem').textContent = q.stem;
     if (focus) get('practiceStem').focus();
-    const asset = q.image && RegistryImages[q.image];
-    get('practiceImageFrame').hidden = !asset;
     const hintLevel=session.hintLevel??Number(Boolean(session.hint));
-    if (asset) get('practiceImage').src = hintLevel>=3&&!session.hintsHidden || session.result ? asset.path : asset.promptPath??asset.path;
-    else get('practiceImage').removeAttribute('src');
+    const imagePanel=get('practiceImagePanel');
+    imagePanel.hidden=!q.image;
+    const zoom=get('practiceImageZoom');
+    if(focus)zoom.value=1;
+    function renderImage(){
+      RegistryImageView.mount(get('practiceImage'),q,{revealed:Boolean(session.result)||hintLevel>=3&&!session.hintsHidden,zoom:Number(zoom.value)});
+    }
+    if(q.image){renderImage();zoom.oninput=renderImage;}
     renderAnswerChoices(q);
     const feedback = get('practiceFeedback');
     feedback.replaceChildren();
@@ -232,13 +250,15 @@
   function renderTrouble() {
     const filter = get('queueMode').value, now = Date.now();
     const bySubject = get('troubleSubject').value;
+    get('troubleLowerFilter').hidden=bySubject!=='Lower Extremity';
     const byDifficulty = get('troubleDifficulty').value;
     const since = get('since').value ? new Date(get('since').value+'T00:00:00').getTime() : 0;
     const min = Number(get('minMisses').value);
     const topic = get('troubleTopic').value.toLowerCase().trim();
     const all = [...pool,...StudyVariants.variants].map(q=>[q,stats.get(q.id),records.get('bookmark:'+q.id)?.value.bookmarked]);
     function matches(q,s,bookmarked) {
-      if (bySubject!=='Mixed Practice' && subject(q)!==bySubject) return false;
+      if(bySubject==='Lower Extremity'&&!LowerExtremity.matches(q,get('troubleLower').value))return false;
+      if (bySubject!=='Mixed Practice'&&bySubject!=='Lower Extremity'&&subject(q)!==bySubject) return false;
       if (byDifficulty!=='Any' && difficulty(q)!==byDifficulty) return false;
       if (since && (s?.last??0)<since || (s?.misses??0)<min || !q.topic.toLowerCase().includes(topic)) return false;
       if (filter==='Bookmarked Questions') return Boolean(bookmarked);
@@ -350,7 +370,12 @@
     session = records.get(recordKey)?.value;
     if (session) {
       response = session.draft??[];
-      get('subject').value = session.subject;
+      if(!lowerRequested){
+        get('subject').value = session.subject;
+        get('lowerRegion').value = session.lowerRegion??'all';
+      }else if(session.mode==='continuous'&&!session.ended){
+        await save({...session,subject:'Lower Extremity',lowerRegion:requestedRegion,topic:null});
+      }
       get('difficulty').value = session.difficulty;
       get('useVariants').checked = Boolean(session.variants);
       if (topicLesson && topicLesson!==session.topic) incomingPlan = true;
@@ -372,12 +397,14 @@
     AppNavigation.navigate(url,false,{mriCorrectionFor:null});
     routePractice();
   };
-  for (const id of ['queueMode','troubleSubject','since','minMisses','troubleDifficulty','troubleTopic']) {
+  for (const id of ['queueMode','troubleSubject','troubleLower','since','minMisses','troubleDifficulty','troubleTopic']) {
     get(id).oninput = () => {troubleLimit=25;renderTrouble();};
   }
   get('moreTrouble').onclick = ()=>{troubleLimit+=25;renderTrouble();};
-  for (const id of ['subject','difficulty','useVariants']) get(id).onchange = run(async()=>{
-    if (session) await save({...session,subject:get('subject').value,difficulty:get('difficulty').value,variants:get('useVariants').checked});
+  for (const id of ['subject','lowerRegion','difficulty','useVariants']) get(id).onchange = run(async()=>{
+    const nextSubject=get('subject').value;
+    if(nextSubject==='Lower Extremity'){clearTopic=true;incomingPlan=false;}
+    if (session) await save({...session,subject:nextSubject,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,variants:get('useVariants').checked,topic:clearTopic?null:session.topic});
     render();
   });
   const start = async () => {

@@ -3,7 +3,10 @@
 <title>Study Center | MRI Study Lab</title>
 <style>
 :root{color-scheme:dark;background:#101826;color:#eef5ff;font:16px/1.55 system-ui}main{max-width:920px;padding:22px;margin:auto}a{color:#79e3cc}button,textarea,select,input{font:inherit}button,textarea,select{color:inherit;background:#23344a;border:1px solid #638399;border-radius:8px;padding:9px 12px;min-height:44px}button:enabled{cursor:pointer}button[aria-current=true]{border-color:#79e3cc;color:#79e3cc}.nav,.options{display:flex;gap:8px;flex-wrap:wrap}.options{flex-direction:column;align-items:flex-start}.panel{background:#182538;border-radius:12px;padding:18px;margin:18px 0}.figure{display:block;width:100%;max-height:720px;object-fit:contain;background:#fff;border-radius:10px}figure{margin:18px 0}.organ-filters{display:flex;gap:12px;flex-wrap:wrap}.organ-filters label{display:grid;gap:3px}textarea{width:100%;box-sizing:border-box}.dashboard{width:100%;text-align:left;border-collapse:collapse}.dashboard td,.dashboard th{padding:8px 6px;border-bottom:1px solid #495b72}canvas{display:block;width:min(100%,384px);height:auto;background:#080c13}.small{color:#beccda}[hidden]{display:none!important}
-</style><link rel="stylesheet" href="./app-navigation.css"></head><body><main>
+</style><link rel="stylesheet" href="./app-navigation.css"><style>.lower-links{display:flex;gap:8px 18px;flex-wrap:wrap}.lower-links a{min-height:44px;display:inline-flex;align-items:center}
+#lower dt{margin-top:12px;font-weight:700}#lower dd{margin:.2em 0 0}#lower img{max-width:min(100%,480px);height:auto}#lower figure{margin:12px 0}
+#lowerProtocols details{margin:10px 0;padding:10px;border:1px solid #55758d;border-radius:8px}#lowerNote{display:block;width:min(100%,540px);font:inherit}
+.coverage-scroll{overflow:auto}.coverage-scroll table{border-collapse:collapse}.coverage-scroll th,.coverage-scroll td{padding:8px;text-align:left;border-bottom:1px solid #55758d;min-width:100px}</style></head><body><main>
 <nav data-app-nav="anatomy" aria-label="Primary navigation"></nav><h1 id="studyTitle">Study Center</h1><nav id="sections" class="nav" aria-label="Study activities"></nav>
 <section id="systems" class="panel"><h2>Anatomy Explorer</h2>
 <div class="organ-filters"><label>Body region <select id="bodyRegion"><option value="">All regions</option></select></label><label>System <select id="system"></select></label><label>Structure <select id="organChoice"></select></label></div>
@@ -17,8 +20,20 @@
 <p><label>Severity <input id="severity" type="range" min="0" max="100" value="45"></label></p>
 <canvas id="phantom" width="192" height="192" aria-label="Synthetic MRI artifact phantom" role="img"></canvas><p id="artifactText"></p>
 </section>
+<section id="lower" class="panel" hidden>
+<h2>Lower-extremity MRI library</h2>
+<label>Region <select id="libraryRegion"></select></label>
+<p id="lowerStatus"></p><div id="lowerActions" class="lower-links"></div>
+<h3>Anatomy and relationships</h3><dl id="lowerAnatomy"></dl><div id="lowerPlates"></div>
+<h3>Educational protocol examples</h3><p>Position, coil, sequence settings and coverage depend on the scanner, field strength, indication and local radiologist-approved protocol. Use these examples for study.</p>
+<div id="lowerProtocols"></div>
+<h3>My notes</h3><label>Note for this region <textarea id="lowerNote" rows="3"></textarea></label><button id="saveLowerNote">Save note</button><p id="lowerNoteStatus" role="status"></p>
+<details><summary>Full-body coverage inventory</summary>
+<p>Counts are questions in each teaching area. A question that applies to more than one region can appear in multiple rows. Text-only regions have no hidden MRI images.</p>
+<div class="coverage-scroll"><table><thead><tr><th scope="col">Region</th><th scope="col">MRI volume</th><th scope="col">Illustration</th><th scope="col">Cross section</th><th scope="col">Verified labels</th><th scope="col">Image questions</th><th scope="col">Text questions</th><th scope="col">Protocol</th><th scope="col">Lesson links</th><th scope="col">Offline</th></tr></thead><tbody id="coverageRows"></tbody></table></div></details>
+</section>
 <section id="activity" class="panel" hidden><h2 id="activityTitle"></h2><p id="caseCount"></p><p id="stem"></p><div id="choices" class="options"></div><p id="feedback" role="status"></p><aside id="clinicalHints" class="study-guidance" hidden aria-live="polite"></aside><button id="clinicalHint" hidden>Show Hint</button><button id="clinicalHideHint" hidden>Hide Hints</button><button id="clinicalTeach" hidden>Teach Me Why I Was Wrong</button><article id="clinicalCorrection" class="study-guidance" hidden></article><button id="next" hidden>Next</button><p class="small" id="safetyReference" hidden>Educational exercises follow general MR safety principles. <a href="https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Radiology-Safety/MR-Safety">ACR MR Safety resources</a></p></section>
 <section id="mastery" class="panel" hidden><h2>My mastery</h2><p>Independent accuracy excludes attempts that used a location hint. Results stay on this device and are included in the study backup.</p>
 <table class="dashboard"><thead><tr><th>Study area</th><th>Independent correct</th><th>Assisted attempts</th></tr></thead><tbody id="masteryRows"></tbody></table><h3>Weak topics</h3><ul id="weakTopics"></ul><details><summary>Recent study history</summary><ol id="studyHistory"></ol></details>
 </section>
-</main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./registry-blueprints.js"></script><script src="./physics-lessons.js"></script><script src="./mri-physics.js"></script><script src="./physics-diagrams.js"></script><script src="./study-guidance.js"></script><script src="./study-center.js"></script></body></html>
+</main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./registry-blueprints.js"></script><script src="./physics-lessons.js"></script><script src="./mri-physics.js"></script><script src="./physics-diagrams.js"></script><script src="./study-guidance.js"></script><script src="./lower-extremity.js"></script><script src="./study-coverage.js"></script><script src="./lower-library.js"></script><script src="./study-center.js"></script></body></html>

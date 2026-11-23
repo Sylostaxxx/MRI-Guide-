@@ -34,7 +34,7 @@
 <div class="anatomy-intro"><h1>Anatomy Explorer</h1>
 <p>Study structures on linked axial, coronal and sagittal MRI. Switch to a textbook plate or compare both views in the same workspace.</p>
 <a class="launch" href="./brain-atlas.html">Open Real MRI Atlas</a>
-<div class="anatomy-tools"><a href="./study-center.html?section=systems">Browse anatomical systems</a><a href="./study-center.html?section=pathology">Pathology Explorer</a></div>
+<div class="anatomy-tools"><a href="./study-center.html?section=systems">Browse anatomical systems</a><a href="./study-center.html?section=lower">Lower-extremity MRI library</a><a href="./study-center.html?section=pathology">Pathology Explorer</a></div>
 </div>
 <figure class="anatomy-preview"><img src="./atlas/cerebra-preview.webp" alt="Axial T1-weighted slice from the symmetric MNI-ICBM152 brain volume"><figcaption>Axial T1 · MNI-ICBM152 2009c</figcaption></figure>
 </div></section>
@@ -256,7 +256,7 @@ thalamus:{name:'Thalamus',loc:'Paired deep gray nuclei on either side of the thi
 corpus:{name:'Corpus callosum',loc:'C-shaped white-matter tract above the lateral ventricles connecting the cerebral hemispheres.',fn:'Transfers information between left and right cerebral hemispheres.',path:'Demyelination, traumatic axonal injury, congenital agenesis and callosal lesions.',mri:'Midline sagittal T1/T2 best demonstrates genu, body and splenium.'}
 };
 const paramNames={tr:'TR',te:'TE',ti:'TI',flip:'Flip angle',nex:'NEX',fov:'FOV',matrix:'Matrix',slice:'Slice thickness',bw:'Bandwidth'};
-function topicName(k){if(k.startsWith('structure:'))return structureData[k.split(':')[1]]?.name||k;if(k.startsWith('physics:'))return 'Physics · '+(paramNames[k.split(':')[1]]||(k==='physics:sandbox'?'Sandbox':k));return names[k]||k}
+function topicName(k){if(k.startsWith('mri.lower.reference.note.v1:'))return 'Lower extremity · '+({hip:'Hip and pelvis',thigh:'Thigh',knee:'Knee',leg:'Lower leg',ankle:'Ankle',foot:'Foot'}[k.split(':')[1]]??'Study');if(k.startsWith('structure:'))return structureData[k.split(':')[1]]?.name||k;if(k.startsWith('physics:'))return 'Physics · '+(paramNames[k.split(':')[1]]||(k==='physics:sandbox'?'Sandbox':k));return names[k]||k}
 function customNote(kind,code,body){body=body.trim();if(!body)return false;notes.unshift({id:(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():Date.now()+'-'+Math.random(),region:kind+':'+code,plane:'',angle:0,fov:0,offset:0,body,kind,created:new Date().toISOString()});if(!store())return false;showRecent();showAll();return true}
 let currentStructure=null,labelsShown=true,atlasQuiz=false;
 function selectStructure(id){const d=structureData[id];if(!d)return;currentStructure=id;document.querySelectorAll('.atlas-target').forEach(x=>x.classList.toggle('selected',x.dataset.structure===id));el('structureTitle').textContent=d.name;el('structureSub').textContent='Brain · Interactive anatomy card';el('structureContent').className='anatomy-detail';el('structureContent').innerHTML='<h3>Exact location</h3><p>'+esc(d.loc)+'</p><h3>What it does</h3><p>'+esc(d.fn)+'</p><h3>Common pathology</h3><p>'+esc(d.path)+'</p><h3>Relevant MRI sequences</h3><p>'+esc(d.mri)+'</p><button id="openStructureNote" class="primary">✎ Open notes for '+esc(d.name)+'</button>';el('structureNotes').classList.add('hidden');el('structureStatus').textContent='';if(atlasQuiz){el('atlasFeedback').textContent='Selected: '+d.name+' — check the description to review.'}else{el('atlasFeedback').textContent='Selected '+d.name+'.'}el('openStructureNote').onclick=()=>{el('structureNotes').classList.toggle('hidden');showStructureRecent()}}
@@ -561,6 +561,10 @@ function routeHome(){
   const route=new URLSearchParams(location.search),requested=route.get('section');
   const area=Object.hasOwn(groups,requested)?requested:'anatomy';
   const tool=route.get('tool');
+  const requestedRegion=route.get('region');
+  if(area==='clinical'&&tool==='planner'&&Object.hasOwn(names,requestedRegion)){
+    region=requestedRegion;offset=0;el('region').value=requestedRegion;
+  }
   tab(groups[area].some(([id])=>id===tool&&!id.startsWith('./'))?tool:groups[area][0][0],area,false);
   StudyResume.card(el('resumeStudy'));
 }
