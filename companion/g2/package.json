@@ -1,0 +1,26 @@
+{
+  "name": "mri-study-lab-go",
+  "version": "0.1.0",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "data": "node scripts/prepare-bank.mjs",
+    "dev": "npm run data && vite --host 0.0.0.0",
+    "build": "npm run data && vite build",
+    "test": "npm run data && node --test --test-isolation=none tests/*.test.mjs",
+    "pack": "npm run build && evenhub pack app.json dist --sdk-ver 0.0.16 -o mri-study-lab-go.ehpk",
+    "simulator": "evenhub-simulator http://127.0.0.1:5173 --automation-port 9898",
+    "test:simulator": "python3 tests/simulator.py"
+  },
+  "type": "module",
+  "dependencies": {
+    "@evenrealities/even_hub_sdk": "0.0.16"
+  },
+  "devDependencies": {
+    "@evenrealities/evenhub-cli": "0.2.0",
+    "@evenrealities/evenhub-simulator": "0.9.5",
+    "vite": "7.3.1"
+  },
+  "private": true
+}
