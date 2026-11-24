@@ -25,6 +25,9 @@ Checksums, integer source label lookups, geometry, expected keys, endpoint bound
 
 ## Dataset decisions
 
+- [Vestibular-Schwannoma-SEG](https://www.cancerimagingarchive.net/collection/vestibular-schwannoma-seg/) offers high-resolution T2-weighted and postcontrast T1 MRI under CC BY 4.0. The published annotations support the tumor use case. Individual normal nerve branches and labyrinth landmarks still need independent annotation before use for atlas grading.
+- [Krupa and Bekiesińska-Figatowska, Figure 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC4340093/figure/f1-poljradiol-80-93/) is an attributed noncommercial teaching figure for spinal truncation. The figure is displayed in its original form. The caption leaves the sequence unspecified.
+
 | Candidate | Decision |
 | --- | --- |
 | [pyKNEEr](https://doi.org/10.5281/zenodo.3820248) | Existing downloadable knee atlas. CC BY-NC-SA 4.0, two labels covering femur and femoral cartilage. Three new questions use these published masks. |

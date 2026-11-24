@@ -1,7 +1,7 @@
 (() => {
   const el = id => document.getElementById(id);
   const select = el('artifactLesson');
-  const {lessons} = ArtifactAcademy;
+  const {lessons,images} = ArtifactAcademy;
   const terms = [
     ['Definition','definition'], ['In plain language','simple'], ['Physical mechanism','mechanism'],
     ['Recognize it on MRI','appearance'], ['Troubleshooting and tradeoffs','correction'], ['Interpretation pitfall','pitfall']
@@ -25,6 +25,20 @@
     el('artifactSource').href = lesson.source[1];
     el('artifactPhysics').href = './academy.html?lesson='+lesson.physics;
     el('artifactCase').href = './practice.html?retry=art-'+lesson.id;
+    const example = images[lesson.id];
+    const figure = el('artifactImage');
+    figure.hidden = !example;
+    el('artifactImageAvailability').hidden = Boolean(example);
+    if (example) {
+      const img = el('artifactImageRaster');
+      img.src = example.path;
+      img.alt = example.plane+' '+example.region.toLowerCase()+' MRI showing '+example.artifact;
+      const fullSize = el('artifactImageFullSize');
+      fullSize.href = example.path;
+      el('artifactImageSource').href = example.source;
+      el('artifactImageSource').textContent = example.attribution;
+      el('artifactImageCredit').textContent = ' '+[example.modality,example.plane,example.sequence,example.license].join(' · ');
+    }
     const demo = ['ghost','wrap','shift'].includes(lesson.id);
     el('artifactDemo').hidden = !demo;
     if (demo) {

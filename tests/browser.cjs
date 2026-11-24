@@ -291,7 +291,7 @@ async function run() {
     await page.waitForFunction(()=>document.querySelector('#diagram').naturalWidth>0);
     await page.locator('#organNote').fill('Kidney study note');
     await page.locator('#organSave').click();
-    await page.getByRole('button',{name:'Artifact Simulator'}).click();
+    await page.getByRole('button',{name:'Artifact Academy'}).click();
     const phantom=page.locator('#phantom');
     const baseline=await phantom.evaluate(canvas=>canvas.toDataURL());
     await page.locator('#severity').fill('90');
@@ -595,6 +595,8 @@ async function run() {
     assert.match(await reopened.locator('#artifactText').textContent(),/4.4 pixels/);
     await reopened.locator('#artifactBandwidth').fill('440');
     assert.match(await reopened.locator('#artifactText').textContent(),/1.0 pixels/);
+    await reopened.locator('#artifactLesson').selectOption('gibbs');
+    await reopened.waitForFunction(()=>document.querySelector('#artifactImageRaster').naturalWidth===600);
     await reopened.locator('#artifactLesson').selectOption('epi');
     await reopened.getByRole('heading',{name:'EPI susceptibility distortion'}).waitFor();
     assert.equal(await reopened.locator('#artifactDemo').isVisible(),false);

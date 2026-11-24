@@ -502,6 +502,8 @@ test('artifact curriculum maps to sourced practice and published physics lessons
   assert.equal(displacement(440,440),1);
   const questions=RegistryContent.bank.filter(question=>StudyFocus.matches(question,'artifact'));
   assert.equal(lessons.length,12);
+  const asset=ArtifactAcademy.images.gibbs;
+  assert.equal(createHash('sha256').update(fs.readFileSync(asset.path)).digest('hex'),asset.sha256);
   assert.equal(questions.length,12);
   assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
     RegistryCore.buildForm(RegistryContent.bank.filter(q=>!questions.includes(q)),RegistryBlueprints.arrt));

@@ -2,12 +2,14 @@
   const sources = {
     physics: ['MRI Physics, StatPearls', 'https://www.ncbi.nlm.nih.gov/books/NBK564320/'],
     artifacts: ['Questions and Answers in MRI, Allen D. Elster', 'https://mriquestions.com/'],
+    review: ['Krupa and Bekiesińska-Figatowska, Artifacts in Magnetic Resonance Imaging', 'https://doi.org/10.12659/PJR.892628'],
+    body: ['Body MR Imaging: Artifacts, k-Space, and Solutions', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4613875/'],
     qa: ['ACR MRI Quality Control', 'https://accreditationsupport.acr.org/support/solutions/articles/11000061043-quality-control-mri']
   };
   const rows = [
     ['ghost','Motion and flow','Motion ghosting','Phase inconsistencies from motion between phase-encoded acquisitions produce displaced signal replicas.','Moving structures are measured at different positions and can leave repeated copies.','Periodic motion creates structured ghosts along phase encoding in conventional Cartesian imaging. Irregular motion may blur or smear.','Abdominal breathing, cervical swallowing, cardiac or CSF pulsation.','Choose coaching, breath-holding or gating for the motion source. Redirect ghosts with phase direction if safe for coverage. Gating can extend acquisitions.','Changing phase direction moves a ghost and may introduce phase wrap. A vessel flow void can be normal.','k-space','artifacts'],
     ['wrap','Sampling and reconstruction','Phase wrap (aliasing)','Signal outside the sampled field of view is assigned an aliased position inside it.','An object outside the frame folds into the opposite side.','The phase sampling interval determines unaliased FOV. Outside spins can share sampled phase behavior with inside spins.','Small-FOV spine, knee or pelvic Cartesian acquisitions.','Increase phase FOV, use phase oversampling, or change phase direction. A larger FOV at fixed matrix increases pixel size.','A folded limb retains recognizable contours and may appear to cross another structure.','k-space','physics'],
-    ['gibbs','Sampling and reconstruction','Gibbs ringing (truncation)','Finite k-space sampling creates oscillations near sharply defined signal transitions.','A sharp border can acquire alternating bright and dark lines.','Truncating spatial frequencies produces a point-spread function with sidelobes.','At a sharp spinal cord–CSF or brain–CSF boundary.','Acquire higher spatial frequencies when feasible or use apodization. Apodization suppresses ringing at the cost of spatial detail.','Interpolation alone cannot recover missing high-frequency data. Ringing can mimic a thin cord cavity.','k-space','artifacts'],
+    ['gibbs','Sampling and reconstruction','Gibbs ringing (truncation)','Finite k-space sampling creates oscillations near sharply defined signal transitions.','A sharp border can acquire alternating bright and dark lines.','Truncating spatial frequencies produces a point-spread function with sidelobes.','At a sharp spinal cord–CSF or brain–CSF boundary.','Acquire higher spatial frequencies when feasible or use apodization. Apodization suppresses ringing at the cost of spatial detail.','Interpolation alone cannot recover missing high-frequency data. Ringing can mimic a thin cord cavity.','k-space','review'],
     ['partial-volume','Sampling and reconstruction','Partial-volume averaging','Signals from multiple tissues within the same voxel contribute to the reconstructed voxel value.','A large pixel or thick slice can mix neighboring tissues.','A voxel overlapping fluid and tissue depends on both contributions and their sequence-dependent contrast.','Small lesions and oblique boundaries, especially on thick slices.','Use thinner slices, higher acquired in-plane resolution, or an appropriate orthogonal plane. Smaller voxels generally decrease SNR when other settings are fixed.','Interpolating a thick acquisition gives more displayed samples without restoring the missing through-plane detail.','k-space','physics'],
     ['shift','Field and tissue effects','Chemical shift type 1','Fat and water resonate at different frequencies, producing spatial misregistration during frequency encoding.','The scanner places fat slightly next to where it belongs.','Shift in pixels equals frequency difference in Hz divided by readout bandwidth in Hz/pixel. The displacement increases with field strength at a fixed bandwidth.','Bright or dark bands at fat–water interfaces in spin echo and gradient echo.','Raise receiver bandwidth or suppress fat when appropriate. Higher receiver bandwidth generally reduces SNR when other settings are fixed.','Type 2 chemical shift causes intravoxel cancellation and follows the echo phase relationship.','larmor','artifacts'],
     ['opposed','Field and tissue effects','Chemical shift type 2 (India ink)','Opposed-phase fat and water components can cancel within the same voxel.','Signals from fat and water can point in opposite directions and partly cancel.','The relative phase accumulates over TE from the frequency difference; magnitude signal falls when opposed components coexist.','Dual-echo gradient echo at fat–water boundaries or within mixed tissue.','Compare paired in-phase and opposed-phase acquisitions. Use the intended echo phase for the clinical question.','An opposed-phase dark boundary does not establish a tissue tear or a misplaced readout edge.','larmor','artifacts'],
@@ -20,6 +22,17 @@
   ];
   const lessons = rows.map(([id,group,name,definition,simple,mechanism,appearance,correction,pitfall,physics,source]) =>
     ({id,group,name,definition,simple,mechanism,appearance,correction,pitfall,physics,source:sources[source]}));
+  const images = {
+    gibbs: {
+      path:'./atlas/artifacts/gibbs-cord.jpg', width:600, height:829,
+      modality:'MRI', region:'Spine', plane:'Sagittal', sequence:'Sequence not specified in figure caption',
+      artifact:'Gibbs ringing',
+      source:'https://pmc.ncbi.nlm.nih.gov/articles/PMC4340093/figure/f1-poljradiol-80-93/',
+      attribution:'Krupa and Bekiesińska-Figatowska, Polish Journal of Radiology (2015), Figure 1.',
+      license:'Attributed noncommercial use under the journal’s stated terms.',
+      sha256:'6d34e4fb51fd7acf44c87c1c091e15f3bfa8a7581aaa982ed46f8b92944354a0'
+    }
+  };
   const displacement = (offsetHz, bandwidthHzPerPixel) => offsetHz / bandwidthHzPerPixel;
-  globalThis.ArtifactAcademy = {lessons,displacement};
+  globalThis.ArtifactAcademy = {lessons,images,displacement};
 })();
