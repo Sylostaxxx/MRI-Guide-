@@ -394,7 +394,7 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/310 practice questions/).waitFor();
+    await page.getByText(/334 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -556,6 +556,37 @@ async function run() {
     await reopened.locator('#questionCount').waitFor();
     assert.equal(await reopened.locator('#questionCount').textContent(),'Question 1 of 10');
     assert.equal(await reopened.locator('#hint').isVisible(),false);
+    await reopened.goto(home+'study-center.html?section=sequence');
+    await reopened.getByRole('heading',{name:'Sequence Recognition',exact:true}).waitFor();
+    await reopened.getByText(/47 questions in this topic/).waitFor();
+    await reopened.locator('#start').click();
+    const stems=new Set();
+    for(let i=0;i<6;i++){
+      await reopened.waitForFunction(number=>document.querySelector('#practiceNumber').textContent==='Question '+number,i+1);
+      stems.add(await reopened.locator('#practiceStem').textContent());
+      const options=reopened.locator('#practiceChoices button');
+      await options.first().click();
+      for(let option=1;option<await options.count()&&await reopened.locator('#checkPractice').isDisabled();option++){
+        await options.nth(option).click();
+      }
+      await reopened.locator('#checkPractice').click();
+      await reopened.locator('#nextPractice').click();
+    }
+    assert.equal(stems.size,6);
+    await reopened.waitForFunction(()=>document.querySelector('#practiceNumber').textContent==='Question 7');
+    const savedStem=await reopened.locator('#practiceStem').textContent();
+    await reopened.reload();
+    await reopened.locator('#practiceStem').waitFor();
+    assert.equal(await reopened.locator('#practiceStem').textContent(),savedStem);
+    await reopened.goto(home+'study-center.html?section=body&part=hand');
+    await reopened.getByRole('heading',{name:'Hand and fingers',exact:true}).waitFor();
+    await reopened.waitForFunction(()=>document.querySelector('#bodyPartImages img')?.naturalWidth>0);
+    assert.match(await reopened.locator('#bodyPartCoverage').textContent(),/No verified MRI/);
+    await reopened.locator('#bodyPart').selectOption('long-bones');
+    await reopened.getByRole('heading',{name:'Long bones',exact:true}).waitFor();
+    assert.equal(await reopened.locator('#bodyPartImages img').count(),5);
+    await reopened.goBack();
+    await reopened.getByRole('heading',{name:'Hand and fingers',exact:true}).waitFor();
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');

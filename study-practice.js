@@ -30,6 +30,12 @@
   }
   get('bankInfo').textContent = pool.length+' practice questions · '+bank.length+' authored items including simulated pilots · questions cycle after the pool is used';
   const query = new URLSearchParams(location.search);
+  const focus=Object.hasOwn(StudyFocus.titles,query.get('focus'))?query.get('focus'):null;
+  if(focus){
+    document.querySelector('h1').textContent=StudyFocus.titles[focus];
+    const count=pool.filter(q=>StudyFocus.matches(q,focus)).length;
+    get('bankInfo').textContent=count+' questions in this topic. Finish the full set before questions repeat.';
+  }
   const requestedLesson = query.get('quiz');
   const requestedRegion = query.get('region');
   const lowerRequested = requestedRegion==='all'||Object.hasOwn(LowerExtremity.regions,requestedRegion);
@@ -42,7 +48,7 @@
   const topicLesson = Object.hasOwn(lessons,query.get('topic')) ? query.get('topic') : null;
   const quiz = Object.hasOwn(lessons,requestedLesson) ? requestedLesson : null;
   const retry = pool.some(q=>q.id===query.get('retry'))||StudyVariants.variants.some(q=>q.id===query.get('retry')) ? query.get('retry') : null;
-  const recordKey = quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : 'session';
+  const recordKey = quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : 'session';
   let attempts = [], records = new Map(), stats = new Map(), session, response = [], busy = false;
   let shownAt = Date.now(), troubleLimit = 25, incomingPlan = false, clearTopic = false;
   const recalculate = () => {stats = summarize(attempts,records.get('reset')?.value.at);};
@@ -70,7 +76,7 @@
   }
   function fresh(plan = {}) {
     return {id:crypto.randomUUID(),mode:quiz?'lesson':retry?'retry':'continuous',number:1,
-      recent:[],queue:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
+      recent:[],cycle:[],queue:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
       result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,ended:false,elapsed:0,
       subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
   }
@@ -79,15 +85,19 @@
   }
   function filtered(plan) {
     const questions = plan.variants ? [...pool,...StudyVariants.variants] : pool;
-    return questions.filter(q =>
+    return questions.filter(q => StudyFocus.matches(q,focus) &&
       (!plan.topic || StudyContentMap.lessonFor(q) === plan.topic) &&
       (plan.subject === 'Mixed Practice' || (plan.subject==='Lower Extremity'?LowerExtremity.matches(q,plan.lowerRegion??'all'):subject(q)===plan.subject)) &&
       (plan.difficulty === 'Any' || difficulty(q) === plan.difficulty));
   }
   async function next(plan) {
     const requested = plan.queue[0];
+    const eligible=filtered(plan);
+    const cycle=plan.cycle??plan.recent;
+    const exhausted=eligible.every(q=>cycle.includes(q.id));
+    const candidates=StudyFocus.unvisited(eligible,cycle,plan.current);
     const question = requested ? catalog.get(requested) :
-      plan.mode === 'continuous' ? select(filtered(plan),attempts,plan,stats) : null;
+      plan.mode === 'continuous' ? select(candidates,attempts,plan,stats) : null;
     if (!question) {
       if (plan.mode !== 'continuous') {
         await save({...plan,ended:true});StudyResume.clear('Study Center');
@@ -101,7 +111,7 @@
     const window = Math.max(1,Math.min(16,filtered(plan).length-1));
     const recent = [...plan.recent,question.id].slice(-window);
     const order = RegistryCore.shuffle(question.options.map((_,i)=>i));
-    await save({...plan,current:question.id,result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,elapsed:0,recent,order,draft:[],
+    await save({...plan,cycle:[...(exhausted?[]:cycle),question.id],current:question.id,result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,elapsed:0,recent,order,draft:[],
       queue:requested?plan.queue.slice(1):plan.queue});
     response = [];
     shownAt = Date.now();
@@ -164,7 +174,7 @@
     if(!session||session.ended||!session.current||currentView!=='session')return;
     const href=new URL(location.href);
     href.searchParams.set('recover','1');
-    StudyResume.save('Study Center',quiz?'Academy quiz':retry?'Question retry':'Continuous practice',
+    StudyResume.save('Study Center',quiz?'Academy quiz':retry?'Question retry':focus?StudyFocus.titles[focus]:'Continuous practice',
       catalog.get(session.current)?.topic??session.subject,'Question '+session.number,href.href);
   }
   function correctionRoute(id) {

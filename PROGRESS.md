@@ -1,5 +1,11 @@
 # MRI Study Lab progress
 
+## Study Center variety and body-region browsing
+
+- Sequence Recognition now uses the continuous practice engine. The old link opens a 47-question deck with 12 new sequence questions. The focused session saves separately and gives every eligible item a turn before cycling.
+- Added 6 hand and wrist questions and 6 long-bone questions, for 24 new study-only items overall. The continuous practice bank has 334 eligible items. The scored registry blueprint and mock forms use their existing bank.
+- Anatomy Explorer now indexes 26 regions or structure groups and distinguishes real MRI, illustrated references, and text coverage. Hand and long-bone sections include organized anatomical subdivisions and seven attributed OpenStax plates across the body index. Hand and wrist MRI remain unavailable, and long-bone illustrations cover bones that lack verified MRI packs.
+
 ## Verified in this milestone
 
 - The CerebrA brain pack uses the publisher’s symmetric population-average T1 MRI and 102 anatomical label IDs. Both volumes share a 1 mm RAS+ grid. Automated checks compare affine matrices, file checksums, all label lookup points, and thalamic laterality.

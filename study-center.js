@@ -1,6 +1,6 @@
 (() => {
   const el=id=>document.getElementById(id), {cases}=StudyContent;
-  const sections={systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
+  const sections={body:'Browse by Body Region',systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
     positioning:'Patient Positioning',pathology:'Pathology Explorer',safety:'MRI Safety',
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
   const historyKey='mri-study-lab-review-v1';
@@ -17,6 +17,11 @@
     const b=document.createElement('button');b.textContent=text;b.onclick=click;return b;
   }
   function show(section,write=false) {
+    if(section==='sequence'){
+      if(write)AppNavigation.open('./practice.html?focus=sequence');
+      else location.replace('./practice.html?focus=sequence');
+      return;
+    }
     if(write)AppNavigation.navigate('?section='+section);
     if(course===section&&el('studyTitle').dataset.initialized)return;
     el('studyTitle').dataset.initialized='true';
@@ -26,18 +31,18 @@
       if(previous?.version===1&&Number.isInteger(previous.step)&&previous.step>=0&&previous.step<=cases[section]?.length)
         ({step,score,selected,hintLevel=0,hintsHidden=false}=previous);
     }catch{}
-    const area={systems:'anatomy',lower:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
+    const area={body:'anatomy',systems:'anatomy',lower:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
     AppNavigation.active(area[section]??'clinical');
-    el('studyTitle').textContent=section==='systems'?'Anatomy Explorer':'Study Center';
+    el('studyTitle').textContent=['body','systems'].includes(section)?'Anatomy Explorer':'Study Center';
 
-    for (const key of ['systems','lower','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
+    for (const key of ['body','systems','lower','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
     for (const node of el('sections').children) node.setAttribute('aria-current',String(node.dataset.section===section));
     if (section==='artifact') artifact();
     if (section==='mastery') mastery();
     if (cases[section]) exercise();
   }
   for (const [key,name] of Object.entries(sections)) {
-    const control=button(name,()=>show(key,true));control.dataset.section=key;el('sections').append(control);
+    const control=button(name,()=>{show(key,true);if(key==='body')globalThis.BodyBrowser.route();});control.dataset.section=key;el('sections').append(control);
   }
 
   const regions=[...new Set(OrganCatalog.flatMap(system=>system.entries.map(entry=>entry.region)))].sort();
