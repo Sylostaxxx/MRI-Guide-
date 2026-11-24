@@ -604,7 +604,12 @@ async function run() {
     await reopened.locator('#start').click();
     await reopened.getByText(/Single-shot diffusion images stretch along phase/).waitFor();
     await reopened.locator('#practiceHint').click();
-    assert.match(await reopened.locator('#practiceHints').textContent(),/Hint 1/);
+    await reopened.locator('#practiceHints').getByText(/Hint 1/).waitFor();
+    await reopened.getByRole('button',{name:'Make the EPI train longer.',exact:true}).click();
+    await reopened.locator('#checkPractice').click();
+    await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
+    await reopened.locator('#teachPractice').click();
+    await reopened.locator('#practiceCorrection').getByText(/accumulated phase error and distortion/).waitFor();
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');
