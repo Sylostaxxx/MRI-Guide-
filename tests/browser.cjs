@@ -407,11 +407,14 @@ async function run() {
     await page.locator('#practiceStem').waitFor();
     assert.equal(await page.locator('#practiceStem').textContent(),currentQuestion);
     const practiceQuestion=await page.evaluate(()=>RegistryContent.bank.find(q=>q.stem===document.querySelector('#practiceStem').textContent));
-    await page.locator('#practiceChoices button').filter({hasText:practiceQuestion.options[1][0]}).click();
+    const choose=async(q,index)=>page.locator('#practiceChoices button').getByText(q.options[index][0],{exact:true}).click();
+    const wrong=practiceQuestion.type==='order'? [...practiceQuestion.key].reverse():
+      [practiceQuestion.options.findIndex((_,index)=>!practiceQuestion.key.includes(index))];
+    for(const index of wrong)await choose(practiceQuestion,index);
     await page.locator('#checkPractice').click();
     await page.getByText('✕ INCORRECT',{exact:true}).waitFor();
-    assert.equal(await page.locator('.choice-bad').count(),1);
-    assert.equal(await page.locator('.choice-good').count(),1);
+    assert.ok(await page.locator('.choice-bad').count()>0);
+    if(practiceQuestion.type!=='order')assert.equal(await page.locator('.choice-good').count(),practiceQuestion.key.length);
     await page.getByRole('button',{name:'Trouble Questions',exact:true}).click();
     await page.locator('#troubleRows').getByText(currentQuestion,{exact:true}).waitFor();
     assert.equal(await page.getByRole('link',{name:'Retry Question',exact:true}).count()>=1,true);
@@ -420,7 +423,7 @@ async function run() {
     await page.getByText('Question 2',{exact:true}).waitFor();
     assert.notEqual(await page.locator('#practiceStem').textContent(),currentQuestion);
     const second=await page.evaluate(()=>RegistryContent.bank.find(q=>q.stem===document.querySelector('#practiceStem').textContent));
-    await page.locator('#practiceChoices button').filter({hasText:second.options[0][0]}).click();
+    for(const index of second.key)await choose(second,index);
     await page.locator('#checkPractice').click();
     await page.getByText('✓ CORRECT!',{exact:true}).waitFor();
     await page.getByRole('button',{name:'Study Dashboard',exact:true}).click();
