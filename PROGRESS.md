@@ -1,5 +1,13 @@
 # MRI Study Lab progress
 
+## Artifact Academy and image re-audit
+
+- Physics now opens the expanded Artifact Academy at the existing simulator route. Twelve lessons cover motion, sampling, field and tissue effects, RF hardware, EPI and TOF. Each links to an existing Physics Academy chapter and an original troubleshooting scenario with progressive hints and answer rationales.
+- The 12 new text cases use the shared practice engine, bringing the eligible continuous-practice bank to 346 items. The artifact expansion target is 150 new questions and 50 licensed real-image examples. This increment contributes zero clinical artifact images and leaves the timed exam banks unchanged.
+- Motion, phase wrap and type 1 chemical shift have side-by-side synthetic comparisons. The 3 T chemical-shift model converts a 440 Hz fat–water offset to pixels using receiver bandwidth. The other two phantoms are qualitative.
+- Rechecked 24 visual questions, including the previously reported disc-level marker, and the three allowlisted Atlas plates. Added missing-image and attribution guards. Independent clinical review remains pending.
+- Updated the coverage inventory to reflect the existing upper- and lower-limb illustrations and eight hand/wrist questions. The lower-extremity bank remains 71 of 300, with seven knee MRI items. Dedicated IAC/CPA, MRV and sinus datasets and questions, other lower-extremity MRI, larger artifact curriculum, and end-to-end troubleshooting with clinical cases remain open.
+
 ## Study Center variety and body-region browsing
 
 - Sequence Recognition now uses the continuous practice engine. The old link opens a 47-question deck with 12 new sequence questions. The focused session saves separately and gives every eligible item a turn before cycling.

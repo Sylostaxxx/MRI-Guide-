@@ -36,6 +36,7 @@
     return stats;
   }
   function subject(question) {
+    if (question.subject) return question.subject;
     if (/artifact|ghost|zipper|gibbs|alias|wrap|chemical.shift|motion|magic angle|dielectric|distortion/i.test(question.topic)) return 'Artifacts';
     if (question.image || /anatomy|vertebral level/i.test(question.topic)) return 'Anatomy';
     return {physical:'Physics',parameters:'Physics',acquisition:'Image Production',safety:'Safety',

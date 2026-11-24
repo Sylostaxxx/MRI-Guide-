@@ -17,6 +17,12 @@ Registered indicators include arrows, numbered leaders, dot leaders, outlined ho
 
 Checksums, integer source label lookups, geometry, expected keys, endpoint bounds, loaded image dimensions, contrasting strokes, and overlay-to-image alignment are tested. New question pools preflight image loads and reject missing or unverified assets. Existing timed sessions retain their deadlines and saved questions. An image load error in an already saved session is shown in place so learners can move to another question. Source NIfTI volumes, previous attempt history and backup data are untouched.
 
+## 2026-11-24 re-audit
+
+- The current 24 registry visual items retain their published source registration. Automated tests rechecked label lookup, affine geometry, source hashes, expected answers and marker endpoints against all four MRI packs. The browser suite exercises the sagittal disc-level overlay under zoom and resize. No deployed question required a new marker or suspension.
+- Pool validation now rejects text prompts that explicitly depend on a missing image or arrow, and visual records missing a license URL or checksum. Preflight compares decoded dimensions for each item even when several items reference the same source raster.
+- The three Atlas identification plate assets remain subject to the existing unlabeled-image allowlist, file hash checks and hotspot bounds. The 24 registry items still await independent clinical review.
+
 ## Dataset decisions
 
 | Candidate | Decision |

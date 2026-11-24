@@ -394,7 +394,7 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/334 practice questions/).waitFor();
+    await page.getByText(/346 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -590,6 +590,19 @@ async function run() {
     assert.equal(await reopened.locator('#bodyPartImages img').count(),5);
     await reopened.goBack();
     await reopened.getByRole('heading',{name:'Hand and fingers',exact:true}).waitFor();
+    await reopened.goto(home+'study-center.html?section=artifact&lesson=shift');
+    await reopened.getByRole('heading',{name:'Artifact Academy',exact:true}).waitFor();
+    assert.match(await reopened.locator('#artifactText').textContent(),/4.4 pixels/);
+    await reopened.locator('#artifactBandwidth').fill('440');
+    assert.match(await reopened.locator('#artifactText').textContent(),/1.0 pixels/);
+    await reopened.locator('#artifactLesson').selectOption('epi');
+    await reopened.getByRole('heading',{name:'EPI susceptibility distortion'}).waitFor();
+    assert.equal(await reopened.locator('#artifactDemo').isVisible(),false);
+    await reopened.getByRole('link',{name:'Try this Fix the Scan case'}).click();
+    await reopened.locator('#start').click();
+    await reopened.getByText(/Single-shot diffusion images stretch along phase/).waitFor();
+    await reopened.locator('#practiceHint').click();
+    assert.match(await reopened.locator('#practiceHints').textContent(),/Hint 1/);
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');

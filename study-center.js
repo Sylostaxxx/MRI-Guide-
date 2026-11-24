@@ -1,6 +1,6 @@
 (() => {
   const el=id=>document.getElementById(id), {cases}=StudyContent;
-  const sections={body:'Browse by Body Region',systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Simulator',sequence:'Sequence Recognition',
+  const sections={body:'Browse by Body Region',systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Academy',sequence:'Sequence Recognition',
     positioning:'Patient Positioning',pathology:'Pathology Explorer',safety:'MRI Safety',
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
   const historyKey='mri-study-lab-review-v1';
@@ -37,12 +37,11 @@
 
     for (const key of ['body','systems','lower','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
     for (const node of el('sections').children) node.setAttribute('aria-current',String(node.dataset.section===section));
-    if (section==='artifact') artifact();
     if (section==='mastery') mastery();
     if (cases[section]) exercise();
   }
   for (const [key,name] of Object.entries(sections)) {
-    const control=button(name,()=>{show(key,true);if(key==='body')globalThis.BodyBrowser.route();});control.dataset.section=key;el('sections').append(control);
+    const control=button(name,()=>{show(key,true);if(key==='body')globalThis.BodyBrowser.route();if(key==='artifact')ArtifactBrowser.route();});control.dataset.section=key;el('sections').append(control);
   }
 
   const regions=[...new Set(OrganCatalog.flatMap(system=>system.entries.map(entry=>entry.region)))].sort();
@@ -233,7 +232,8 @@
 
   function artifact() {
     const canvas=el('phantom'),ctx=canvas.getContext('2d'),n=canvas.width;
-    const frame=ctx.createImageData(n,n), amount=Number(el('severity').value)/100;
+    const reference=el('phantomReference').getContext('2d');
+    const frame=ctx.createImageData(n,n), clean=reference.createImageData(n,n), amount=Number(el('severity').value)/100;
     const type=el('artifactType').value, vertical=el('artifactAxis').value==='vertical';
     function signal(x,y) {
       const fat=((x-95)/77)**2+((y-97)/70)**2<1;
@@ -241,30 +241,39 @@
       const fluid=((x-109)/21)**2+((y-90)/13)**2<1;
       return {fat:fat&&!tissue?140:0, water:fluid?210:tissue?80:0};
     }
-    const shift=Math.round(amount*21), repeat=Math.round(n*(1-amount*.57));
+    const bandwidth=Number(el('artifactBandwidth').value);
+    const displacement=ArtifactAcademy.displacement(440,bandwidth);
+    const shift=Math.round(displacement);
+    el('artifactDirectionLabel').textContent=type==='shift'?'Frequency-encoding direction':'Phase-encoding direction';
+    el('artifactBandwidthRow').hidden=type!=='shift';
+    el('artifactSeverityRow').hidden=type==='shift';
+    el('artifactBandwidthValue').textContent=bandwidth+' Hz/pixel';
+    const repeat=Math.round(n*(1-amount*.57));
     for (let y=0;y<n;y++) for (let x=0;x<n;x++) {
       const base=signal(x,y), sample=(delta)=>signal(x-(vertical?0:delta),y-(vertical?delta:0));
       let v=base.fat+base.water;
       if (type==='ghost') {
         const ghost=sample(32);v+=amount*.45*(ghost.fat+ghost.water);
       } else if (type==='shift') v=base.water+sample(shift).fat;
-      else {
+      else if(amount>0){
         const folded=sample((vertical?y:x)<n/2?-repeat:repeat);
         v+=folded.fat+folded.water;
       }
       const i=(y*n+x)*4;
+      clean.data[i]=clean.data[i+1]=clean.data[i+2]=base.fat+base.water;clean.data[i+3]=255;
       frame.data[i]=frame.data[i+1]=frame.data[i+2]=Math.min(255,v);frame.data[i+3]=255;
     }
     ctx.putImageData(frame,0,0);
+    reference.putImageData(clean,0,0);
     el('artifactText').textContent={
       ghost:'Motion can produce replicas in the phase-encoding direction. This model adds a displaced copy.',
       wrap:'An undersized phase FOV can fold signal from outside the prescribed image back into the image.',
-      shift:'Fat and water can map to different positions along the frequency-encoding direction.'
+      shift:'Approximate 3 T fat–water offset of 440 Hz gives '+displacement.toFixed(1)+' pixels of readout displacement. The demo rounds to whole pixels. Higher bandwidth generally reduces SNR.'
     }[type];
   }
-  for (const id of ['severity','artifactType','artifactAxis']) el(id).oninput=artifact;
+  for (const id of ['severity','artifactType','artifactAxis','artifactBandwidth']) el(id).oninput=artifact;
   updateSystems();
-  function route(){const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');routeCorrection();}
+  function route(){const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');if(requested==='artifact')ArtifactBrowser.route();routeCorrection();}
   route();window.addEventListener('popstate',route);
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
 })();
