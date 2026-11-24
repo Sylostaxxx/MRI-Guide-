@@ -57,10 +57,11 @@
     for (const row of data.records) {
       if (!object(row) || !str(row.id) || !object(row.value) || !Number.isFinite(row.at)) throw Error('Invalid study record.');
       const value = row.value;
-      if (/^session(?::(?:lesson|retry):[a-z0-9-]+)?$/.test(row.id)) {
+      if (/^session(?::(?:lesson|retry|focus):[a-z0-9-]+)?$/.test(row.id)) {
         const hasResult = value.result !== null;
         if (!str(value.id) || !['continuous','lesson','retry'].includes(value.mode) ||
             !Array.isArray(value.recent) || !value.recent.every(str) ||
+            (value.cycle !== undefined && (!Array.isArray(value.cycle) || !value.cycle.every(str))) ||
             !Array.isArray(value.queue) || !value.queue.every(str) || !indexes(value.order) ||
             (value.draft !== undefined && !indexes(value.draft)) ||
             (value.current !== null && !str(value.current)) ||

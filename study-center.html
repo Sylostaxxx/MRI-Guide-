@@ -4,7 +4,7 @@
 <style>
 :root{color-scheme:dark;background:#101826;color:#eef5ff;font:16px/1.55 system-ui}main{max-width:920px;padding:22px;margin:auto}a{color:#79e3cc}button,textarea,select,input{font:inherit}button,textarea,select{color:inherit;background:#23344a;border:1px solid #638399;border-radius:8px;padding:9px 12px;min-height:44px}button:enabled{cursor:pointer}button[aria-current=true]{border-color:#79e3cc;color:#79e3cc}.nav,.options{display:flex;gap:8px;flex-wrap:wrap}.options{flex-direction:column;align-items:flex-start}.panel{background:#182538;border-radius:12px;padding:18px;margin:18px 0}.figure{display:block;width:100%;max-height:720px;object-fit:contain;background:#fff;border-radius:10px}figure{margin:18px 0}.organ-filters{display:flex;gap:12px;flex-wrap:wrap}.organ-filters label{display:grid;gap:3px}textarea{width:100%;box-sizing:border-box}.dashboard{width:100%;text-align:left;border-collapse:collapse}.dashboard td,.dashboard th{padding:8px 6px;border-bottom:1px solid #495b72}canvas{display:block;width:min(100%,384px);height:auto;background:#080c13}.small{color:#beccda}[hidden]{display:none!important}
 </style><link rel="stylesheet" href="./app-navigation.css"><style>.lower-links{display:flex;gap:8px 18px;flex-wrap:wrap}.lower-links a{min-height:44px;display:inline-flex;align-items:center}
-#lower dt{margin-top:12px;font-weight:700}#lower dd{margin:.2em 0 0}#lower img{max-width:min(100%,480px);height:auto}#lower figure{margin:12px 0}
+#bodyPart{max-width:100%}#bodyPartBreakdown dt,#lower dt{margin-top:12px;font-weight:700}#bodyPartBreakdown dd,#lower dd{margin:.2em 0 0}#lower img{max-width:min(100%,480px);height:auto}#lower figure{margin:12px 0}
 #lowerProtocols details{margin:10px 0;padding:10px;border:1px solid #55758d;border-radius:8px}#lowerNote{display:block;width:min(100%,540px);font:inherit}
 .coverage-scroll{overflow:auto}.coverage-scroll table{border-collapse:collapse}.coverage-scroll th,.coverage-scroll td{padding:8px;text-align:left;border-bottom:1px solid #55758d;min-width:100px}</style></head><body><main>
 <nav data-app-nav="anatomy" aria-label="Primary navigation"></nav><h1 id="studyTitle">Study Center</h1><nav id="sections" class="nav" aria-label="Study activities"></nav>
@@ -20,7 +20,10 @@
 <p><label>Severity <input id="severity" type="range" min="0" max="100" value="45"></label></p>
 <canvas id="phantom" width="192" height="192" aria-label="Synthetic MRI artifact phantom" role="img"></canvas><p id="artifactText"></p>
 </section>
-<section id="lower" class="panel" hidden>
+<section id="body" class="panel" hidden><h2>Browse by Body Region</h2>
+<label>Region or structure <select id="bodyPart"></select></label><h3 id="bodyPartTitle"></h3>
+<p id="bodyPartDescription"></p><dl id="bodyPartBreakdown" hidden></dl><p id="bodyPartCoverage"></p><div id="bodyPartLinks" class="lower-links"></div>
+<div id="bodyPartImages"></div></section><section id="lower" class="panel" hidden>
 <h2>Lower-extremity MRI library</h2>
 <label>Region <select id="libraryRegion"></select></label>
 <p id="lowerStatus"></p><div id="lowerActions" class="lower-links"></div>
@@ -36,4 +39,4 @@
 <section id="mastery" class="panel" hidden><h2>My mastery</h2><p>Independent accuracy excludes attempts that used a location hint. Results stay on this device and are included in the study backup.</p>
 <table class="dashboard"><thead><tr><th>Study area</th><th>Independent correct</th><th>Assisted attempts</th></tr></thead><tbody id="masteryRows"></tbody></table><h3>Weak topics</h3><ul id="weakTopics"></ul><details><summary>Recent study history</summary><ol id="studyHistory"></ol></details>
 </section>
-</main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./registry-blueprints.js"></script><script src="./physics-lessons.js"></script><script src="./mri-physics.js"></script><script src="./physics-diagrams.js"></script><script src="./study-guidance.js"></script><script src="./lower-extremity.js"></script><script src="./study-coverage.js"></script><script src="./lower-library.js"></script><script src="./study-center.js"></script></body></html>
+</main><script src="./app-navigation.js"></script><script src="./atlas-study.js"></script><script src="./study-content.js"></script><script src="./anatomy-plates.js"></script><script src="./organ-catalog.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./registry-blueprints.js"></script><script src="./physics-lessons.js"></script><script src="./mri-physics.js"></script><script src="./physics-diagrams.js"></script><script src="./study-guidance.js"></script><script src="./lower-extremity.js"></script><script src="./study-coverage.js"></script><script src="./lower-library.js"></script><script src="./body-browser.js"></script><script src="./study-center.js"></script></body></html>

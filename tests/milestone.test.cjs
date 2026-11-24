@@ -308,8 +308,8 @@ require('../physics-videos.js');
 
 test('academy content is complete for each published lesson and isolated from Exam A', () => {
   const bank=RegistryContent.bank;
-  assert.equal(bank.filter(q=>!q.id.startsWith('le-')).length,279);
-  assert.equal(bank.filter(q=>!q.pilot&&!q.id.startsWith('le-')).length,249);
+  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone)-/.test(q.id)).length,279);
+  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone)-/.test(q.id)).length,249);
   assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
   const exact = new Set();
   for(const q of bank){
@@ -470,4 +470,25 @@ test('registry image overlays match the original RAS source voxels, answer keys 
     }
     assert.ok(!RegistryImageView.valid(q,{...asset,verification:'pending'}),q.id);
   }
+});
+
+require('../study-focus.js');
+require('../registry-bank-focus.js');
+require('../body-browser.js');
+test('focused topics exhaust their questions before cycling and preserve the exam form',()=>{
+  const active=RegistryContent.bank.filter(q=>!q.pilot && StudyFocus.matches(q,'sequence'));
+  assert.equal(active.length,47);
+  const seen=[];
+  while(seen.length<active.length) seen.push(StudyFocus.unvisited(active,seen,seen.at(-1))[0].id);
+  assert.equal(new Set(seen).size,active.length);
+  assert.ok(StudyFocus.unvisited(active,seen,seen.at(-1)).every(q=>q.id!==seen.at(-1)));
+  const additions=RegistryContent.bank.filter(q=>/^(seq|hand|bone)-/.test(q.id));
+  assert.equal(additions.length,24);
+  assert.ok(additions.every(q=>q.studyOnly&&q.options.length>=3&&q.hints.length===2&&q.references.length));
+  assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
+    RegistryCore.buildForm(RegistryContent.bank.filter(q=>!additions.includes(q)),RegistryBlueprints.arrt));
+  const rows=BodyIndex.groups.flatMap(([,regions])=>regions);
+  assert.equal(rows.length,26);
+  assert.ok(rows.find(row=>row[0]==='hand'&&row[4]==='hand-bones'));
+  assert.ok(rows.find(row=>row[0]==='long-bones'&&row[4]==='long-bone'));
 });

@@ -152,5 +152,68 @@ globalThis.AnatomyPlates = {
     "author": "OpenStax, Rice University",
     "sha256": "ec1dd63f7f3a3c808b845350d050e1d2d5d6b5d7535c403760e02ebbacbb21f4",
     "changes": "Cropped to panels a and b; original callouts retained."
+  },
+  "humerus": {
+    "asset": "./atlas/plates/humerus.webp",
+    "title": "Humerus and elbow",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-2-bones-of-the-upper-limb#fig-ch08_02_01",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "71279962b58a578127ad17f677dfbc0592a6586e21fa338762855b7bc5c813dd"
+  },
+  "forearm-bones": {
+    "asset": "./atlas/plates/forearm-bones.webp",
+    "title": "Ulna and radius",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-2-bones-of-the-upper-limb#fig-ch08_02_02",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "0863ad9f8a7b5f7d768dde005810b42b83040aae0d6cc49d7fc8a6d7502e4ff1"
+  },
+  "hand-bones": {
+    "asset": "./atlas/plates/hand-bones.webp",
+    "title": "Bones of the wrist and hand",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-2-bones-of-the-upper-limb#fig-ch08_02_03",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "b293a940602ab00afa65672b1b6abc2ff8decca281db9f43c5ee338ad658aee8"
+  },
+  "carpal-tunnel": {
+    "asset": "./atlas/plates/carpal-tunnel.webp",
+    "title": "Carpal tunnel",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-2-bones-of-the-upper-limb#fig-ch08_02_05",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "49b4361dbcb4532c3dc7870bbe07dd29330fa3630ff460deb15c723b74bc8758"
+  },
+  "long-bone": {
+    "asset": "./atlas/plates/long-bone.webp",
+    "title": "Anatomy of a long bone",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/6-3-bone-structure#fig-ch06_03_01",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "b88e6c50b0780873f6a5a82556516f2d5ce37bcbf89cddc865183221a189d2cb"
+  },
+  "leg-bones": {
+    "asset": "./atlas/plates/leg-bones.webp",
+    "title": "Tibia and fibula",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-4-bones-of-the-lower-limb#fig-ch08_04_03",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "5ef9c5ac695e2630d03f577eac4ed59f8613911359316018d746874d67e633a5"
+  },
+  "foot-bones": {
+    "asset": "./atlas/plates/foot-bones.webp",
+    "title": "Bones of the foot",
+    "source": "https://openstax.org/books/anatomy-and-physiology-2e/pages/8-4-bones-of-the-lower-limb#fig-ch08_04_04",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "author": "OpenStax, Rice University",
+    "sha256": "04600392a64e73ea4d07ac87a16baf0b85ba10c1d7097771bddfaa025c229c5b"
   }
 };
