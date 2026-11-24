@@ -308,8 +308,8 @@ require('../physics-videos.js');
 
 test('academy content is complete for each published lesson and isolated from Exam A', () => {
   const bank=RegistryContent.bank;
-  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone)-/.test(q.id)).length,279);
-  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone)-/.test(q.id)).length,249);
+  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone|art)-/.test(q.id)).length,279);
+  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone|art)-/.test(q.id)).length,249);
   assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
   const exact = new Set();
   for(const q of bank){
@@ -491,4 +491,38 @@ test('focused topics exhaust their questions before cycling and preserve the exa
   assert.equal(rows.length,26);
   assert.ok(rows.find(row=>row[0]==='hand'&&row[4]==='hand-bones'));
   assert.ok(rows.find(row=>row[0]==='long-bones'&&row[4]==='long-bone'));
+});
+
+
+require('../artifact-lessons.js');
+require('../registry-bank-artifacts.js');
+test('artifact curriculum maps to sourced practice and published physics lessons',()=>{
+  const {lessons,displacement}=ArtifactAcademy;
+  assert.equal(displacement(440,220),2);
+  assert.equal(displacement(440,440),1);
+  const questions=RegistryContent.bank.filter(question=>StudyFocus.matches(question,'artifact'));
+  assert.equal(lessons.length,12);
+  const asset=ArtifactAcademy.images.gibbs;
+  assert.equal(createHash('sha256').update(fs.readFileSync(asset.path)).digest('hex'),asset.sha256);
+  assert.equal(questions.length,12);
+  assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
+    RegistryCore.buildForm(RegistryContent.bank.filter(q=>!questions.includes(q)),RegistryBlueprints.arrt));
+  for (const item of lessons) {
+    const question=questions.find(q=>q.id==='art-'+item.id);
+    assert.ok(StudyContentMap.lessons[item.physics],item.id);
+    assert.equal(StudyReview.subject(question),'Artifacts');
+    assert.match(StudyContentMap.related(question),new RegExp('lesson='+item.id+'$'));
+    assert.ok(item.definition&&item.mechanism&&item.appearance&&item.correction&&item.pitfall);
+    assert.deepEqual(question.references,[item.source]);
+    assert.ok(question.hints.every(hint=>!hint.includes(question.options[0][0])));
+  }
+});
+
+test('image question validation fails closed for missing images and attribution data',()=>{
+  const q=RegistryContent.bank.find(question=>question.id==='n10');
+  assert.ok(RegistryImageView.valid(q));
+  assert.equal(RegistryImageView.valid({...q,image:undefined}),false);
+  assert.equal(RegistryImageView.valid(q,{...RegistryImages[q.image],sha256:undefined}),false);
+  assert.equal(RegistryImageView.valid(q,{...RegistryImages[q.image],licenseUrl:undefined}),false);
+  assert.deepEqual(RegistryContent.bank.filter(question=>!RegistryImageView.valid(question)).map(q=>q.id),[]);
 });

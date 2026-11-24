@@ -2,11 +2,13 @@
   const loaded = new Map();
   const disabled = Object.freeze([]);
   const markerWords = /indicated by|highlighted by|which disc level|which structure is labeled|marked anatomical region|numbered marker|outline|marker dot|marked by|highlighted structure/i;
+  const missingVisual = /(?:indicated|marked|highlighted) by (?:an? |the )?(?:arrow|marker|outline)|(?:in|on) (?:the|this) (?:image|scan|localizer|illustration)|which (?:structure|disc level) is (?:labeled|indicated|marked)/i;
   function valid(question,asset=globalThis.RegistryImages?.[question.image]) {
-    if (!question.image) return true;
+    if (!question.image) return !missingVisual.test(question.stem);
     if(disabled.includes(question.id))return false;
     if (!asset || asset.questionId!==question.id || (asset.verification!=='source-verified') ||
-      !Object.hasOwn(asset,'marker') || !asset.source || !asset.license || !asset.attribution ||
+      !Object.hasOwn(asset,'marker') || !/^https:\/\//.test(asset.source) || !asset.license || !asset.attribution ||
+      !/^https:\/\//.test(asset.licenseUrl) || !/^[a-f0-9]{64}$/.test(asset.sha256) ||
       !/^\d{4}-\d\d-\d\d$/.test(asset.reviewed) || !asset.sequence || !asset.plane ||
       !/^\.\/atlas\/registry\/[\w-]+\.webp$/.test(asset.path) ||
       !Number.isInteger(asset.width) || !Number.isInteger(asset.height) ||
@@ -41,7 +43,7 @@
         const timeout=setTimeout(()=>resolve(false),8000);
         image.onload=()=>{
           clearTimeout(timeout);
-          resolve(image.naturalWidth===asset.width&&image.naturalHeight===asset.height);
+          resolve([image.naturalWidth,image.naturalHeight]);
         };
         image.onerror=()=>{clearTimeout(timeout);resolve(false);};
         image.src=asset.path;
@@ -49,8 +51,8 @@
       loaded.set(asset.path,result);
       result.then(ok=>{if(!ok)loaded.delete(asset.path);});
     }
-    const ok=await loaded.get(asset.path);
-    return ok&&(!asset.comparison||await ready(comparisonQuestion(RegistryImages[asset.comparison])));
+    const size=await loaded.get(asset.path);
+    return Boolean(size&&size[0]===asset.width&&size[1]===asset.height)&&(!asset.comparison||await ready(comparisonQuestion(RegistryImages[asset.comparison])));
   }
   async function available(questions) {
     const checks=await Promise.all(questions.map(ready));

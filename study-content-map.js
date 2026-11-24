@@ -31,6 +31,7 @@
     return 'Registry';
   }
   function related(question) {
+    if (question.id.startsWith('art-')) return question.related;
     const lesson = lessonFor(question);
     return lesson ? './academy.html?lesson='+lesson : question.related;
   }

@@ -8,25 +8,25 @@
     ['Lumbar spine','—','—','—','—',0,1,'Schematic planner','Lumbar anatomy practice','Text'],
     ['Sacrum and SI joints','—','—','—','—',0,1,'SI planning reference','Hip and pelvis library','Text'],
     ['Shoulder','—','—','—','—',0,2,'Schematic planner','Rotator cuff practice','Text'],
-    ['Arm','—','—','—','—',0,0,'—','—','—'],
-    ['Elbow','—','—','—','—',0,1,'—','Distal biceps practice','Text'],
-    ['Forearm','—','—','—','—',0,0,'—','—','—'],
-    ['Wrist','—','—','—','—',0,1,'—','Carpal tunnel practice','Text'],
-    ['Hand','—','—','—','—',0,1,'—','Digit anatomy practice','Text'],
+    ['Arm','—','Humerus','—','—',0,0,'—','Long-bone anatomy','Plate'],
+    ['Elbow','—','Humeral landmarks','—','—',0,1,'—','Distal biceps practice','Text and plate'],
+    ['Forearm','—','Radius and ulna','—','—',0,0,'—','Long-bone anatomy','Plate'],
+    ['Wrist','—','Carpal tunnel and hand bones','—','—',0,4,'—','Carpal and tunnel practice','Text and plates'],
+    ['Hand','—','Hand bones and carpal tunnel','—','—',0,4,'—','Digit and tendon anatomy practice','Text and plates'],
     ['Chest','—','Lungs','—','—',0,1,'—','Motion control practice','Text and plate'],
     ['Abdomen','—','Liver and kidney','—','—',0,7,'—','Abdominal pathology questions','Text and plates'],
     ['Pelvis','—','Uterus','—','—',0,3,'Bilateral pelvis survey','Hip and pelvis library','Text and plate'],
     ['Hip','—','Femur and hip muscles','—','—',0,12,'Unilateral, bilateral, arthrogram','Lower-extremity library','Text and plates'],
     ['Thigh','—','Hip and thigh muscles','Text compartments','—',0,8,'Thigh','Lower-extremity library','Text and plate'],
     ['Knee','pyKNEEr DESS','Knee joint','Orthogonal MRI and knee plate','Femur and femoral cartilage',7,16,'Knee, postoperative knee, real scout','Lower-extremity library','MRI pack'],
-    ['Lower leg','—','—','Text compartments','—',0,8,'Tibia/fibula','Lower-extremity library','Text'],
-    ['Ankle','—','—','—','—',0,11,'Ankle and Achilles','Lower-extremity library','Text'],
-    ['Foot','—','—','—','—',0,9,'Foot and forefoot','Lower-extremity library','Text'],
+    ['Lower leg','—','Tibia and fibula','Text compartments','—',0,8,'Tibia/fibula','Lower-extremity library','Text'],
+    ['Ankle','—','Foot and ankle bones','—','—',0,11,'Ankle and Achilles','Lower-extremity library','Text'],
+    ['Foot','—','Foot bones','—','—',0,9,'Foot and forefoot','Lower-extremity library','Text'],
     ['Cardiac','MSD left atrial crop','Heart','Heart cross section','Left atrial mask',2,0,'—','Cardiac orientation practice','MRI pack'],
     ['Vascular','—','—','—','—',0,3,'Lower-extremity vascular overview','Flow and velocity practice','Text'],
     ['Specialized examinations','—','—','—','—',0,2,'Direct hip arthrogram reference','IR and perfusion lessons','Text']
   ];
-  globalThis.StudyCoverage = {version:1,reviewed:'2026-11-23',rows:rows.map(row=>[
-    ...row,row[1]!=='—'?'Partial MRI coverage':row[6]?'Reference coverage':'Coverage gap'
+  globalThis.StudyCoverage = {version:2,reviewed:'2026-11-24',rows:rows.map(row=>[
+    ...row,row[1]!=='—'?'Partial MRI coverage':(row[2]!=='—'||row[6])?'Reference coverage':'Coverage gap'
   ])};
 })();

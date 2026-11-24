@@ -291,7 +291,7 @@ async function run() {
     await page.waitForFunction(()=>document.querySelector('#diagram').naturalWidth>0);
     await page.locator('#organNote').fill('Kidney study note');
     await page.locator('#organSave').click();
-    await page.getByRole('button',{name:'Artifact Simulator'}).click();
+    await page.getByRole('button',{name:'Artifact Academy'}).click();
     const phantom=page.locator('#phantom');
     const baseline=await phantom.evaluate(canvas=>canvas.toDataURL());
     await page.locator('#severity').fill('90');
@@ -394,7 +394,7 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/334 practice questions/).waitFor();
+    await page.getByText(/346 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -590,6 +590,26 @@ async function run() {
     assert.equal(await reopened.locator('#bodyPartImages img').count(),5);
     await reopened.goBack();
     await reopened.getByRole('heading',{name:'Hand and fingers',exact:true}).waitFor();
+    await reopened.goto(home+'study-center.html?section=artifact&lesson=shift');
+    await reopened.getByRole('heading',{name:'Artifact Academy',exact:true}).waitFor();
+    assert.match(await reopened.locator('#artifactText').textContent(),/4.4 pixels/);
+    await reopened.locator('#artifactBandwidth').fill('440');
+    assert.match(await reopened.locator('#artifactText').textContent(),/1.0 pixels/);
+    await reopened.locator('#artifactLesson').selectOption('gibbs');
+    await reopened.waitForFunction(()=>document.querySelector('#artifactImageRaster').naturalWidth===600);
+    await reopened.locator('#artifactLesson').selectOption('epi');
+    await reopened.getByRole('heading',{name:'EPI susceptibility distortion'}).waitFor();
+    assert.equal(await reopened.locator('#artifactDemo').isVisible(),false);
+    await reopened.getByRole('link',{name:'Try this Fix the Scan case'}).click();
+    await reopened.locator('#start').click();
+    await reopened.getByText(/Single-shot diffusion images stretch along phase/).waitFor();
+    await reopened.locator('#practiceHint').click();
+    await reopened.locator('#practiceHints').getByText(/Hint 1/).waitFor();
+    await reopened.getByRole('button',{name:'Make the EPI train longer.',exact:true}).click();
+    await reopened.locator('#checkPractice').click();
+    await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
+    await reopened.locator('#teachPractice').click();
+    await reopened.locator('#practiceCorrection').getByText(/accumulated phase error and distortion/).waitFor();
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');
