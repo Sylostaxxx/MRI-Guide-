@@ -36,6 +36,9 @@
     const count=pool.filter(q=>StudyFocus.matches(q,focus)).length;
     get('bankInfo').textContent=count+' questions in this topic. Finish the full set before questions repeat.';
   }
+  const requestedSubject=query.get('subject');
+  const subjectScope=subjects.includes(requestedSubject)&&requestedSubject!=='Mixed Practice'?requestedSubject:null;
+  if(subjectScope)get('subject').value=subjectScope;
   const requestedLesson = query.get('quiz');
   const requestedRegion = query.get('region');
   const lowerRequested = requestedRegion==='all'||Object.hasOwn(LowerExtremity.regions,requestedRegion);
@@ -52,7 +55,7 @@
   const chartParameters=ParameterModel.parameters.filter(p=>chartRequest==='all'||chartRequest===p.id);
   const chartQueue=chartParameters.flatMap(p=>p.quiz.map(index=>ParameterModel.idFor(p,index)));
   const chart=chartQueue.length>0;
-  const recordKey = chart ? 'session:lesson:parameter-'+chartRequest : quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : 'session';
+  const recordKey = chart ? 'session:lesson:parameter-'+chartRequest : quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : subjectScope ? 'session:focus:subject-'+subjectScope.toLowerCase().replaceAll(' ','-') : 'session';
   let attempts = [], records = new Map(), stats = new Map(), session, response = [], busy = false;
   let shownAt = Date.now(), troubleLimit = 25, incomingPlan = false, clearTopic = false;
   const recalculate = () => {stats = summarize(attempts,records.get('reset')?.value.at);};
@@ -91,6 +94,7 @@
     const questions = plan.variants ? [...pool,...StudyVariants.variants] : pool;
     return questions.filter(q => StudyFocus.matches(q,focus) &&
       (!plan.topic || StudyContentMap.lessonFor(q) === plan.topic) &&
+      (!subjectScope || subject(q)===subjectScope) &&
       (plan.subject === 'Mixed Practice' || (plan.subject==='Lower Extremity'?LowerExtremity.matches(q,plan.lowerRegion??'all'):subject(q)===plan.subject)) &&
       (plan.difficulty === 'Any' || difficulty(q) === plan.difficulty));
   }
@@ -208,6 +212,7 @@
     get('start').textContent = live ? 'Resume' : chart ? 'Start chart challenge' : quiz ? 'Start five-question lesson quiz' : retry ? 'Retry question' : 'Start practice';
     get('pause').hidden = !live || session.paused;
     for (const id of ['subject','difficulty','useVariants']) get(id).disabled = Boolean(quiz || retry || chart);
+    get('subject').disabled ||= Boolean(subjectScope);
     const plan = {subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:clearTopic?null:session?.topic??topicLesson,variants:get('useVariants').checked};
     get('clearFocus').hidden = !plan.topic || Boolean(quiz || retry || chart);
     const lower=plan.subject==='Lower Extremity';
@@ -401,6 +406,9 @@
   function routePractice(){
     const route=new URLSearchParams(location.search).get('view');
     show(['trouble','dashboard'].includes(route)?route:'session');
+    if(route==='trouble'&&new URLSearchParams(location.search).has('due')){
+      get('queueMode').value='Due for Review';renderTrouble();
+    }
     render();
     updateResume();
   }

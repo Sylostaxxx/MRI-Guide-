@@ -3,15 +3,17 @@
   const sections={body:'Browse by Body Region',systems:'Organ systems',lower:'Lower Extremity',artifact:'Artifact Academy',sequence:'Sequence Recognition',
     positioning:'Patient Positioning',pathology:'Pathology Explorer',safety:'MRI Safety',
     rotation:'Virtual Clinical Rotation',mastery:'My Mastery'};
+  const areas={body:'anatomy',systems:'anatomy',lower:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'practice'};
+  const areaFor=section=>areas[section]??'clinical';
   const historyKey='mri-study-lab-review-v1';
   const read=()=>JSON.parse(localStorage.getItem(historyKey)??'[]');
   let course='systems',step=0,score=0,selected=null,hintLevel=0,hintsHidden=false;
   const key=section=>'mri.clinical.session.v1:'+section;
   function saveActivity(){
     try{localStorage.setItem(key(course),JSON.stringify({version:1,step,score,selected,hintLevel,hintsHidden}));}catch{}
-    if(step<cases[course].length)StudyResume.save('Study Center',sections[course],sections[course],
+    if(step<cases[course].length)StudyResume.save(areaFor(course)==='clinical'?'Clinical':'Study Center',sections[course],sections[course],
       'Question '+(step+1)+' of '+cases[course].length);
-    else StudyResume.clear('Study Center',sections[course]);
+    else {StudyResume.clear('Clinical',sections[course]);StudyResume.clear('Study Center',sections[course]);}
   }
   function button(text,click) {
     const b=document.createElement('button');b.textContent=text;b.onclick=click;return b;
@@ -31,12 +33,17 @@
       if(previous?.version===1&&Number.isInteger(previous.step)&&previous.step>=0&&previous.step<=cases[section]?.length)
         ({step,score,selected,hintLevel=0,hintsHidden=false}=previous);
     }catch{}
-    const area={body:'anatomy',systems:'anatomy',lower:'anatomy',pathology:'anatomy',artifact:'physics',sequence:'practice',mastery:'study'};
-    AppNavigation.active(area[section]??'clinical');
-    el('studyTitle').textContent=['body','systems'].includes(section)?'Anatomy Explorer':'Study Center';
+    const area=areaFor(section);
+    AppNavigation.active(area);
+    AppNavigation.context(sections[section]);
+    el('studyTitle').textContent=sections[section];
+    el('sections').hidden=area==='physics'||section==='mastery';
 
     for (const key of ['body','systems','lower','artifact','activity','mastery']) el(key).hidden=key!==(cases[course]?'activity':course);
-    for (const node of el('sections').children) node.setAttribute('aria-current',String(node.dataset.section===section));
+    for (const node of el('sections').children) {
+      node.hidden=areaFor(node.dataset.section)!==area;
+      node.setAttribute('aria-current',String(node.dataset.section===section));
+    }
     if (section==='mastery') mastery();
     if (cases[section]) exercise();
   }
@@ -105,7 +112,7 @@
 
   function exercise() {
     const items=cases[course];
-    el('activityTitle').textContent=sections[course];
+    el('activityTitle').textContent='Decision practice';
     el('choices').replaceChildren();
     el('next').hidden=true;
     el('feedback').textContent='';
@@ -273,7 +280,15 @@
   }
   for (const id of ['severity','artifactType','artifactAxis','artifactBandwidth']) el(id).oninput=artifact;
   updateSystems();
-  function route(){const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');if(requested==='artifact')ArtifactBrowser.route();routeCorrection();}
+  function route(){const requested=new URLSearchParams(location.search).get('section');show(Object.hasOwn(sections,requested)?requested:'systems');if(requested==='artifact')ArtifactBrowser.route();
+    if(requested==='systems'){
+      const id=new URLSearchParams(location.search).get('structure');
+      if(id&&OrganCatalog.some(group=>group.entries.some(entry=>entry.id===id))){
+        el('bodyRegion').value='';updateSystems();el('system').value=id.split('.')[0];updateOrganChoices();
+        el('organChoice').value=id;organ();
+      }
+    }
+    routeCorrection();}
   route();window.addEventListener('popstate',route);
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('./sw.js').catch(console.warn);
 })();

@@ -1,5 +1,14 @@
 # MRI Study Lab progress
 
+## Four-section interface
+
+- The primary shell now has Anatomy, Clinical, Physics and Study Center. Settings carries personal notes, bookmarks, downloads and backups. The legacy study, flashcard, protocol and anatomy deep links retain their destinations where practical.
+- Anatomy opens a six-category image grid with availability badges and an integrated organ-system filter. Verified regions open the existing real MRI viewer. Regions awaiting MRI use the current reference pages. Search-result structure links can be navigated with Back and Forward.
+- Clinical groups six tools and offers a resume link for saved clinical challenges. The Scanner Simulator entry uses the existing prescription workflow with Siemens-inspired terminology. This release adds no separate scanner emulation.
+- Physics groups six tools and shows saved lesson completion. Study Center groups six study activities and checks the live, eligible question pool before showing subject counts. Scoped subject practice uses separate session records so it does not replace Endless Practice.
+- The dashboard includes existing Atlas results in aggregate accuracy. Atlas and study attempts retain their established storage formats. Study Center spaced-repetition queues remain question based. No new clinical volumes or question content is included.
+- Independent content expansion remains tracked in the Artifact Academy, lower-extremity, neuro and image QA sections below. Physical iPad and Apple Pencil testing remains outstanding.
+
 ## Parameter Lab
 
 - Inspected the one-page 2021 BetterMRI chart supplied for this task. It defines the topic scope. The application uses original teaching text, diagrams and interactions.
