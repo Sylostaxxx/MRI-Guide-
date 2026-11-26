@@ -713,7 +713,7 @@ async function run() {
     if(!await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).isVisible()) await head.click();
     await reopened.getByRole('link',{name:'IAC / cerebellopontine angle',exact:true}).click();
     await reopened.getByRole('heading',{name:'IAC / CPA MRI Atlas',exact:true}).waitFor();
-    await reopened.getByText(/MRI and labels saved for offline use/).waitFor();
+    await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI and labels saved for offline use.'));
     await reopened.getByRole('button',{name:'Source-contoured cochlea',exact:true}).click();
     await reopened.getByRole('heading',{name:'Source-contoured cochlea',exact:true}).waitFor();
     await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Back',exact:true}).click();
@@ -721,12 +721,12 @@ async function run() {
     await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).click();
     await reopened.getByRole('heading',{name:'Intracranial MRA',exact:true}).waitFor();
     await reopened.getByRole('button',{name:'Download and open MRI',exact:true}).click();
-    await reopened.getByText(/MRI saved for offline use/).waitFor();
+    await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI saved for offline use.'));
     assert.equal(await reopened.locator('#views canvas:visible').count(),3);
     assert.equal(await reopened.locator('#layerDrawer').isVisible(),false);
     for(const region of ['lumbar','prostate']){
       await reopened.goto(home+'brain-atlas.html?region='+region);
-      await reopened.getByText(/MRI and labels saved for offline use/).waitFor();
+      await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI and labels saved for offline use.'));
       assert.equal(await reopened.locator('#views canvas:visible').count(),3,region);
       await reopened.getByRole('slider',{name:'Sagittal slice',exact:true}).fill('10');
     }

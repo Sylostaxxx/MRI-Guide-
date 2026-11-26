@@ -560,6 +560,7 @@ async function open(online) {
       volumes.push({ path:asset.path, file:new Response(buffer), volume:await parse(buffer) });
     }
     const [t1, segmentation] = volumes.map(item => item.volume);
+    if(!segmentation&&region!=='mra')throw Error('This atlas requires its source label volume.');
     verifyAtlasGrid(t1,segmentation,{oblique:pack.oblique});
     image = t1;mask = segmentation;labels = manifest.labels;anchors = manifest.anchors;
     cursor = pack.anchor ? [...anchors[pack.anchor]] : image.dim.map(n => Math.floor(n/2));
@@ -570,7 +571,10 @@ async function open(online) {
         await cache.put(manifestURL,response);offline = true;
       } catch { await caches.delete(cacheName).catch(() => {}); }
     }
-    if(extra){showDataset(manifest);el('datasetPreview').hidden=true;el('layerDrawer').hidden=!mask;}
+    if(extra){
+      showDataset(manifest);el('datasetPreview').hidden=true;el('layerDrawer').hidden=!mask;
+      for(const control of ['opacity','overlay'])el(control).closest('label').hidden=!mask;
+    }
     initLayers();
     routeStructure(false);
     el('views').replaceChildren();
