@@ -15,6 +15,9 @@ const deep = new Set(['Accumbens Area','Amygdala','Basal Forebrain','Caudate','H
 
 function layerFor(region,label) {
   if (region==='knee') return label.name==='Femur'?'bone':'cartilage';
+  if (region==='lumbar') return label.name.includes('disc')?'disc':label.name.includes('canal')?'central':'bone';
+  if (region==='iac') return label.name.includes('cochlea')?'organs':'central';
+  if (region==='prostate') return 'glands';
   if (region==='cardiac') return 'organs';
   if (region==='spine') return label.name.startsWith('Craniovertebral')?'cranio':'disc';
   const name=label.name.replace(/^(Right|Left) /,'');

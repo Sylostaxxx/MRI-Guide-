@@ -1,0 +1,26 @@
+# Real MRI coverage and dataset audit
+
+The [Body Region Library](https://sylostaxxx.github.io/MRI-Guide-/) exposes a coverage inventory backed by [atlas-coverage.js](atlas-coverage.js). It defines 49 anatomical targets. Eight have a relevant scrollable acquisition or atlas and eight have limited coverage from a shared study. That count represents eight distinct MRI volumes in total. There are 33 targets without an integrated volume, including two documented access or redistribution blockers. Coverage by a source mask, availability of a graded quiz, and availability of a multiparametric exam are separate.
+
+## New scrollable acquisitions
+
+| Library entry | Study and format | Source, rights, and validation | Labels and quizzes |
+| --- | --- | --- | --- |
+| IAC / CPA | 384 × 384 × 80 axial 3D T2, native 0.547 × 0.547 × 1.5 mm. NIfTI pack, 15.6 MB. | [TCIA Vestibular-Schwannoma-SEG](https://doi.org/10.7937/TCIA.9YTJ-5Q73), CC BY 4.0. TCIA SeriesDescription identifies `t2_ci3d_tra_1.5mm_v1` and 80 images. The pinned NIfTI conversion was checked against that record and reoriented into RAS+ without interpolation. | Source contours for one cochlea and the schwannoma. No nerve-branch labels. No new graded quiz. |
+| Lumbar spine | 120 × 366 × 543 RAS+ voxels, 0.9 × 0.469 × 0.469 mm; native-grid crop of sagittal T2 SPACE. NIfTI pack, 25.9 MB. | [SPIDER, release 10159290](https://zenodo.org/records/10159290), CC BY 4.0. Extracted matched MetaImage members from the published archives via HTTP ranges. Used SimpleITK's physical geometry and preserved all labeled voxels and surrounding margins. | Fifteen original source labels for vertebrae, discs and canal. Indices are relative to the lowest lumbar vertebra. No new graded quiz. |
+| Prostate | 320 × 320 × 15 oblique axial T2, approximately 0.6 × 0.6 × 4.0 mm. NIfTI pack, 2.8 MB. | [Medical Segmentation Decathlon Task05](https://medicaldecathlon.com/), CC BY-SA 4.0. Selected the complete T2 channel from the paired published volume via a pinned mirror and kept native spacing and obliquity. | Peripheral and transition-zone masks. Orthogonal voxel-plane views have limited detail. No new graded quiz. |
+| Intracranial MRA | Previously bundled processed MRA demonstration. | [NiiVue demo images](https://github.com/niivue/niivue-demo-images/blob/main/README.md#licenses), CC BY-NC 4.0. Routes now open the main atlas with the near-RAS affine and single slices. The previous projection and scan notes remain reachable. | No source vessel labels or acquisition-sequence details. |
+
+Both image and mask hashes, source-member hashes, acquisition details, orientation, rights and label IDs are recorded in the individual pack manifests. The derivatives have clean NIfTI headers without patient fields. In-mask label anchors were checked against source-published masks after conversion. Visual review checked that the selected anatomy is visible in representative source slices. Independent validation for new graded identifications is still pending.
+
+The three new acquisitions download individually. Only metadata and small previews are in the app shell. The shared viewer verifies downloaded file sizes and SHA-256 digests, supports saving and deleting offline packs, and uses the existing zoom, pan, windowing, notes and annotations. Existing MRI, quiz banks and note keys remain in place. Unlabeled MRA exposes no layers or graded identification tools.
+
+## Remaining acquisition work
+
+- **Head and vascular.** TCIA's [UCSD-VS-Longitudinal](https://www.cancerimagingarchive.net/collection/ucsd-vs-longitudinal/) is a distinct longitudinal pathology collection and could supplement this initial IAC case after per-series review. Dedicated normal nerve studies, MRV, orbits, paranasal sinuses, sellar imaging and neck remain open. Intracranial MRA does not establish venous coverage.
+- **Spine.** The Spine Generic pack reaches the upper thoracic spine. SPIDER adds lumbar imaging. Full thoracic, dedicated sacrum, sacroiliac joints and whole-cord studies are pending.
+- **Extremities.** Candidate paired knee datasets and inaccessible thigh imaging remain tracked in [IMAGE-QUESTION-AUDIT.md](IMAGE-QUESTION-AUDIT.md). The [NYU fastMRI catalog](https://datacatalog.med.nyu.edu/dataset/10389) describes institution- and use-specific access. Its public listing alone provides insufficient redistribution authorization. Shoulder, arm, elbow, forearm, wrist, hand, hip, thigh, lower leg, ankle, and all three foot subdivisions remain open.
+- **Body.** The left-atrial crop and prostate T2 represent limited cardiac and pelvic coverage. TCIA breast collections are candidates for a documented source acquisition. No liver or pancreatic CT benchmark was counted as MRI. Dedicated chest, breast, abdomen, MRCP, organ-specific, female pelvis and additional vascular studies remain open.
+- **Discovery sources.** The Imaging Data Commons, MosaicMRI, Penn's MIPG page and Radiology Dataset Hub are discovery sources. Per-series redistribution and image metadata still need verification before bundling. Large acquisitions should remain downloadable per region, with external static storage evaluated as the library grows.
+
+Each new pack is one acquisition or one retained channel. No new region is represented as a complete multisequence examination.

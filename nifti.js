@@ -37,9 +37,14 @@
     const scaled = Number.isFinite(slope) && slope !== 0;
     const factor = scaled ? slope : 1;
     const baseline = scaled && Number.isFinite(intercept) ? intercept : 0;
-    const p = read === 'getUint8' && factor === 1 && baseline === 0
-      ? bytes.subarray(offset, offset + size)
-      : new Float32Array(size);
+    const nativeLittle = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+    const native16 = little === nativeLittle && (bytes.byteOffset + offset) % 2 === 0;
+    let p;
+    if (factor === 1 && baseline === 0 && read === 'getUint8') p = bytes.subarray(offset, offset + size);
+    else if (factor === 1 && baseline === 0 && native16 && ['getInt16','getUint16'].includes(read)) {
+      const TypedArray = read === 'getInt16' ? Int16Array : Uint16Array;
+      p = new TypedArray(bytes.buffer,bytes.byteOffset+offset,size);
+    } else p = new Float32Array(size);
     let lo = Infinity, hi = -Infinity;
     for (let i = 0; i < size; i++) {
       if (p instanceof Float32Array) {
@@ -55,12 +60,21 @@
     return { dim, p, lo, hi, affine };
   }
 
-  function verifyAtlasGrid(image, labels) {
-    if (!image.affine || !labels.affine ||
+  function verifyAtlasGrid(image, labels, {oblique=false}={}) {
+    if (!image.affine || image.affine.some(value=>!Number.isFinite(value))) throw Error('Missing or invalid MRI orientation.');
+    if (labels && (!labels.affine ||
         image.dim.some((size, axis) => size !== labels.dim[axis]) ||
         image.affine.some((value, i) => !Number.isFinite(value) ||
-          !Number.isFinite(labels.affine[i]) || Math.abs(value - labels.affine[i]) > 1e-4)) {
+          !Number.isFinite(labels.affine[i]) || Math.abs(value - labels.affine[i]) > 1e-4))) {
       throw Error('The MRI and segmentation grids do not match.');
+    }
+    if (oblique) {
+      for(let axis=0;axis<3;axis++){
+        const component=image.affine[axis*5];
+        const others=[0,1,2].filter(row=>row!==axis).map(row=>image.affine[row*4+axis]);
+        if(!(component>0&&component>Math.hypot(...others)))throw Error('Expected native axes oriented near RAS.');
+      }
+      return;
     }
     if (image.affine.some((value, i) =>
         (i % 5 === 0 && value <= 0) ||

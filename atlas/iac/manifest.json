@@ -1,0 +1,76 @@
+{
+  "id": "tcia-iac-t2-v1",
+  "source": "https://doi.org/10.7937/TCIA.9YTJ-5Q73",
+  "collection": "https://www.cancerimagingarchive.net/collection/vestibular-schwannoma-seg/",
+  "mirror": "https://huggingface.co/datasets/MedOtter/Vestibular-Schwannoma-SEG/tree/1f92bbfee37b098d9c7b2ac7dbfd0a124421dae9",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Shapey et al., Vestibular-Schwannoma-SEG, The Cancer Imaging Archive; NIfTI conversion distributed by MedOtter.",
+  "region": "IAC and cerebellopontine angle, vestibular schwannoma case",
+  "sequence": "High-resolution axial 3D T2 CISS (TCIA protocol t2_ci3d_tra_1.5mm_v1)",
+  "orientation": "RAS+ native voxel grid; axial acquisition, orthogonal reformats.",
+  "processing": "Reoriented original NIfTI and source RTSTRUCT-derived labels by axis flips; retained full field of view. No interpolation.",
+  "labelsNote": "The original segmentation identifies the vestibular schwannoma and one contoured cochlea. No nerve branches or normal bilateral structures are segmented. Graded quizzes are disabled pending independent anatomical review.",
+  "dimensions": [
+    384,
+    384,
+    80
+  ],
+  "spacingMM": [
+    0.546875,
+    0.546875,
+    1.5
+  ],
+  "affine": [
+    0.546875,
+    1.1216592238350032e-10,
+    0.0,
+    -104.45312504295956,
+    -1.1216592238350032e-10,
+    0.546875,
+    0.0,
+    -84.42492671485294,
+    0.0,
+    0.0,
+    1.5,
+    -77.83429718017578
+  ],
+  "labels": {
+    "1": {
+      "name": "Vestibular schwannoma"
+    },
+    "2": {
+      "name": "Source-contoured cochlea"
+    }
+  },
+  "anchors": {
+    "1": [
+      151,
+      167,
+      22
+    ],
+    "2": [
+      126,
+      189,
+      18
+    ]
+  },
+  "volumes": [
+    {
+      "title": "MRI",
+      "path": "./atlas/iac/image.nii.gz",
+      "bytes": 15559303,
+      "sha256": "2397ff172cbbb1c1712c3120f47cc9b82d4ddebafa46668d131b9dfa6f64da9e",
+      "sourceFile": "dataset/vs_gk_001/t2/image.nii.gz",
+      "sourceSha256": "ff3f508c9d245faf9a4445993531207dcf977715c3998e9cf68c1696da3f34be"
+    },
+    {
+      "title": "Source labels",
+      "path": "./atlas/iac/labels.nii.gz",
+      "bytes": 53745,
+      "sha256": "ef454892446091629568f8d86964226bd3e65f929cd0899ac43891b163e1e077",
+      "sourceFile": "dataset/vs_gk_001/t2/mask.nii.gz",
+      "sourceSha256": "22ba3a39f424a5c4ddc20e261d396d70ab2d01c30899dad3f3a3a7ffefc79236"
+    }
+  ]
+}

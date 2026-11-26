@@ -1,5 +1,11 @@
 # MRI Study Lab progress
 
+## Real MRI coverage expansion
+
+- Added scrollable IAC/CPA high-resolution T2, lumbar T2 SPACE, and prostate T2 acquisitions with source masks and per-pack downloads. Intracranial MRA now opens in the shared viewer, with the existing projection linked from it.
+- The Anatomy coverage inventory distinguishes 49 required targets. Eight have a relevant scrollable acquisition or atlas, eight have partial coverage, and 33 lack an integrated volume. No new graded identifications or complete multi-sequence examinations were added.
+- [MRI-COVERAGE.md](MRI-COVERAGE.md) records source files, licenses, validation, and the outstanding regions.
+
 ## Content integrity and clinical practice
 
 - Expanded the shared practice bank from 378 to 423 authored active items. Patient Positioning now has 23 cases, MRI Safety has 29 eligible items, and Pathology has 21. Existing timed exam forms retain their content.

@@ -7,6 +7,7 @@ const { parse, verifyAtlasGrid, voxelIndex } = Nifti;
 const el = id => document.getElementById(id);
 const status = text => { el('status').textContent = text; };
 const packs = {
+  ...AtlasCoverage.packs,
   brain:{id:'cerebra1',cache:'mri-brain-atlas-cerebra-1',path:'atlas/manifest.json',
     coordinates:'MNI RAS',label:'CerebrA label'},
   spine:{id:'spine1',cache:'mri-spine-atlas-1',path:'atlas/spine/manifest.json',
@@ -30,9 +31,21 @@ if (pack.title) {
   el('intro').textContent = pack.intro;
   el('status').textContent = 'Download the MRI and labels once to use them offline.';
   el('brainAttribution').hidden = true;
-  el(region+'Attribution').hidden = false;
+  const oldCredit=el(region+'Attribution');
+  if(oldCredit)oldCredit.hidden=false;
+  AppNavigation.context(pack.title);
 }
+for(const [key,value] of Object.entries(AtlasCoverage.packs))el('atlasRegion').add(new Option(value.title,key));
 el('atlasRegion').value=region;
+const extra=Object.hasOwn(AtlasCoverage.packs,region);
+if(extra){
+  el('load').textContent='Download and open MRI';
+  document.querySelector('.quiz-options').hidden=true;
+  if(pack.preview){el('datasetPreview').src=pack.preview;el('datasetPreview').hidden=false;}
+  for(const control of document.querySelectorAll('[data-mode]')){
+    if(control.dataset.mode!=='mri')control.hidden=true;
+  }
+}
 el('atlasRegion').onchange=()=>{
   const next=el('atlasRegion').value, params=new URLSearchParams({region:next});
   if(mode!=='mri')params.set('mode',mode);
@@ -83,7 +96,7 @@ function restoreQuiz(){
 const plates = {brain:['brainstem','brain-cross'],spine:['cervical',null],knee:['knee','knee-cross'],cardiac:['heart','heart-cross']};
 
 function updatePlate() {
-  const [illustrated,cross] = plates[region];
+  const [illustrated,cross] = plates[region]??[];
   const name = labels?.[selected]?.name;
   const sectionMatch=region==='brain'&&/Caudate|Putamen|Pallidum|Lateral Ventricle/.test(name??'');
   const thalamus=region==='brain'&&name?.endsWith('Thalamus');
@@ -118,14 +131,14 @@ function drawPlate(key, question=false) {
 }
 
 function setMode(next) {
-  mode=next;
+  mode=extra?'mri':next;
   const mri=mode==='mri'||mode==='compare';
   if(!mri&&target)endPractice();
   el('mriPanel').hidden=!mri;
   el('atlasPlate').hidden=mode==='mri';
   el('atlasLayout').classList.toggle('compare',mode==='compare');
   el('explorePanel').hidden=!image;
-  el('practice').hidden=!image||!mri;
+  el('practice').hidden=extra||!image||!mri;
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
   if(mode!=='mri')updatePlate();else setPracticePlate(null);
 }
@@ -241,7 +254,7 @@ function drawView(view) {
     q[v] = h - 1 - y;
     for (let x = 0; x < w; x++) {
       q[u] = x;
-      const i = index(q), id = mask.p[i], offset = (y*w+x)*4;
+      const i = index(q), id = mask?.p[i]??0, offset = (y*w+x)*4;
       const gray = Math.max(0,Math.min(255,(image.p[i]-lower)*255/width));
       frame.data[offset] = gray;
       frame.data[offset+1] = gray;
@@ -287,17 +300,17 @@ function drawView(view) {
   }
   }
   view.slider.value = cursor[axis];
-  view.title.textContent = view.name + ' · ' + (cursor[axis]+1) + ' / ' + image.dim[axis];
+  view.title.textContent = (pack.oblique?'Near-':'') + view.name + ' · ' + (cursor[axis]+1) + ' / ' + image.dim[axis];
 }
 
 function render() {
   el('isolate').disabled=!selected||!!target;
   el('isolate').setAttribute('aria-pressed',String(!!isolated));
-  el('practiceSelected').hidden=!selected||!!target||!visibleLabel(selected);
+  el('practiceSelected').hidden=extra||!selected||!!target||!visibleLabel(selected);
   views.forEach(drawView);
   el('undo').disabled = !strokes(activeView).length;
-  el('position').textContent = pack.coordinates+' (mm) ' + cursor.map((voxel, axis) =>
-    (image.affine[axis*5]*voxel + image.affine[axis*4+3]).toFixed(1)).join(', ');
+  el('position').textContent = pack.coordinates+' (mm) ' + cursor.map((_, axis) =>
+    ([0,1,2].reduce((sum,column)=>sum+image.affine[axis*4+column]*cursor[column],image.affine[axis*4+3])).toFixed(1)).join(', ');
 }
 
 function select(id) {
@@ -345,7 +358,7 @@ function tap(view, event) {
   const [x,y] = normalized(view.canvas,event);
   cursor[view.u] = Math.floor(x*view.canvas.width);
   cursor[view.v] = view.canvas.height-1-Math.floor(y*view.canvas.height);
-  let id = mask.p[index(cursor)];
+  let id = mask?.p[index(cursor)]??0;
   if (spine) {
     let distance = 7;
     for (const [candidate,point] of Object.entries(anchors)) {
@@ -393,7 +406,8 @@ function addView(view) {
   const canvas = view.canvas = section.querySelector('canvas');
   view.offset=[0,0];
   canvas.width = image.dim[view.u];canvas.height = image.dim[view.v];
-  canvas.style.aspectRatio = (canvas.width * image.affine[view.u*5]) + ' / ' + (canvas.height * image.affine[view.v*5]);
+  const spacing = axis=>Math.hypot(...[0,1,2].map(row=>image.affine[row*4+axis]));
+  canvas.style.aspectRatio = (canvas.width * spacing(view.u)) + ' / ' + (canvas.height * spacing(view.v));
   canvas.setAttribute('aria-label', view.name + ' MRI slice');
   canvas.setAttribute('role','img');
   section.querySelector('.markers').innerHTML = [...view.edges].map((letter,i) =>
@@ -502,6 +516,28 @@ async function bytes(response, asset, offline) {
   return data.buffer;
 }
 
+function showDataset(manifest){
+  const information=el('datasetDetails');
+  information.hidden=false;
+  const source=document.createElement('a');source.href=manifest.source;
+  source.textContent=manifest.attribution;
+  const license=document.createElement('a');license.href=manifest.licenseUrl;license.textContent=manifest.license;
+  information.replaceChildren(manifest.sequence+' · '+manifest.orientation+' ',source,' · ',license,
+    manifest.labelsNote?' · '+manifest.labelsNote:'');
+  if(region==='mra'){
+    const mip=document.createElement('a');mip.href='./real-scans.html?scan=mra';mip.textContent='View maximum-intensity projection';
+    information.append(' · ',mip);
+  }
+  el('status').textContent='Download '+(manifest.volumes.reduce((n,v)=>n+v.bytes,0)/1000000).toFixed(1)+' MB to use this acquisition offline.';
+}
+async function showDownloadEstimate(){
+  if(!extra)return;
+  try{
+    const cache=await caches.open(cacheName);
+    const response=await cache.match(manifestURL)??await fetch(manifestURL);
+    if(response.ok&&!image)showDataset(await response.json());
+  }catch{}
+}
 async function open(online) {
   el('load').disabled = true;
   try {
@@ -524,7 +560,7 @@ async function open(online) {
       volumes.push({ path:asset.path, file:new Response(buffer), volume:await parse(buffer) });
     }
     const [t1, segmentation] = volumes.map(item => item.volume);
-    verifyAtlasGrid(t1,segmentation);
+    verifyAtlasGrid(t1,segmentation,{oblique:pack.oblique});
     image = t1;mask = segmentation;labels = manifest.labels;anchors = manifest.anchors;
     cursor = pack.anchor ? [...anchors[pack.anchor]] : image.dim.map(n => Math.floor(n/2));
     let offline = false;
@@ -534,14 +570,15 @@ async function open(online) {
         await cache.put(manifestURL,response);offline = true;
       } catch { await caches.delete(cacheName).catch(() => {}); }
     }
+    if(extra){showDataset(manifest);el('datasetPreview').hidden=true;el('layerDrawer').hidden=!mask;}
     initLayers();
     routeStructure(false);
     el('views').replaceChildren();
     views.forEach(addView);
     el('workspace').hidden = false;el('load').hidden = true;el('remove').hidden = !offline;
-    status(offline ? 'Atlas ready. MRI and labels saved for offline use.' : 'Atlas ready for this session. Browser storage could not save an offline copy.');
+    status(offline ? (mask?'Atlas ready. MRI and labels saved for offline use.':'Atlas ready. MRI saved for offline use.') : 'Atlas ready for this session. Browser storage could not save an offline copy.');
     el('downloads').open=new URLSearchParams(location.search).get('panel')==='downloads';
-    setMode(mode);updateResults();render();restoreQuiz();
+    setMode(mode);updateResults();render();if(!extra)restoreQuiz();
   } catch(error) { status(error.message); }
   finally { el('load').disabled = false; }
 }
@@ -751,4 +788,4 @@ if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWor
 const viewMode=new URLSearchParams(location.search).get('mode');
 if(['mri','illustrated','cross','compare'].includes(viewMode))setMode(viewMode);
 if(new URLSearchParams(location.search).has('practice'))document.querySelector('.quiz-options').open=true;
-open(false);
+open(false).then(showDownloadEstimate);

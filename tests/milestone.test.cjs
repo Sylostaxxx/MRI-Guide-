@@ -490,7 +490,7 @@ test('focused topics exhaust their questions before cycling and preserve the exa
   assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
     RegistryCore.buildForm(RegistryContent.bank.filter(q=>!additions.includes(q)),RegistryBlueprints.arrt));
   const rows=BodyIndex.groups.flatMap(([,regions])=>regions);
-  assert.equal(rows.length,31);
+  assert.equal(rows.length,32);
   assert.ok(rows.find(row=>row[0]==='hand'&&row[4]==='hand-bones'));
   assert.ok(rows.find(row=>row[0]==='long-bones'&&row[4]==='long-bone'));
 });
@@ -593,4 +593,39 @@ test('bundled MRA retains the licensed source bytes and near-RAS geometry',async
   assert.ok(Math.abs(affine[2])>.04,'keep the oblique sform');
   assert.ok(hi>100&&lo===0);
   assert.equal(manifest.markers.length,0);
+});
+
+require('../atlas-coverage.js');
+test('regional coverage distinguishes acquisitions, partial coverage and missing data',()=>{
+  const {targets,byRegion,packs}=AtlasCoverage;
+  assert.equal(new Set(targets.map(row=>row.id)).size,targets.length);
+  for(const key of ['iac','lumbar','prostate','mra']){
+    assert.equal(byRegion[key].state,'available');
+    assert.ok(fs.existsSync(packs[key].path));
+  }
+  assert.equal(byRegion.thoracic.state,'partial');
+  assert.equal(byRegion.mrv.pack,'');
+});
+
+test('new atlas volumes have licensed hashes, aligned masks and in-mask anchors',async()=>{
+  for(const key of ['iac','lumbar','prostate']){
+    const {path,oblique}=AtlasCoverage.packs[key];
+    const manifest=JSON.parse(fs.readFileSync(path));
+    assert.match(manifest.license,/CC BY/);
+    const [volume,labels]=await Promise.all(manifest.volumes.map(async entry=>{
+      const bytes=fs.readFileSync(entry.path);
+      assert.equal(bytes.length,entry.bytes);
+      assert.equal(createHash('sha256').update(bytes).digest('hex'),entry.sha256);
+      return parse(bytes);
+    }));
+    verifyAtlasGrid(volume,labels,{oblique});
+    assert.deepEqual(volume.dim,manifest.dimensions);
+    assert.ok(volume.dim.every(n=>n>=15));
+    assert.ok(volume.hi>volume.lo);
+    for(const [id,point] of Object.entries(manifest.anchors)){
+      assert.equal(labels.p[voxelIndex(labels.dim,point)],Number(id),key+' '+id);
+      assert.ok(volume.p[voxelIndex(volume.dim,point)]>0);
+    }
+    assert.ok(!fs.readFileSync('sw.js','utf8').includes(manifest.volumes[0].path));
+  }
 });

@@ -1,7 +1,11 @@
-const CACHE = 'mri-study-lab-shell-20';
+const CACHE = 'mri-study-lab-shell-21';
 const ROOT = new URL(self.registration.scope);
 importScripts('./anatomy-plates.js','./quiz-assets.js','./registry-images.js');
 const FILES = [
+  './atlas-coverage.js',
+  './atlas/iac/manifest.json', './atlas/iac/preview.webp',
+  './atlas/lumbar/manifest.json', './atlas/lumbar/preview.webp',
+  './atlas/prostate/manifest.json', './atlas/prostate/preview.webp',
   './atlas/mra/chris_MRA.nii.gz', './atlas/mra/manifest.json', './registry-bank-clinical.js',
   './section-homes.js', './section-homes.css',
   './parameter-lab.html', './parameter-lab.js', './parameter-model.js', './registry-bank-parameters.js',

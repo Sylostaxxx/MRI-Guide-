@@ -8,8 +8,22 @@
   "attribution": "Chris Rorden, McCausland Center for Brain Imaging. Distributed by NiiVue demo images.",
   "license": "CC BY-NC 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
-  "dimensions": [200, 256, 120],
+  "dimensions": [
+    200,
+    256,
+    120
+  ],
   "orientation": "Near-RAS sform. Native voxel slices are slightly oblique.",
   "markers": [],
-  "sha256": "d4bf431c4b4223e3ea368c5c26ea7904c23d9d59496e14022e32a38a5270b63f"
+  "sha256": "d4bf431c4b4223e3ea368c5c26ea7904c23d9d59496e14022e32a38a5270b63f",
+  "labels": {},
+  "anchors": {},
+  "volumes": [
+    {
+      "title": "MRA teaching volume",
+      "path": "./atlas/mra/chris_MRA.nii.gz",
+      "bytes": 95078,
+      "sha256": "d4bf431c4b4223e3ea368c5c26ea7904c23d9d59496e14022e32a38a5270b63f"
+    }
+  ]
 }

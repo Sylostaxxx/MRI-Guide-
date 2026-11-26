@@ -1,0 +1,76 @@
+{
+  "id": "msd-prostate-t2-v1",
+  "source": "https://medicaldecathlon.com/",
+  "publication": "https://doi.org/10.1038/s41467-022-30695-9",
+  "mirror": "https://huggingface.co/datasets/MedOtter/msd-prostate/tree/a29c87536488bb64cd4be2a1da74b823c1cc83fa",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "attribution": "Medical Segmentation Decathlon Task05 Prostate, Radboud University Medical Center contributors.",
+  "region": "Prostate and adjacent acquired pelvic anatomy",
+  "sequence": "Oblique axial T2-weighted, source channel 0",
+  "orientation": "Near-RAS native oblique grid; other planes are voxel-plane reformats. Limited through-plane resolution.",
+  "processing": "Extracted the complete T2 channel from the paired T2/ADC source volume and retained its native voxel grid. No interpolation.",
+  "labelsNote": "Source-provided peripheral and transition zones. Limited to this acquisition; this is not a complete pelvic or multiparametric exam. Graded quizzes are disabled pending independent anatomical review.",
+  "dimensions": [
+    320,
+    320,
+    15
+  ],
+  "spacingMM": [
+    0.6000000238418579,
+    0.600000337151977,
+    4.000002270650031
+  ],
+  "affine": [
+    0.6000000238418579,
+    2.6261757525569696e-12,
+    -1.1856285397904287e-10,
+    -98.16610717773438,
+    2.6261744515143626e-12,
+    0.5743920207023621,
+    1.1561279296875,
+    -105.46665954589844,
+    1.778441803546027e-11,
+    -0.17341917753219604,
+    3.829280138015747,
+    -39.175384521484375
+  ],
+  "labels": {
+    "1": {
+      "name": "Peripheral zone"
+    },
+    "2": {
+      "name": "Transition zone"
+    }
+  },
+  "anchors": {
+    "1": [
+      154,
+      156,
+      3
+    ],
+    "2": [
+      153,
+      174,
+      7
+    ]
+  },
+  "volumes": [
+    {
+      "title": "MRI",
+      "path": "./atlas/prostate/image.nii.gz",
+      "bytes": 2797241,
+      "sha256": "86f8fbaf1ea7ff61cb828ef26c5198b5081704f5954d50d42b8451b06c876290",
+      "sourceFile": "imagesTr/prostate_00.nii.gz",
+      "sourceSha256": "3959533b046f533b72a78e31be1dcfc462cfe32aae8ae78ef174d4d41f5ab3c4"
+    },
+    {
+      "title": "Source labels",
+      "path": "./atlas/prostate/labels.nii.gz",
+      "bytes": 11499,
+      "sha256": "8546cdd7d84b927aab66f33bb6ef6ef6c93587529be8993a2120d6e26ca59a31",
+      "sourceFile": "labelsTr/prostate_00.nii.gz",
+      "sourceSha256": "7042ca5a80c783586060c1daa91469ec7123be9ba32dbbae3c3425e5a2e4f67d"
+    }
+  ]
+}

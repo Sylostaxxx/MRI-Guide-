@@ -37,7 +37,7 @@
     ['Spine','./atlas/plates/cervical.webp','Cervical and upper thoracic MRI available',['cervical','thoracic','lumbar','sacrum']],
     ['Upper Extremities','./atlas/plates/hand-bones.webp','Illustrations and references',['shoulder','arm','elbow','forearm','wrist','hand']],
     ['Lower Extremities','./atlas/plates/knee.webp','Knee MRI available',['hip','thigh','knee','leg','ankle','foot']],
-    ['Abdomen & Pelvis','./atlas/plates/liver.webp','Illustrations and references',['abdomen','pelvis']],
+    ['Abdomen & Pelvis','./atlas/plates/liver.webp','Illustrations and references',['abdomen','pelvis','prostate']],
     ['Chest & Cardiac','./atlas/plates/heart.webp','Partial cardiac MRI available',['chest','heart']]
   ];
   const rows=new Map(BodyIndex.groups.flatMap(([,entries])=>entries.map(row=>[row[0],row])));
@@ -85,13 +85,13 @@
         const [,name,,pack,plate]=rows.get(id);
         const href=pack?'./brain-atlas.html?region='+pack:'./study-center.html?section=body&part='+id;
         const entry=node('li');
-        entry.append(link(name,href),node('small',pack?'Real MRI'+(id==='thoracic'?' · upper coverage':id==='heart'?' · left atrial crop':''):plate?'Illustrated reference · Real MRI not yet available':'Text reference · Real MRI not yet available'));
+        entry.append(link(name,href),node('small',pack?AtlasCoverage.states[AtlasCoverage.byRegion[id]?.state??'available']:plate?'Illustrated reference · Real MRI not yet available':'Text reference · Real MRI not yet available'));
         if(pack)entry.append(link(name+' regional reference','./study-center.html?section=body&part='+id));
         list.append(entry);
       }
       if(ids.includes('brain')){
         const entry=node('li');
-        entry.append(link('Intracranial MRA','./real-scans.html?scan=mra'),
+        entry.append(link('Intracranial MRA',AtlasCoverage.route('mra')),
           node('small','Real MR angiography demonstration. No verified vessel labels.'));list.append(entry);
         const missing=node('li');
         missing.append(node('small','Dedicated sellar MRI is unavailable.'),
@@ -99,6 +99,13 @@
         list.append(missing);
       }
       card.append(summary,list);grid.append(card);
+    }
+    const inventory=get('atlasCoverageList');
+    for(const entry of AtlasCoverage.targets){
+      const row=node('li');
+      row.append(entry.pack?link(entry.name,AtlasCoverage.route(entry.pack)):node('strong',entry.name),
+        ' · '+AtlasCoverage.states[entry.state]+'. '+entry.limit);
+      inventory.append(row);
     }
     route();
   }
