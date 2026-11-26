@@ -314,7 +314,7 @@
       const saved = node('p');saved.setAttribute('role','status');
       note.append(node('summary','Add Personal Note'),field,button('Save to notebook',()=>{
         if (!field.value.trim()) return;
-        try {StudyStore.note('practice:'+q.id,q.topic+'\n'+field.value.trim());field.value='';saved.textContent='Saved in My Study Space.';}
+        try {StudyStore.note('practice:'+q.id,q.topic+'\n'+field.value.trim());field.value='';saved.textContent='Saved to Notes and bookmarks in Settings.';}
         catch(error) {reportError(error);}
       }),saved);
       area.append(heading,node('p',q.stem),node('p',(s?.misses??0)+' misses · '+date+' · '+difficulty(q)),controls,details,note);

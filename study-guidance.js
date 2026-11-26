@@ -171,7 +171,7 @@
       const status=node('p');status.setAttribute('role','status');
       host.append(label,button('Add Personal Note',()=>{
         if(!text.value.trim())return;
-        try{StudyStore.note('practice:'+question.id,question.topic+'\n'+text.value.trim());text.value='';status.textContent='Saved in My Study Space.';}
+        try{StudyStore.note('practice:'+question.id,question.topic+'\n'+text.value.trim());text.value='';status.textContent='Saved to Notes and bookmarks in Settings.';}
         catch{status.textContent='The note could not be saved.';}
       }),status);
     }

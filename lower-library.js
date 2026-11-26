@@ -45,7 +45,7 @@
     el('lowerNoteStatus').textContent='';
     el('saveLowerNote').onclick=()=>{
       if(!note.value.trim())return;
-      try{StudyStore.note(noteKey, row.label+' · '+note.value.trim());note.value='';el('lowerNoteStatus').textContent='Saved in My Study Space.';}
+      try{StudyStore.note(noteKey, row.label+' · '+note.value.trim());note.value='';el('lowerNoteStatus').textContent='Saved to Notes and bookmarks in Settings.';}
       catch{el('lowerNoteStatus').textContent='The note could not be saved.';}
     };
   }

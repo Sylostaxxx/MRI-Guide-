@@ -102,7 +102,7 @@
     try {
       StudyStore.note('physics:lesson:'+lesson.id,lesson.title+'\n'+field.value.trim());
       field.value='';
-      get('lessonNoteStatus').textContent='Saved in My Study Space.';
+      get('lessonNoteStatus').textContent='Saved to Notes and bookmarks in Settings.';
     } catch {get('lessonNoteStatus').textContent='Note could not be saved.';}
   };
   if(!query.has('resume'))StudyResume.save('Physics Academy','Lesson',lesson.title,'Chapter '+(position+1),url(lesson.id)+'&resume=1');
