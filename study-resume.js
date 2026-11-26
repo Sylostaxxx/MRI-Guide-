@@ -6,17 +6,24 @@
     if(url.origin===root.origin&&[root.pathname,new URL('index.html',root).pathname].includes(url.pathname)&&url.searchParams.get('section')==='practice')return true;
     return url.origin===root.origin && ['practice.html','registry.html','academy.html','brain-atlas.html','study-center.html'].some(page=>url.pathname===new URL(page,root).pathname);
   }
-  function read() {
-    try {const value=JSON.parse(localStorage.getItem(key));return value?.version===1&&safe(value.href)?value:null;}
+  function read(section) {
+    try {const value=JSON.parse(localStorage.getItem(section?key+'.'+section:key)??localStorage.getItem(key));return value?.version===1&&(!section||value.section===section)&&safe(value.href)?value:null;}
     catch{return null;}
   }
   function save(section,mode,topic,position,href=location.href) {
     if(!safe(href))return;
-    try {localStorage.setItem(key,JSON.stringify({version:1,section,mode,topic,position,href,at:Date.now()}));}catch{}
+    try {
+      const record=JSON.stringify({version:1,section,mode,topic,position,href,at:Date.now()});
+      localStorage.setItem(key,record);localStorage.setItem(key+'.'+section,record);
+    }catch{}
   }
   function clear(section,mode) {
     const value=read();
-    if(value?.section===section&&(!mode||value.mode===mode))try{localStorage.removeItem(key);}catch{}
+    try{
+      if(value?.section===section&&(!mode||value.mode===mode))localStorage.removeItem(key);
+      const scoped=read(section);
+      if(scoped&&(!mode||scoped.mode===mode))localStorage.removeItem(key+'.'+section);
+    }catch{}
   }
   function card(element) {
     const latest=read();

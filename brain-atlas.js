@@ -21,6 +21,7 @@ const packs = {
 };
 const requested = new URLSearchParams(location.search).get('region');
 const region = Object.hasOwn(packs,requested) ? requested : 'brain';
+if(new URLSearchParams(location.search).get('from')==='study')AppNavigation.active('practice');
 const pack = packs[region], spine = region === 'spine';
 const {id:packId,cache:cacheName,path:manifestURL} = pack;
 if (pack.title) {
@@ -441,6 +442,25 @@ function addView(view) {
   canvas.onpointercancel = () => { view.pan=null;view.stroke = null;render(); };
 }
 
+let previousStructureRoute;
+function structureRoute(){
+  const params=new URLSearchParams(location.search);
+  return [params.get('label'),params.get('structure')].join(':');
+}
+function routeStructure(clear=true) {
+  if(!image||target)return;
+  const state=structureRoute();
+  if(clear&&state===previousStructureRoute)return;
+  previousStructureRoute=state;
+  const params=new URLSearchParams(location.search), lookup=params.get('structure'), label=params.get('label');
+  const match=labels[label]?[label,labels[label]]:Object.entries(labels).find(([,entry])=>entry.name===lookup||
+    (entry.subdivision&&entry.subdivision+' '+entry.name===lookup));
+  if(match&&anchors[match[0]]){
+    const id=Number(match[0]);cursor=[...anchors[id]];select(id);
+  }else if(clear)select(0);
+}
+window.addEventListener('popstate',()=>{routeStructure();if(image)render();});
+
 function updateResults() {
   const query = el('search').value.trim().toLowerCase();
   el('results').replaceChildren();
@@ -449,7 +469,11 @@ function updateResults() {
     if (!label.name.toLowerCase().includes(query) || !anchors[id] || !visibleLabel(Number(id))) continue;
     const button = document.createElement('button');
     button.textContent = label.name + (label.subdivision ? ' · ' + label.subdivision + ' subdivision' : '');
-    button.onclick = () => { cursor = [...anchors[id]];select(Number(id));render(); };
+    button.onclick = () => {
+      const url=new URL(location.href);url.searchParams.delete('structure');url.searchParams.set('label',id);
+      AppNavigation.navigate(url);
+      routeStructure(false);render();
+    };
     el('results').append(button);
   }
   if (!el('results').children.length) el('results').textContent = 'No matching structures.';
@@ -511,13 +535,7 @@ async function open(online) {
       } catch { await caches.delete(cacheName).catch(() => {}); }
     }
     initLayers();
-    const params=new URLSearchParams(location.search), lookup=params.get('structure'), label=params.get('label');
-    const match=labels[label]?[label,labels[label]]:Object.entries(labels).find(([,label])=>label.name===lookup||
-      (label.subdivision&&label.subdivision+' '+label.name===lookup));
-    if(match&&anchors[match[0]]) {
-      const id=Number(match[0]);
-      cursor=[...anchors[id]];select(id);
-    }
+    routeStructure(false);
     el('views').replaceChildren();
     views.forEach(addView);
     el('workspace').hidden = false;el('load').hidden = true;el('remove').hidden = !offline;

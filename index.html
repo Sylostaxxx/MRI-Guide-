@@ -25,19 +25,28 @@
 .tool-nav [aria-current]{border-color:#69dfca;background:#213e4b;color:#b5f9e7}
 .anatomy-home{display:grid;grid-template-columns:1fr 1.1fr;min-height:470px;align-items:center;gap:20px;padding:clamp(15px,3vw,35px)}.anatomy-intro h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.06;margin:0 0 16px}.anatomy-intro p{font-size:1.08rem;color:var(--muted);max-width:34ch}.launch{display:inline-flex;align-items:center;min-height:48px;padding:10px 16px;border-radius:8px;background:#75dfca;color:#072721;font-weight:750;text-decoration:none}.anatomy-tools{display:flex;flex-wrap:wrap;gap:8px 18px;margin:20px 0}.anatomy-tools a{display:inline-flex;align-items:center;min-height:44px;color:#a9e9dc}.anatomy-preview{margin:0;text-align:center;color:#bed2e1}.anatomy-preview img{display:block;width:100%;height:clamp(230px,45vw,475px);object-fit:contain;background:#05090f;border:1px solid #314657;border-radius:14px}.anatomy-preview figcaption{margin-top:6px}
 @media(max-width:630px){.anatomy-home{display:flex;flex-direction:column;align-items:stretch}.anatomy-preview img{height:62vw}}
-</style><link rel="stylesheet" href="./app-navigation.css"></head><body><main class="wrap">
+</style><link rel="stylesheet" href="./app-navigation.css"><link rel="stylesheet" href="./section-homes.css"></head><body><main class="wrap">
 <nav data-app-nav="anatomy" aria-label="Primary navigation"></nav>
-<div id="toolNav" class="tool-nav" aria-label="Section tools"></div>
+
 <section id="anatomyHome" class="page">
-<div id="resumeStudy" class="panel"></div>
-<div class="anatomy-home panel">
-<div class="anatomy-intro"><h1>Anatomy Explorer</h1>
-<p>Study structures on linked axial, coronal and sagittal MRI. Switch to a textbook plate or compare both views in the same workspace.</p>
-<a class="launch" href="./brain-atlas.html">Open Real MRI Atlas</a>
-<div class="anatomy-tools"><a href="./study-center.html?section=systems">Browse anatomical systems</a><a href="./study-center.html?section=body">Browse by body region</a><a href="./study-center.html?section=lower">Lower-extremity MRI library</a><a href="./study-center.html?section=pathology">Pathology Explorer</a></div>
-</div>
-<figure class="anatomy-preview"><img src="./atlas/cerebra-preview.webp" alt="Axial T1-weighted slice from the symmetric MNI-ICBM152 brain volume"><figcaption>Axial T1 · MNI-ICBM152 2009c</figcaption></figure>
-</div></section>
+<header class="dashboard-header"><h1>Body Region Library</h1><p>Browse regions or filter by organ system. Available MRI opens in the Anatomy Explorer.</p></header>
+<div id="bodyRegionGrid" class="dashboard-grid region-grid"></div>
+<div class="dashboard-actions"><a href="./?section=anatomy&amp;tool=atlas">Schematic brain exercise</a><a href="./study-center.html?section=pathology">Pathology Explorer</a><a href="./study-center.html?section=body&amp;part=long-bones">Long bones</a><a href="./study-center.html?section=lower">Lower-extremity protocols and coverage</a></div>
+</section>
+<section id="clinicalHome" class="page hidden">
+<header class="dashboard-header"><h1>Clinical Dashboard</h1><p>Plan acquisitions, rehearse procedures, and test clinical decisions.</p></header>
+<div id="clinicalTools" class="dashboard-grid"></div><aside id="resumeClinical" class="panel" hidden></aside>
+</section>
+<section id="physicsHome" class="page hidden">
+<header class="dashboard-header"><h1>Physics Academy</h1><p>Connect acquisition settings to signal, contrast, and artifacts.</p></header>
+<div id="physicsTools" class="dashboard-grid"></div><aside id="physicsProgress" class="panel"></aside>
+</section>
+<section id="practiceHome" class="page hidden">
+<header class="dashboard-header"><h1>Study Dashboard</h1><p>Choose an activity or pick up where you left off.</p></header>
+<div id="practiceTools" class="dashboard-grid"></div>
+<aside id="resumeStudy" class="panel"></aside><aside id="learningSummary" class="panel"></aside>
+<section class="panel" id="subjectQuizzes"><h2>Subject quizzes</h2><div id="subjectLinks" class="dashboard-grid"></div></section>
+</section>
 <section id="planner" class="page hidden"><div class="layout"><div class="panel"><div class="split"><h2>Planning simulator</h2></div><div class="label">Anatomy</div><select id="region"><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select><div class="label">Prescription plane</div><div class="row"><button class="mini primary plane" data-plane="sagittal">Sagittal</button><button class="mini plane" data-plane="coronal">Coronal</button><button class="mini plane" data-plane="axial">Axial</button></div><p class="small" id="plannerSource" role="status">Loading real MRI localizers…</p>
 <button id="planRetry" hidden>Retry MRI download</button>
 <div id="realPlanning">
@@ -101,7 +110,7 @@
 <p class="small warning">Educational approximation, not a Bloch-equation or scanner simulator. SNR proxy assumes equal coil/field/tissue factors and scales roughly with voxel volume × √NEX ÷ √bandwidth. This deliberately omits TR/TE tissue dependence, coil sensitivity, noise correlations and many acquisition details. Scan time assumes simple 2D phase encoding with no overhead, parallel imaging or partial Fourier; ETL affects both timing and contrast/blurring in practice. Larger in-plane detail score means smaller pixels, not guaranteed image quality.</p>
 </div></section>
 
-<section id="protocol" class="page hidden"><div class="panel"><div class="split"><h2>Protocol Builder — Slice Stack</h2><span class="pill">Interactive training</span></div>
+<section id="protocol" class="page hidden"><div id="scannerIntro" class="panel" hidden><h1>Scanner Simulator</h1><p>Siemens-inspired training uses a localizer, slice group, field of view, and slice-stack checks. This educational workflow uses standard planning concepts.</p><a href="./study-center.html?section=rotation">Open clinical challenge</a></div><div class="panel"><div class="split"><h2>Protocol Builder — Slice Stack</h2><span class="pill">Interactive training</span></div>
 <p class="small">Pick anatomy and a target plane. Drag the green slice stack directly on the image, rotate it, set slice coverage and thickness, then check your plan. The background is a <b>teaching schematic</b> until you load a licensed MRI reference image. Movement is educational and does not implement full DICOM geometry.</p>
 <div class="row"><label>Region <select id="protoRegion"><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></label><label>Plane <select id="protoPlane"><option value="axial">Axial</option><option value="sagittal" selected>Sagittal</option><option value="coronal">Coronal</option></select></label><button id="protoNew">New challenge</button></div>
 <div class="protocol-layout"><div><div class="protocol-image" id="protoViewer"><img id="protoImg" class="hidden" alt="User supplied MRI reference"><svg id="protoSvg" viewBox="0 0 500 420" aria-label="Interactive slice-stack overlay" role="img"><defs><radialGradient id="protoGrad"><stop stop-color="#8393a4"/><stop offset=".65" stop-color="#566677"/><stop offset="1" stop-color="#273649"/></radialGradient></defs><ellipse cx="250" cy="210" rx="156" ry="173" fill="url(#protoGrad)" stroke="#879ab1" stroke-width="3"/><ellipse cx="250" cy="210" rx="65" ry="112" fill="#2a384b" stroke="#b7c2d1" stroke-width="2"/><g id="protoStack" stroke="#60e3c3" stroke-width="3" stroke-linecap="round"></g></svg><div class="img-help">Drag the green stack to move it • Rotate and select a slice below</div></div>
@@ -128,9 +137,9 @@
 <p class="small" id="protoCoverage"></p><div class="row"><button class="primary" id="protoCheck">Check this plan</button><button id="protoSave">Save plan + note</button></div><div id="protoFeedback" class="qresult">Adjust a stack and check your work.</div><label for="protoNote">My protocol notes</label><textarea id="protoNote" placeholder="Write why you selected this plane, coverage, and slice placement..." rows="3"></textarea></div></div></div></section>
 <section id="review" class="page hidden"><div class="panel"><div class="split"><h2>Pre-study Recall Quiz</h2><span class="pill">Spaced review starter</span></div><p class="small">Before studying new content, answer a short question from anatomy and MRI physics. Previously visited note topics receive extra priority. Missed questions are stored locally to be reviewed again; this is a lightweight practice mode, not a complete adaptive learning system.</p><div class="row"><button class="primary" id="quizBegin">Start / Next question</button><span id="quizScore" class="small">0 attempted</span></div><h3 id="quizQuestion">Tap Start to review what you know.</h3><div id="quizOptions"></div><div id="recallHints" class="study-guidance" hidden></div><button id="recallHint" hidden>Show Hint</button><button id="recallHide" hidden>Hide Hints</button><button id="recallTeach" hidden>Teach Me Why I Was Wrong</button><article id="recallCorrection" class="study-guidance" hidden></article><div id="quizFeedback" class="qresult hidden" aria-live="polite"></div><hr class="hr"><h3>Review from your own notes</h3><p class="small">Your latest saved note becomes a recall prompt. Your notes are not automatically treated as medically verified answers.</p><div id="recallPrompt" class="qresult">Add a note in the Anatomy Explorer or Physics Lab to create a recall prompt.</div><button id="quizReveal">Reveal source note</button><div id="recallAnswer" class="qresult hidden"></div></div></section>
 <section id="notes" class="page hidden"><div class="panel"><h2>My MRI notebook</h2><p class="small">Your notes stay grouped by anatomy and available for later review in this browser, subject to the device's local storage retention. Export backups regularly.</p><div class="row"><div class="grow"><div class="label">Filter notes</div><select id="filter"><option value="all">All study topics</option><option value="physics">Physics</option><option value="structure">Anatomical structures</option><option value="brain">Brain</option><option value="cspine">Cervical spine</option><option value="lspine">Lumbar spine</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option></select></div><div class="grow"><div class="label">Search notes</div><input id="search" type="text" placeholder="Search keywords"></div></div><div id="allNotes"></div></div><div class="panel"><h2>Atlas bookmarks</h2><ul id="bookmarkList"></ul><h2>Atlas and system notes</h2><ul id="atlasNoteList"></ul></div></section>
-<section id="backup" class="page hidden"><div class="panel"><h1>Settings</h1><h2>MRI downloads and sources</h2><div class="row"><a href="./brain-atlas.html?panel=downloads">Brain pack</a><a href="./brain-atlas.html?region=spine&amp;panel=downloads">Cervical spine pack</a><a href="./brain-atlas.html?region=knee&amp;panel=downloads">Knee pack</a><a href="./brain-atlas.html?region=cardiac&amp;panel=downloads">Cardiac pack</a><a href="./real-scans.html">Sequence library</a></div><hr class="hr"><h2>Backups</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, registry sessions, continuous practice, lesson progress, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">On iPad, open the site in Safari and use Share, then Add to Home Screen. Open the installed app once online and download the MRI packs you want. Notes and image packs are stored in the browser or installed app.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
+<section id="backup" class="page hidden"><div class="dashboard-actions"><a href="./?section=study">Notes and bookmarks</a><a href="./brain-atlas.html?panel=downloads">MRI downloads</a><a href="./practice.html?view=dashboard">Detailed study progress</a><a href="./study-center.html?section=mastery">Atlas and clinical activity</a></div><div class="panel"><h1>Settings</h1><h2>MRI downloads and sources</h2><div class="row"><a href="./brain-atlas.html?panel=downloads">Brain pack</a><a href="./brain-atlas.html?region=spine&amp;panel=downloads">Cervical spine pack</a><a href="./brain-atlas.html?region=knee&amp;panel=downloads">Knee pack</a><a href="./brain-atlas.html?region=cardiac&amp;panel=downloads">Cardiac pack</a><a href="./real-scans.html">Sequence library</a></div><hr class="hr"><h2>Backups</h2><p>Use <b>Export backup</b> to save your notebook, quiz history, registry sessions, continuous practice, lesson progress, scan notes, and atlas drawings as a JSON file in the iPad Files app. You can merge it into your study data later using <b>Import backup</b>. Scan downloads and the saved protocol reference image are managed separately.</p><div class="row"><button class="primary" id="export">Export backup</button><button id="importBtn">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div><div id="backupStatus" class="status" aria-live="polite"></div><hr class="hr"><h2>Offline and iPad instructions</h2><p class="small">On iPad, open the site in Safari and use Share, then Add to Home Screen. Open the installed app once online and download the MRI packs you want. Notes and image packs are stored in the browser or installed app.</p><p class="small warning">Note storage may disappear after clearing browser data, using private browsing, switching app/browser, or opening the HTML from a different file location. Export backups before doing any of those things.</p><hr class="hr"><button id="clear" style="border-color:#8e4c5c;color:#ffb6c4">Delete all local notes</button></div></section>
 <div class="footer">Educational use only · Study data stays in this browser</div></main>
-<script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./study-guidance.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
+<script src="./app-navigation.js"></script><script src="./study-content.js"></script><script src="./organ-catalog.js"></script><script src="./body-browser.js"></script><script src="./anatomy-plates.js"></script><script src="./registry-images.js"></script><script src="./registry-content.js"></script><script src="./registry-bank-physics.js"></script><script src="./registry-calculations.js"></script><script src="./registry-bank-acquisition.js"></script><script src="./registry-bank-procedures.js"></script><script src="./registry-bank-safety.js"></script><script src="./registry-bank-pilot.js"></script><script src="./registry-bank-academy.js"></script><script src="./lower-extremity.js"></script><script src="./registry-bank-lower.js"></script><script src="./study-focus.js"></script><script src="./registry-bank-focus.js"></script><script src="./artifact-lessons.js"></script><script src="./registry-bank-artifacts.js"></script><script src="./parameter-model.js"></script><script src="./registry-bank-parameters.js"></script><script src="./registry-image-view.js"></script><script src="./study-review.js"></script><script src="./registry-blueprints.js"></script><script src="./physics-lessons.js"></script><script src="./section-homes.js"></script><script src="./study-resume.js"></script><script src="./study-guidance.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./planner-geometry.js"></script><script src="./real-planner.js"></script><script src="./study-backup.js"></script><script src="./study-store.js"></script><script src="./mri-physics.js"></script><script src="./physics-view.js"></script><script>
 (()=>{'use strict';
 const names={brain:'Brain',cspine:'Cervical spine',lspine:'Lumbar spine',knee:'Knee',shoulder:'Shoulder'};
 const prompts={brain:'Review mid-sagittal landmarks, corpus callosum, AC–PC orientation, and how the prescribed stack relates to the reference plane.',cspine:'Review the spinal canal, intervertebral discs, cord alignment, and coverage from the craniocervical junction through the lower cervical spine.',lspine:'Review disc-space alignment, vertebral coverage, and the relationship between sagittal localizers and axial disc prescriptions.',knee:'Review condylar anatomy, menisci, ACL/PCL orientation, and why the selected plane affects ligament visualization.',shoulder:'Review glenoid alignment, rotator cuff tendons, humeral head, and orientation of oblique coronal and sagittal series.'};
@@ -150,36 +159,24 @@ function noteHTML(n){const stamp=new Date(n.created);return `<div class="note-it
 function showRecent(){let items=notes.filter(n=>n.region===region).slice(0,3);el('recentNotes').innerHTML=items.length?items.map(noteHTML).join(''):'<div class="empty">No notes yet for this topic.</div>'}
 function showAll(){let filter=el('filter').value,q=el('search').value.toLowerCase();let items=notes.filter(n=>(filter==='all'||filter===n.region||(filter==='physics'&&n.region.startsWith('physics:'))||(filter==='structure'&&n.region.startsWith('structure:')))&&((n.body||'').toLowerCase().includes(q)||topicName(n.region).toLowerCase().includes(q)));el('allNotes').innerHTML=items.length?items.map(noteHTML).join(''):'<div class="empty">No matching notes. Start in the Slice Planner tab.</div>'}
 const groups={
-  anatomy:[['anatomyHome','Anatomy Explorer'],['atlas','Schematic brain exercise']],
-  clinical:[['planner','Slice Planner'],['protocol','Protocol Builder'],['./study-center.html?section=rotation','Virtual Clinical Rotation'],
-    ['./study-center.html?section=positioning','Patient Positioning'],['./study-center.html?section=safety','MRI Safety']],
-  physics:[['physics','Parameter Charts'],['./academy.html','Physics Academy'],['sandbox','Physics Sandbox'],['./parameter-lab.html','Parameter Lab'],['./real-scans.html','MRI Sequences'],['./study-center.html?section=artifact','Artifact Academy']],
-  practice:[['review','Pre-study Quiz & Flashcards'],['./practice.html','Study Center'],['./registry.html','Registry Preparation'],['./brain-atlas.html?practice=1','Anatomy Identification'],['./practice.html?focus=sequence','Sequence Recognition'],['physics','Physics Challenges']],
-  study:[['notes','My Notes'],['./practice.html?view=dashboard','Study Dashboard'],['./registry.html','Registry History'],['./study-center.html?section=mastery','Mastery & Weak Topics']],
-  settings:[['backup','Backup & Help']]
+  anatomy:[['anatomyHome','Body Region Library'],['atlas','Schematic brain exercise']],
+  clinical:[['clinicalHome','Clinical Dashboard'],['planner','Slice Planner'],['protocol','Protocol Library'],['scanner','Scanner Simulator']],
+  physics:[['physicsHome','Physics Academy'],['physics','Physics Reference'],['sandbox','Physics Sandbox']],
+  practice:[['review','Pre-study quiz and flashcards'],['physics','Physics Challenges']],
+  'study-center':[['practiceHome','Study Dashboard']],
+  study:[['notes','Notes and bookmarks']],
+  settings:[['backup','Settings']]
 };
 let activeGroup='anatomy';
 function tab(name, group, write=true) {
   const category=group??Object.keys(groups).find(key=>groups[key].some(([id])=>id===name));
   activeGroup=category??'anatomy';
-  document.querySelectorAll('.page').forEach(node=>node.classList.toggle('hidden',node.id!==name));
-  AppNavigation.active(activeGroup);
-  const nav=el('toolNav');nav.replaceChildren();
-  for(const [id,label] of groups[activeGroup]){
-    if(id===name&&groups[activeGroup].length===1)continue;
-    const external=id.startsWith('./');
-    const control=document.createElement(external?'a':'button');
-    control.textContent=label;
-    if(external)control.href=id;
-    else {
-      control.type='button';control.onclick=()=>{
-        tab(id,activeGroup);
-        if(id==='physics'&&activeGroup==='practice')document.querySelector('[data-mode="game"]').click();
-      };
-    }
-    if(id===name)control.setAttribute('aria-current','page');
-    nav.append(control);
-  }
+  document.querySelectorAll('.page').forEach(node=>node.classList.toggle('hidden',node.id!==(name==='scanner'?'protocol':name)));
+  AppNavigation.active(activeGroup==='study-center'?'practice':activeGroup);
+  AppNavigation.context(({anatomyHome:'Anatomy',clinicalHome:'Clinical',physicsHome:'Physics',practiceHome:'Study Center'})[name]??
+    groups[activeGroup].find(([id])=>id===name)?.[1]??'');
+  el('scannerIntro').hidden=name!=='scanner';
+  SectionHomes.refresh(name);
   if(name==='notes'){showAll();showAtlasStudy();}
   if(name==='planner')render();
   if(write&&window.location.protocol!=='file:'){
@@ -566,11 +563,11 @@ function routeHome(){
     region=requestedRegion;offset=0;el('region').value=requestedRegion;
   }
   tab(groups[area].some(([id])=>id===tool&&!id.startsWith('./'))?tool:groups[area][0][0],area,false);
-  StudyResume.card(el('resumeStudy'));
+
 }
 routeHome();
 window.addEventListener('popstate',routeHome);
-window.addEventListener('pageshow',()=>StudyResume.card(el('resumeStudy')));
+window.addEventListener('pageshow',event=>{if(event.persisted)routeHome();});
 })();
 
 </script><script>if('serviceWorker' in navigator && window.isSecureContext){navigator.serviceWorker.register('./sw.js').catch(console.warn)}</script></body></html>

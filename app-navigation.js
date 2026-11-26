@@ -2,9 +2,8 @@
   const destinations = [
     ['anatomy','Anatomy','./'],
     ['clinical','Clinical','./?section=clinical'],
-    ['physics','Physics','./academy.html'],
-    ['practice','Practice','./practice.html'],
-    ['study','My Study Space','./?section=study']
+    ['physics','Physics','./?section=physics'],
+    ['practice','Study Center','./?section=study-center']
   ];
   const nav=document.querySelector('[data-app-nav]');
   if(!nav)return;
@@ -13,17 +12,38 @@
   home.className='app-mark';home.href='./';home.textContent='MRI Study Lab';
   nav.append(home);
   const links=document.createElement('div');links.className='primary-links';nav.append(links);
-  for (const [id,label,url] of [...destinations,['settings','Settings','./?section=settings']]) {
+  for (const [id,label,url] of destinations) {
     const link=document.createElement('a');
     link.href=url;link.textContent=label;link.dataset.section=id;
-    if(id==='settings')link.classList.add('settings-link');
     links.append(link);
   }
+  const settings=document.createElement('a');
+  settings.className='settings-link';settings.href='./?section=settings';settings.textContent='Settings';
+  nav.append(settings);
+  const crumbs=document.createElement('nav');
+  crumbs.className='breadcrumbs';crumbs.setAttribute('aria-label','Breadcrumb');
+  if(nav.classList.contains('study-chrome'))crumbs.classList.add('study-chrome');
+  nav.after(crumbs);
+  let section=nav.dataset.appNav;
+  let page=document.title.split('|')[0].trim();
+  function context(title) {
+    page=title;
+    const item=destinations.find(([id])=>id===section);
+    crumbs.replaceChildren();
+    if(!item||!page||page===item[1])return;
+    const root=document.createElement('a');root.href=item[2];root.textContent=item[1]+' home';
+    const leaf=document.createElement('span');leaf.setAttribute('aria-current','page');leaf.textContent=page;
+    crumbs.append(root,' / ',leaf);
+  }
   function active(id) {
+    section=id==='study'?'practice':id;
+    settings.toggleAttribute('aria-current',id==='settings');
+    if(id==='settings')settings.setAttribute('aria-current','page');
     for(const link of links.children) {
-      if(link.dataset.section===id)link.setAttribute('aria-current','page');
+      if(link.dataset.section===section)link.setAttribute('aria-current','page');
       else link.removeAttribute('aria-current');
     }
+    context(page);
   }
   const key='mri.navigation.v1';
   const get=name=>{try{return JSON.parse(sessionStorage.getItem(key+name));}catch{return null;}};
@@ -77,5 +97,5 @@
   window.addEventListener('popstate',refresh);
   window.addEventListener('pageshow',refresh);
   active(nav.dataset.appNav);refresh();
-  globalThis.AppNavigation={active,navigate,open};
+  globalThis.AppNavigation={active,context,navigate,open};
 })();
