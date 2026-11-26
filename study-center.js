@@ -48,7 +48,11 @@
     if (cases[section]) exercise();
   }
   for (const [key,name] of Object.entries(sections)) {
-    const control=button(name,()=>{show(key,true);if(key==='body')globalThis.BodyBrowser.route();if(key==='artifact')ArtifactBrowser.route();});control.dataset.section=key;el('sections').append(control);
+    const control=button(name,()=>{
+      if(key==='positioning'||key==='safety'){
+        AppNavigation.open('./practice.html?focus='+(key==='safety'?'clinical-safety':key));return;
+      }
+      show(key,true);if(key==='body')globalThis.BodyBrowser.route();if(key==='artifact')ArtifactBrowser.route();});control.dataset.section=key;el('sections').append(control);
   }
 
   const regions=[...new Set(OrganCatalog.flatMap(system=>system.entries.map(entry=>entry.region)))].sort();
@@ -113,6 +117,9 @@
   function exercise() {
     const items=cases[course];
     el('activityTitle').textContent='Decision practice';
+    const upgraded=el('expandedActivity');
+    upgraded.hidden=!['positioning','safety','pathology'].includes(course);
+    upgraded.href='./practice.html?focus='+(course==='safety'?'clinical-safety':course);
     el('choices').replaceChildren();
     el('next').hidden=true;
     el('feedback').textContent='';

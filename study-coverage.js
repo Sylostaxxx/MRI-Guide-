@@ -2,6 +2,10 @@
   // Counts are active question IDs, rather than the number of menu labels.
   const rows = [
     ['Brain and cranial nerves','CerebrA T1','Brainstem and diencephalon','Brain cross section','CerebrA masks',11,6,'Brain planner','T1, T2 and neurological practice','MRI pack'],
+    ['Intracranial MRA','NiiVue demonstration','—','Native oblique voxel slices and MIP','—',0,0,'—','MRA, inflow and flow artifact practice','Bundled MRI'],
+    ['IAC, CPA and inner ear','—','—','—','—',0,0,'—','Text references','Text'],
+    ['Intracranial MRV','—','—','—','—',0,1,'—','Venous flow practice','Text'],
+    ['Orbits, sinuses and skull base','—','Pituitary illustration','—','—',0,0,'—','Text and sellar anatomy references','Text and plate'],
     ['Head and neck','—','—','—','—',0,1,'—','Brachial plexus practice','Text'],
     ['Cervical spine','Spine Generic T1','Cervical illustration','Orthogonal MRI','Manual disc landmarks',3,1,'Cervical planner','Level localization','MRI pack'],
     ['Thoracic spine','Upper thoracic portion','—','Partial orthogonal MRI','Upper thoracic landmarks',1,1,'—','Thoracic spine practice','Shared spine pack'],
@@ -26,7 +30,7 @@
     ['Vascular','—','—','—','—',0,3,'Lower-extremity vascular overview','Flow and velocity practice','Text'],
     ['Specialized examinations','—','—','—','—',0,2,'Direct hip arthrogram reference','IR and perfusion lessons','Text']
   ];
-  globalThis.StudyCoverage = {version:2,reviewed:'2026-11-24',rows:rows.map(row=>[
+  globalThis.StudyCoverage = {version:3,reviewed:'2026-11-26',rows:rows.map(row=>[
     ...row,row[1]!=='—'?'Partial MRI coverage':(row[2]!=='—'||row[6])?'Reference coverage':'Coverage gap'
   ])};
 })();
