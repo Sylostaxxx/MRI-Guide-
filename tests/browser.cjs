@@ -668,7 +668,7 @@ async function run() {
     await reopened.getByRole('link',{name:/^Thalamus/}).waitFor();
     await reopened.getByRole('navigation',{name:'Primary navigation'}).getByRole('link',{name:'Study Center',exact:true}).click();
     await reopened.getByRole('link',{name:/^MRI Safety.*available questions/}).click();
-    assert.equal(await reopened.locator('#subject').inputValue(),'Safety');
+    await reopened.waitForFunction(()=>document.querySelector('#subject')?.value==='Safety');
     await reopened.goto(home+'?section=study-center');
     await reopened.getByRole('link',{name:/^Lower Extremity.*71 available questions/}).waitFor();
     assert.equal(await reopened.getByText('Browse lower-extremity regions',{exact:true}).count(),0);
