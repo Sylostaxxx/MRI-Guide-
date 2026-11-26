@@ -1,0 +1,191 @@
+{
+  "id": "spider-lumbar-space-v1",
+  "source": "https://zenodo.org/records/10159290",
+  "collection": "https://spider.grand-challenge.org/data/",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Van der Graaf, van Hooff, Buckens et al., SPIDER lumbar spine MRI and segmentation dataset.",
+  "region": "Lumbar spine and adjacent imaged anatomy",
+  "sequence": "Sagittal 3D T2 SPACE",
+  "orientation": "RAS+ native voxel grid; sagittal acquisition, orthogonal reformats.",
+  "processing": "Converted MetaImage from LPS to RAS and cropped the native grid around all source labels with margins. No labels removed and no interpolation.",
+  "labelsNote": "Indices follow the publisher\u2019s bottom-up numbering. The lowest lumbar vertebra is not automatically L5. No graded questions are enabled pending independent review.",
+  "cropSourceRASVoxels": [
+    [
+      0,
+      18,
+      97
+    ],
+    [
+      120,
+      384,
+      640
+    ]
+  ],
+  "dimensions": [
+    120,
+    366,
+    543
+  ],
+  "spacingMM": [
+    0.8999999761581421,
+    0.46875,
+    0.46875
+  ],
+  "affine": [
+    0.8999999761581421,
+    0.0,
+    0.0,
+    -68.73072052001953,
+    0.0,
+    0.46875,
+    2.2954687060655274e-12,
+    -118.68411255007229,
+    0.0,
+    -2.2954687060655274e-12,
+    0.46875,
+    -95.60467529183711
+  ],
+  "labels": {
+    "1": {
+      "name": "Lowest lumbar vertebra (source numbering)"
+    },
+    "2": {
+      "name": "Vertebra 2 from the bottom (source numbering)"
+    },
+    "3": {
+      "name": "Vertebra 3 from the bottom (source numbering)"
+    },
+    "4": {
+      "name": "Vertebra 4 from the bottom (source numbering)"
+    },
+    "5": {
+      "name": "Vertebra 5 from the bottom (source numbering)"
+    },
+    "6": {
+      "name": "Vertebra 6 from the bottom (source numbering)"
+    },
+    "7": {
+      "name": "Vertebra 7 from the bottom (source numbering)"
+    },
+    "100": {
+      "name": "Spinal canal"
+    },
+    "201": {
+      "name": "Intervertebral disc 1 from the bottom (source numbering)"
+    },
+    "202": {
+      "name": "Intervertebral disc 2 from the bottom (source numbering)"
+    },
+    "203": {
+      "name": "Intervertebral disc 3 from the bottom (source numbering)"
+    },
+    "204": {
+      "name": "Intervertebral disc 4 from the bottom (source numbering)"
+    },
+    "205": {
+      "name": "Intervertebral disc 5 from the bottom (source numbering)"
+    },
+    "206": {
+      "name": "Intervertebral disc 6 from the bottom (source numbering)"
+    },
+    "207": {
+      "name": "Intervertebral disc 7 from the bottom (source numbering)"
+    }
+  },
+  "anchors": {
+    "1": [
+      57,
+      187,
+      138
+    ],
+    "2": [
+      59,
+      211,
+      190
+    ],
+    "3": [
+      58,
+      216,
+      265
+    ],
+    "4": [
+      57,
+      210,
+      340
+    ],
+    "5": [
+      56,
+      197,
+      412
+    ],
+    "6": [
+      56,
+      185,
+      482
+    ],
+    "7": [
+      54,
+      179,
+      532
+    ],
+    "100": [
+      56,
+      170,
+      361
+    ],
+    "201": [
+      59,
+      174,
+      101
+    ],
+    "202": [
+      62,
+      231,
+      145
+    ],
+    "203": [
+      59,
+      242,
+      222
+    ],
+    "204": [
+      57,
+      242,
+      303
+    ],
+    "205": [
+      58,
+      229,
+      379
+    ],
+    "206": [
+      55,
+      212,
+      450
+    ],
+    "207": [
+      56,
+      205,
+      519
+    ]
+  },
+  "volumes": [
+    {
+      "title": "MRI",
+      "path": "./atlas/lumbar/image.nii.gz",
+      "bytes": 25347226,
+      "sha256": "3c9fdad71525bc99ea6e27a48491fbd4be2f6b6a1255d5ba9b39f856699d238d",
+      "sourceFile": "images/107_t2_SPACE.mha",
+      "sourceSha256": "540ed4706578771f25daee9f6bf423a19cd672878c47389aea832b7f9a2e7ae3"
+    },
+    {
+      "title": "Source labels",
+      "path": "./atlas/lumbar/labels.nii.gz",
+      "bytes": 515889,
+      "sha256": "1fc8ad344330f7202ce3eee84cbd381309ae052ecbd91e88f603b0b5edaba60b",
+      "sourceFile": "masks/107_t2_SPACE.mha",
+      "sourceSha256": "3e09be72f0cb4fbcdd22f5db30fa62b5ac0cf3aa177accab2748d1596750b4e2"
+    }
+  ]
+}

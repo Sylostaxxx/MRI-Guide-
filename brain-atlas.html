@@ -34,13 +34,14 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 .focused main{position:fixed;inset:0;overflow:auto;max-width:none;background:var(--background);z-index:20}.focused .study-chrome{display:none!important}
 @media (max-width:900px){.views{grid-template-columns:repeat(3,minmax(0,1fr))}.views section{padding:7px}.quiz-options{width:100%}}
 @media (max-width:600px){.views{grid-template-columns:1fr}.quiz-panel{padding:8px}.quiz-actions button{font-size:.85rem}.image-tools{gap:5px}}
+.scan-preview{display:block;max-width:min(100%,220px);max-height:160px;border-radius:6px;margin:8px 0}
 </style><link rel="stylesheet" href="./app-navigation.css">
 </head>
 <body><main>
 <nav class="study-chrome" data-app-nav="anatomy" aria-label="Primary navigation"></nav>
 <div class="scan-navigation study-chrome"><label>Region <select id="atlasRegion"><option value="brain">Brain</option><option value="spine">Cervical spine</option><option value="knee">Knee</option><option value="cardiac">Cardiac</option></select></label> <a href="./">Body Region Library</a></div>
 <h1 class="study-chrome" id="atlasTitle">Real Brain Atlas</h1>
-<p class="study-chrome" id="intro">Explore the CerebrA anatomical labels on the symmetric MNI-ICBM152 population-average T1-weighted MRI.</p>
+<p id="datasetDetails" class="study-chrome" hidden></p><p class="study-chrome" id="intro">Explore the CerebrA anatomical labels on the symmetric MNI-ICBM152 population-average T1-weighted MRI.</p>
 <div class="controls view-tabs study-chrome" aria-label="Anatomy viewing mode">
 <button type="button" data-mode="mri" aria-pressed="true">Real MRI</button>
 <button type="button" data-mode="illustrated" aria-pressed="false">Illustrated Anatomy</button>
@@ -70,7 +71,7 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <details class="download-tools study-chrome" id="downloads" open>
 <summary>MRI pack and offline storage</summary>
 <div class="controls"><button id="load">Download and open atlas</button><button id="remove" hidden>Remove offline atlas</button></div>
-<p id="status" role="status">Download the 21 MB atlas once to use it offline.</p>
+<img id="datasetPreview" class="scan-preview" alt="Preview of this MRI acquisition" hidden><p id="status" role="status">Download the 21 MB atlas once to use it offline.</p>
 </details>
 <div id="workspace" hidden>
 <details class="layer-panel study-chrome" id="layerDrawer"><summary>Anatomical layers</summary>
@@ -113,5 +114,5 @@ summary{cursor:pointer;min-height:44px;display:list-item;padding-top:10px;box-si
 <p id="spineAttribution" hidden><small>MRI by Julien Cohen-Adad and Spine Generic contributors. Manual landmarks by Sandrine Bedard. Cropped for study. <a href="https://github.com/spine-generic/data-single-subject">Source dataset</a> · <a href="./atlas/spine/LICENSE.txt">CC BY 4.0</a></small></p>
 <p id="kneeAttribution" hidden><small>pyKNEEr demo images v4 by Serena Bonaretti. Converted and downsampled for study. <a href="https://doi.org/10.5281/zenodo.3820248">Source dataset</a> · <a href="./atlas/knee/LICENSE.txt">CC BY-NC-SA 4.0</a></small></p>
 <p id="cardiacAttribution" hidden><small>Medical Segmentation Decathlon Task02 Heart, King’s College London. Cropped around the left atrium. <a href="https://medicaldecathlon.com/">Source dataset</a> · <a href="./atlas/cardiac/LICENSE.txt">CC BY-SA 4.0</a></small></p>
-</details></main><script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./study-guidance.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./anatomy-plates.js"></script><script src="./quiz-assets.js"></script><script type="module" src="./brain-atlas.js"></script></body>
+</details></main><script src="./app-navigation.js"></script><script src="./study-resume.js"></script><script src="./study-store.js"></script><script src="./study-guidance.js"></script><script src="./atlas-coverage.js"></script><script src="./atlas-study.js"></script><script src="./nifti.js"></script><script src="./anatomy-plates.js"></script><script src="./quiz-assets.js"></script><script type="module" src="./brain-atlas.js"></script></body>
 </html>

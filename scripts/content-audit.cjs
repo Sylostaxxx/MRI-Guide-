@@ -23,7 +23,7 @@ const imageItems=active.filter(q=>q.image);
 const registryFigures=new Set(imageItems.flatMap(q=>{
   const a=RegistryImages[q.image];return a.comparison?[a.path,RegistryImages[a.comparison].path]:[a.path];
 }));
-const manifests=['brain','spine','knee','cardiac'].map((name,index)=>{
+const manifests=['brain','spine','knee','cardiac','iac','lumbar','prostate'].map((name,index)=>{
   const file=index?'atlas/'+name+'/manifest.json':'atlas/manifest.json';
   const data=JSON.parse(fs.readFileSync(path.join(root,file),'utf8'));
   return {region:name,files:data.volumes.map(v=>v.path),labelIds:Object.keys(data.labels).length};

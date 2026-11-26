@@ -262,6 +262,17 @@ async function run() {
     await ready();
     await page.getByRole('button',{name:'Left atrium',exact:true}).click();
     await page.getByRole('heading',{name:'Left atrium',exact:true}).waitFor();
+    for(const region of ['iac','lumbar','prostate']){
+      await page.goto(home+'brain-atlas.html?region='+region);
+      await page.getByRole('button',{name:'Download and open MRI',exact:true}).click();
+      await ready();
+      const view=page.locator('#views canvas').first();
+      const previous=await view.evaluate(canvas=>canvas.toDataURL());
+      await page.getByRole('slider',{name:'Axial slice',exact:true}).fill('2');
+      assert.notEqual(await view.evaluate(canvas=>canvas.toDataURL()),previous,region);
+      assert.equal(await page.getByRole('button',{name:'Start MRI quiz',exact:true}).isVisible(),false);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),region);
+    }
     await new Promise(resolve => { server.once('exit',resolve);server.kill(); });
     await page.goto(home + 'brain-atlas.html?region=cardiac',{waitUntil:'domcontentloaded'});
     await ready();
@@ -701,10 +712,25 @@ async function run() {
     const head=reopened.locator('summary').filter({hasText:'Brain & Head'});
     if(!await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).isVisible()) await head.click();
     await reopened.getByRole('link',{name:'IAC / cerebellopontine angle',exact:true}).click();
-    await reopened.getByText('Real MRI not yet available. Anatomy text reference.',{exact:true}).waitFor();
+    await reopened.getByRole('heading',{name:'IAC / CPA MRI Atlas',exact:true}).waitFor();
+    await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI and labels saved for offline use.'));
+    await reopened.getByRole('button',{name:'Source-contoured cochlea',exact:true}).click();
+    await reopened.getByRole('heading',{name:'Source-contoured cochlea',exact:true}).waitFor();
+    await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Back',exact:true}).click();
     await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Back',exact:true}).click();
     await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).click();
     await reopened.getByRole('heading',{name:'Intracranial MRA',exact:true}).waitFor();
+    await reopened.getByRole('button',{name:'Download and open MRI',exact:true}).click();
+    await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI saved for offline use.'));
+    assert.equal(await reopened.locator('#views canvas:visible').count(),3);
+    assert.equal(await reopened.locator('#layerDrawer').isVisible(),false);
+    for(const region of ['lumbar','prostate']){
+      await reopened.goto(home+'brain-atlas.html?region='+region);
+      await reopened.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('MRI and labels saved for offline use.'));
+      assert.equal(await reopened.locator('#views canvas:visible').count(),3,region);
+      await reopened.getByRole('slider',{name:'Sagittal slice',exact:true}).fill('10');
+    }
+    await reopened.goto(home+'real-scans.html?scan=mra');
     await reopened.getByText(/Loaded chris_MRA/).waitFor();
     assert.ok(await reopened.locator('#view').evaluate(canvas=>canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((x,i)=>i%4===0&&x>50)));
     await reopened.locator('#projection').selectOption('slice');
