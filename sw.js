@@ -1,7 +1,8 @@
-const CACHE = 'mri-study-lab-shell-17';
+const CACHE = 'mri-study-lab-shell-18';
 const ROOT = new URL(self.registration.scope);
 importScripts('./anatomy-plates.js','./quiz-assets.js','./registry-images.js');
 const FILES = [
+  './parameter-lab.html', './parameter-lab.js', './parameter-model.js', './registry-bank-parameters.js',
   './atlas/artifacts/gibbs-cord.jpg', './artifact-lessons.js', './artifact-browser.js', './registry-bank-artifacts.js',
   './study-focus.js', './registry-bank-focus.js', './body-browser.js',
   './study-resume.js', './study-guidance.js', './lower-extremity.js', './registry-bank-lower.js', './study-coverage.js', './lower-library.js',

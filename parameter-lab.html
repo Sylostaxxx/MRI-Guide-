@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MRI Parameter Lab | MRI Study Lab</title><link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app-navigation.css"><link rel="stylesheet" href="./registry.css"><link rel="stylesheet" href="./study-v2.css">
+<style>
+.lab-actions{display:flex;gap:.4rem 1rem;flex-wrap:wrap}.lab-actions a{display:inline-flex;align-items:center;min-height:44px}
+.parameter-effects,.protocol-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:.75rem;margin:0}
+.parameter-effects div,.protocol-readouts div{padding:.65rem;border:1px solid #53687d;border-radius:.6rem}
+.parameter-effects dt,.protocol-readouts dt{font-weight:700}.parameter-effects dd,.protocol-readouts dd{margin:.2rem 0 0}
+.protocol-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.75rem}
+.protocol-fields label{display:grid;gap:.25rem}.protocol-fields input{min-height:44px;width:100%}
+.parameter-chart{overflow:auto}.parameter-chart table{border-collapse:collapse;min-width:100%}.parameter-chart th,.parameter-chart td{padding:.35rem;border:1px solid #53687d;text-align:left}.parameter-chart a{display:inline-flex;min-height:44px;align-items:center}
+.signal-bars{display:grid;gap:.3rem}.signal-bars meter{width:100%;height:1.35rem}
+</style></head><body><main>
+<nav data-app-nav="physics" aria-label="Primary navigation"></nav>
+<header><h1>MRI Parameter Lab</h1><p>Change one setting at a time, then use the stated acquisition conditions to predict what happens.</p></header>
+<nav class="lab-actions" aria-label="Parameter Lab activities"><a href="./academy.html">Physics Academy</a><a href="./practice.html?focus=parameters">Predict the Change</a><a href="./practice.html?chart=all">Full Chart Challenge</a><a href="./practice.html?focus=parameters&amp;weak=1">Review weak parameters</a><a href="./practice.html?focus=parameter-registry">Registry Challenge</a><a href="#fixScan">Fix the Scan</a></nav>
+<section class="card" aria-labelledby="referenceTitle"><h2 id="referenceTitle">Parameter reference</h2>
+<div class="controls"><label>Parameter <select id="parameterChoice"></select></label><label>Change <select id="parameterDirection"><option value="up">Increase ↑</option><option value="down">Decrease ↓</option></select></label></div>
+<p id="parameterAssumptions"></p><dl id="parameterEffects" class="parameter-effects"></dl>
+<nav class="lab-actions" aria-label="Selected parameter"><a id="parameterCell">One-cell challenge</a><a id="parameterRow">Complete this row</a><a id="parameterLesson">Related physics lesson and notes</a><a id="parameterSource">Physics reference</a></nav>
+</section>
+<section class="card"><h2>Complete the Chart</h2>
+<p>Choose a blank cell to answer in the Study Center. A dash marks a reference-only relationship. Your independent answers count toward mastery.</p>
+<div class="parameter-chart" tabindex="0" role="region" aria-label="Scrollable parameter challenge chart"><table id="parameterChart"></table></div></section>
+<section id="fixScan" class="card"><h2>Fix the Scan</h2>
+<label>Scenario <select id="fixScenario"></select></label><p id="scenarioPrompt"></p>
+<p>Simplified 2D Cartesian fast spin echo at 3 T. Readout FOV and acquired matrix stay at 220 mm and 192. The model excludes acceleration, partial Fourier, overhead, echo-train modulation, and scanner timing or SAR limits.</p>
+<div id="protocolFields" class="protocol-fields"></div>
+<div class="controls"><button id="checkProtocol">Evaluate changes</button><button id="resetProtocol">Reset scenario</button></div>
+<p id="scenarioFeedback" role="status"></p>
+<dl id="protocolReadouts" class="protocol-readouts"></dl>
+<div class="signal-bars" id="parameterSignal"></div>
+<nav class="lab-actions" aria-label="Related training"><a href="./study-center.html?section=artifact">Artifact Academy</a><a href="./?section=clinical">Clinical simulator</a></nav>
+</section></main>
+<script src="./app-navigation.js"></script><script src="./mri-physics.js"></script><script src="./study-store.js"></script><script src="./study-review.js"></script><script src="./parameter-model.js"></script><script src="./parameter-lab.js"></script>
+</body></html>

@@ -1,5 +1,12 @@
 # MRI Study Lab progress
 
+## Parameter Lab
+
+- Inspected the one-page 2021 BetterMRI chart supplied for this task. It defines the topic scope. The application uses original teaching text, diagrams and interactions.
+- The Physics Academy now links to 14 interactive parameter references and 98 conditional or fixed-control relationships. The structured model identifies acquisition assumptions and references. Teaching estimates cover 2D fast spin-echo shot count, Hz-per-pixel chemical shift at approximately 3 T, phase pitch, voxel volume, relative averages/bandwidth noise and ideal spin-echo signal.
+- The shared Study Center now includes 28 directional questions and four original calculations. Single-cell, two-cell row, full 28-cell, weak-area and registry-style practice share the existing hint, correction, mastery, backup and session systems. There are 378 eligible study questions. Official mock forms keep their existing content.
+- Fix the Scan includes six adjustable educational cases covering SNR, acquisition time, phase resolution, partial volume, phase wrap and type 1 chemical shift. Timed chart mode, scanner-specific heating estimates, and advanced motion, coverage, susceptibility and fat-suppression challenges remain open.
+
 ## Artifact Academy and image re-audit
 
 - Physics now opens the expanded Artifact Academy at the existing simulator route. Twelve lessons cover motion, sampling, field and tissue effects, RF hardware, EPI and TOF. Each links to an existing Physics Academy chapter and an original troubleshooting scenario with progressive hints and answer rationales.

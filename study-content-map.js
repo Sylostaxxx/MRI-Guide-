@@ -14,6 +14,7 @@
   };
   const linked = Object.fromEntries(Object.entries(lessons).flatMap(([lesson,ids])=>ids.map(id=>[id,lesson])));
   function lessonFor(question) {
+    if (question.parameterLesson) return question.parameterLesson;
     if (Object.hasOwn(linked,question.id)) return linked[question.id];
     const topic = question.topic.toLowerCase();
     if (/k.space|zero.fill|partial fourier/.test(topic)) return 'k-space';
@@ -31,7 +32,7 @@
     return 'Registry';
   }
   function related(question) {
-    if (question.id.startsWith('art-')) return question.related;
+    if (question.id.startsWith('art-')||question.parameterLesson) return question.related;
     const lesson = lessonFor(question);
     return lesson ? './academy.html?lesson='+lesson : question.related;
   }
