@@ -73,7 +73,9 @@ test('offline shell includes existing and new study navigation without precachin
     assert.ok(sw.includes("'./" + page + "'"));
     assert.ok(fs.statSync(page).size > 0);
   }
-  assert.doesNotMatch(sw,/\.nii\.gz/);
+  assert.match(sw, /atlas\/mra\/chris_MRA\.nii\.gz/);
+  assert.ok(fs.statSync('atlas/mra/chris_MRA.nii.gz').size<100000);
+  assert.doesNotMatch(sw.replace('./atlas/mra/chris_MRA.nii.gz',''),/\.nii\.gz/);
   assert.match(fs.readFileSync('index.html','utf8'), /href="\.\/brain-atlas\.html"/);
   for (const page of ['index.html','real-scans.html','brain-atlas.html','study-center.html']) {
     assert.match(fs.readFileSync(page,'utf8'), /src="\.\/app-navigation\.js"/);
@@ -308,8 +310,8 @@ require('../physics-videos.js');
 
 test('academy content is complete for each published lesson and isolated from Exam A', () => {
   const bank=RegistryContent.bank;
-  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone|art|param)-/.test(q.id)).length,279);
-  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone|art|param)-/.test(q.id)).length,249);
+  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone|art|param|positioning|pathology|safety)-/.test(q.id)).length,279);
+  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone|art|param|positioning|pathology|safety)-/.test(q.id)).length,249);
   assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
   const exact = new Set();
   for(const q of bank){
@@ -488,7 +490,7 @@ test('focused topics exhaust their questions before cycling and preserve the exa
   assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
     RegistryCore.buildForm(RegistryContent.bank.filter(q=>!additions.includes(q)),RegistryBlueprints.arrt));
   const rows=BodyIndex.groups.flatMap(([,regions])=>regions);
-  assert.equal(rows.length,26);
+  assert.equal(rows.length,31);
   assert.ok(rows.find(row=>row[0]==='hand'&&row[4]==='hand-bones'));
   assert.ok(rows.find(row=>row[0]==='long-bones'&&row[4]==='long-bone'));
 });
@@ -561,4 +563,34 @@ test('parameter lab scenarios and questions preserve controlled assumptions and 
   assert.ok(estimate({...baseline,te:40}).softTissue<current.softTissue);
   assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
     RegistryCore.buildForm(RegistryContent.bank.filter(q=>!questions.includes(q)),RegistryBlueprints.arrt));
+});
+
+require('../registry-bank-clinical.js');
+test('new clinical banks have unique objectives, preserved mock forms, and referenced options',()=>{
+  const all=RegistryContent.bank;
+  const items=all.filter(q=>/^(positioning|safety|pathology)-/.test(q.id));
+  assert.equal(items.length,45);
+  assert.equal(new Set(items.map(q=>q.stem)).size,45);
+  assert.equal(all.filter(q=>StudyFocus.matches(q,'positioning')&&!q.pilot).length,23);
+  assert.equal(all.filter(q=>StudyFocus.matches(q,'clinical-safety')&&!q.pilot).length,29);
+  assert.equal(all.filter(q=>StudyFocus.matches(q,'pathology')&&!q.pilot).length,21);
+  for(const q of items){
+    assert.ok(q.studyOnly&&q.references.length&&q.hints.length===2&&q.related,q.id);
+    assert.ok(q.options.every(([choice,reason])=>choice&&reason),q.id);
+    assert.equal(new Set(q.options.map(([choice])=>choice)).size,3,q.id);
+  }
+  assert.deepEqual(RegistryCore.buildForm(all,RegistryBlueprints.arrt),
+    RegistryCore.buildForm(all.filter(q=>!items.includes(q)),RegistryBlueprints.arrt));
+});
+
+test('bundled MRA retains the licensed source bytes and near-RAS geometry',async()=>{
+  const manifest=JSON.parse(fs.readFileSync('atlas/mra/manifest.json'));
+  const bytes=fs.readFileSync(manifest.path);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),manifest.sha256);
+  const {dim,affine,hi,lo}=await parse(bytes);
+  assert.deepEqual(dim,manifest.dimensions);
+  assert.ok(affine[0]>.5&&affine[5]>.5&&affine[10]>.6);
+  assert.ok(Math.abs(affine[2])>.04,'keep the oblique sform');
+  assert.ok(hi>100&&lo===0);
+  assert.equal(manifest.markers.length,0);
 });

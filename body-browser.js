@@ -3,6 +3,11 @@
     ['Head and neck',[
       ['brain','Brain and cranial nerves','Cortex and deep nuclei; ventricles and CSF; brainstem and cerebellum; major cranial nerve pathways.','brain','brainstem'],
       ['face','Face, orbits and skull base','Globe and optic nerve; extraocular muscles; paranasal sinuses; skull base foramina; temporal bones.'],
+      ['iac','IAC / cerebellopontine angle','Dedicated small-field MRI can assess the internal auditory canals, CPA cisterns and adjacent inner ear. Thin 3D fluid-sensitive imaging and T1 techniques serve different purposes. No labeled branch of CN VII or VIII is available here.'],
+      ['mrv','Intracranial MRV','Venography depicts dural venous sinuses and cerebral venous drainage. Slow or in-plane flow can cause signal gaps on TOF; correlate suspicious gaps with source images and complementary imaging.'],
+      ['inner-ear','Inner ear and cranial nerves','The cochlea, vestibule and semicircular canals are best distinguished on appropriate thin, fluid-sensitive images. A routine brain volume does not establish individual nerve branches.'],
+      ['orbits','Orbits','Targeted imaging may include globes, optic nerves, extraocular muscles and orbital apices. Fat suppression and confirmed bilateral scout coverage can be important.'],
+      ['sinus','Paranasal sinuses and skull base','MRI emphasizes soft tissues and skull-base spread. Fine bony sinus anatomy is often better shown by CT, depending on the clinical question.'],
       ['neck','Neck','Pharynx and larynx; thyroid; salivary glands; carotid and jugular spaces; cervical lymph nodes.']]],
     ['Spine and trunk',[
       ['cervical','Cervical spine','Vertebral bodies and discs; spinal cord; neural foramina; craniocervical junction.','spine','cervical'],
@@ -62,7 +67,7 @@
     const [id,title,description,pack,plate,focus,lower]=rows.get(select.value);
     el('bodyPartTitle').textContent=title;
     el('bodyPartDescription').textContent=description;
-    el('bodyPartCoverage').textContent=pack?'Real MRI available in the linked atlas.':plate?'Illustrated anatomy reference. No verified MRI pack is linked for this region.':'Anatomy text reference. Verified MRI and illustrations are pending.';
+    el('bodyPartCoverage').textContent=pack?'Real MRI available in the linked atlas.':plate?'Illustrated anatomy reference. Real MRI not yet available. No verified MRI pack is linked for this region.':'Real MRI not yet available. Anatomy text reference.';
     const details=el('bodyPartBreakdown');
     const items=breakdown[id]??[];
     details.replaceChildren(...items.flatMap(([name,value])=>[make('dt',name),make('dd',value)]));

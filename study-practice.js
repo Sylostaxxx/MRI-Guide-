@@ -31,6 +31,13 @@
   get('bankInfo').textContent = pool.length+' practice questions · '+bank.length+' authored items including simulated pilots · questions cycle after the pool is used';
   const query = new URLSearchParams(location.search);
   const focus=Object.hasOwn(StudyFocus.titles,query.get('focus'))?query.get('focus'):null;
+  const clinical=['positioning','clinical-safety'].includes(focus);
+  if(clinical){
+    AppNavigation.active('clinical');AppNavigation.context(StudyFocus.titles[focus]);
+    get('clinicalPracticeHome').hidden=false;get('clinicalLimitRow').hidden=false;
+    const length=pool.filter(q=>StudyFocus.matches(q,focus)).length;
+    for(let count=1;count<=length;count++)get('clinicalLimit').add(new Option(count+' questions',count));
+  }
   if(focus){
     document.querySelector('h1').textContent=StudyFocus.titles[focus];
     const count=pool.filter(q=>StudyFocus.matches(q,focus)).length;
@@ -45,6 +52,13 @@
   LowerExtremity.fill(get('lowerRegion'));
   LowerExtremity.fill(get('troubleLower'));
   if(lowerRequested){
+    const breakdown=get('regionalAvailability');
+    breakdown.hidden=false;
+    breakdown.append(...['all',...Object.keys(LowerExtremity.regions)].map(region=>{
+      const count=pool.filter(q=>LowerExtremity.matches(q,region)).length;
+      return link((LowerExtremity.regions[region]?.label??'Mixed Lower Extremity')+' · '+count,
+        './practice.html?region='+region);
+    }),link('Regional library and knee MRI','./study-center.html?section=lower'));
     get('subject').value='Lower Extremity';get('lowerRegion').value=requestedRegion;
     get('troubleSubject').value='Lower Extremity';get('troubleLower').value=requestedRegion;
   }
@@ -55,7 +69,7 @@
   const chartParameters=ParameterModel.parameters.filter(p=>chartRequest==='all'||chartRequest===p.id);
   const chartQueue=chartParameters.flatMap(p=>p.quiz.map(index=>ParameterModel.idFor(p,index)));
   const chart=chartQueue.length>0;
-  const recordKey = chart ? 'session:lesson:parameter-'+chartRequest : quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : subjectScope ? 'session:focus:subject-'+subjectScope.toLowerCase().replaceAll(' ','-') : 'session';
+  const recordKey = chart ? 'session:lesson:parameter-'+chartRequest : quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : subjectScope ? 'session:focus:subject-'+subjectScope.toLowerCase().replaceAll(' ','-') : lowerRequested ? 'session:focus:lower-'+requestedRegion : 'session';
   let attempts = [], records = new Map(), stats = new Map(), session, response = [], busy = false;
   let shownAt = Date.now(), troubleLimit = 25, incomingPlan = false, clearTopic = false;
   const recalculate = () => {stats = summarize(attempts,records.get('reset')?.value.at);};
@@ -82,7 +96,7 @@
     };
   }
   function fresh(plan = {}) {
-    return {id:crypto.randomUUID(),mode:quiz||chart?'lesson':retry?'retry':'continuous',number:1,
+    return {id:crypto.randomUUID(),mode:quiz||chart?'lesson':retry?'retry':'continuous',number:1,limit:clinical?Number(get('clinicalLimit').value):0,
       recent:[],cycle:[],queue:chart?[...chartQueue]:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
       result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,ended:false,elapsed:0,
       subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
@@ -99,6 +113,9 @@
       (plan.difficulty === 'Any' || difficulty(q) === plan.difficulty));
   }
   async function next(plan) {
+    if(plan.limit&&plan.number>plan.limit){
+      await save({...plan,ended:true});StudyResume.clear(clinical?'Clinical':'Study Center');render();return;
+    }
     const requested = plan.queue[0];
     const eligible=filtered(plan);
     const cycle=plan.cycle??plan.recent;
@@ -182,7 +199,7 @@
     if(!session||session.ended||!session.current||currentView!=='session')return;
     const href=new URL(location.href);
     href.searchParams.set('recover','1');
-    StudyResume.save('Study Center',chart?'Parameter chart':quiz?'Academy quiz':retry?'Question retry':focus?StudyFocus.titles[focus]:'Continuous practice',
+    StudyResume.save(clinical?'Clinical':'Study Center',chart?'Parameter chart':quiz?'Academy quiz':retry?'Question retry':focus?StudyFocus.titles[focus]:'Continuous practice',
       catalog.get(session.current)?.topic??session.subject,'Question '+session.number,href.href);
   }
   function correctionRoute(id) {
@@ -208,6 +225,7 @@
     get('restartPractice').hidden=!live;
     get('pause').hidden = !live;
     get('end').hidden = !live;
+    get('clinicalLimit').disabled=live;
     get('start').hidden = live && !session.paused;
     get('start').textContent = live ? 'Resume' : chart ? 'Start chart challenge' : quiz ? 'Start five-question lesson quiz' : retry ? 'Retry question' : 'Start practice';
     get('pause').hidden = !live || session.paused;
@@ -229,7 +247,7 @@
     get('sessionStats').textContent = session ? (session.ended?'Session ended · ':'')+correct+' independent correct of '+sessionAttempts.length+
       ' answered · '+sessionAttempts.filter(a=>a.hint).length+' assisted' : '';
     if (!q) return;
-    get('practiceNumber').textContent = 'Question '+session.number+(chart?' of '+chartQueue.length:quiz?' of 5':'');
+    get('practiceNumber').textContent = 'Question '+session.number+(chart?' of '+chartQueue.length:quiz?' of 5':session.limit?' of '+session.limit:'');
     get('practiceStem').textContent = q.stem;
     if (focus) get('practiceStem').focus();
     const hintLevel=session.hintLevel??Number(Boolean(session.hint));
@@ -388,6 +406,10 @@
     attempts = [...data.attempts,...migrated];
     records = new Map(data.records.map(row=>[row.id,row]));
     session = records.get(recordKey)?.value;
+    if(!session&&lowerRequested){
+      const legacy=records.get('session')?.value;
+      if(legacy?.subject==='Lower Extremity'&&legacy.lowerRegion===requestedRegion)session=legacy;
+    }
     if (session) {
       response = session.draft??[];
       if(!lowerRequested){
@@ -397,6 +419,7 @@
         await save({...session,subject:'Lower Extremity',lowerRegion:requestedRegion,topic:null});
       }
       get('difficulty').value = session.difficulty;
+      if(clinical)get('clinicalLimit').value=String(session.limit??0);
       get('useVariants').checked = Boolean(session.variants);
       if (topicLesson && topicLesson!==session.topic) incomingPlan = true;
     }
@@ -445,7 +468,7 @@
   get('pause').onclick = run(async()=>{await save({...session,elapsed:clocked(),paused:true});render();});
   get('end').onclick = run(async()=>{
     if (confirm('End this practice session? Answered questions will stay in your history.')) {
-      await save({...session,ended:true});StudyResume.clear('Study Center');render();
+      await save({...session,ended:true});StudyResume.clear(clinical?'Clinical':'Study Center');render();
     }
   });
   get('practiceHint').onclick = run(async()=>{

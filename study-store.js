@@ -67,6 +67,7 @@
             (value.current !== null && !str(value.current)) ||
             (hasResult && (!validAttempt(value.result) || value.result.question !== value.current || value.result.session !== value.id)) ||
             !Number.isInteger(value.number) || value.number < 1 ||
+            (value.limit!==undefined&&(!Number.isInteger(value.limit)||value.limit<0)) ||
             !Number.isFinite(value.elapsed) || value.elapsed < 0 || !str(value.subject) || !str(value.difficulty) ||
             !['paused','ended','hint'].every(field=>typeof value[field] === 'boolean')) throw Error('Invalid saved session.');
       } else if (row.id === 'reset') {

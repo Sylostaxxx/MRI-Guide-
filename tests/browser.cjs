@@ -410,7 +410,7 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/378 practice questions/).waitFor();
+    await page.getByText(/423 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -669,6 +669,46 @@ async function run() {
     await reopened.getByRole('navigation',{name:'Primary navigation'}).getByRole('link',{name:'Study Center',exact:true}).click();
     await reopened.getByRole('link',{name:/^MRI Safety.*available questions/}).click();
     assert.equal(await reopened.locator('#subject').inputValue(),'Safety');
+    await reopened.goto(home+'?section=study-center');
+    await reopened.getByRole('link',{name:/^Lower Extremity.*71 available questions/}).waitFor();
+    assert.equal(await reopened.getByText('Browse lower-extremity regions',{exact:true}).count(),0);
+    await reopened.getByRole('link',{name:/^Lower Extremity.*71 available questions/}).click();
+    await reopened.getByRole('link',{name:'Knee · 23',exact:true}).waitFor();
+    await reopened.getByRole('link',{name:'Study Center',exact:true}).click();
+    await reopened.getByRole('link',{name:/^Pathology.*21 available questions/}).click();
+    await reopened.getByText(/21 questions in this topic/).waitFor();
+    await reopened.getByRole('link',{name:'Clinical',exact:true}).click();
+    await reopened.getByRole('link',{name:/^Patient Positioning/}).click();
+    await reopened.getByText(/23 questions in this topic/).waitFor();
+    assert.equal(await reopened.locator('.primary-links [aria-current=page]').textContent(),'Clinical');
+    await reopened.getByRole('button',{name:'Start practice',exact:true}).click();
+    const cases=new Set();
+    for(let n=1;n<=4;n++){
+      await reopened.getByText('Question '+n,{exact:true}).waitFor();
+      cases.add(await reopened.locator('#practiceStem').textContent());
+      await reopened.locator('#practiceChoices button').first().click();
+      await reopened.locator('#checkPractice').click();
+      await reopened.locator('#nextPractice').click();
+    }
+    assert.equal(cases.size,4);
+    await reopened.getByRole('link',{name:'Return to Clinical Dashboard'}).click();
+    await reopened.getByRole('link',{name:/^MRI Safety/}).click();
+    await reopened.getByText(/29 questions in this topic/).waitFor();
+    await reopened.locator('#clinicalLimit').selectOption('3');
+    await reopened.getByRole('button',{name:'Start practice',exact:true}).click();
+    await reopened.getByText('Question 1 of 3',{exact:true}).waitFor();
+    await reopened.getByRole('link',{name:'Anatomy',exact:true}).click();
+    const head=reopened.locator('summary').filter({hasText:'Brain & Head'});
+    if(!await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).isVisible()) await head.click();
+    await reopened.getByRole('link',{name:'IAC / cerebellopontine angle',exact:true}).click();
+    await reopened.getByText('Real MRI not yet available. Anatomy text reference.',{exact:true}).waitFor();
+    await reopened.getByRole('group',{name:'Page history'}).getByRole('button',{name:'Back',exact:true}).click();
+    await reopened.getByRole('link',{name:'Intracranial MRA',exact:true}).click();
+    await reopened.getByRole('heading',{name:'Intracranial MRA',exact:true}).waitFor();
+    await reopened.getByText(/Loaded chris_MRA/).waitFor();
+    assert.ok(await reopened.locator('#view').evaluate(canvas=>canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((x,i)=>i%4===0&&x>50)));
+    await reopened.locator('#projection').selectOption('slice');
+    assert.equal(await reopened.locator('#slice').isEnabled(),true);
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');

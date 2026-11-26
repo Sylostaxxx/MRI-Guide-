@@ -11,8 +11,8 @@
       ['Scanner Simulator','./?section=clinical&tool=scanner','Rehearse a guided scan prescription with scanner terminology.'],
       ['Slice Planner','./?section=clinical&tool=planner','Plan on linked localizers and adjust slice geometry.'],
       ['Protocol Library','./?section=clinical&tool=protocol','Review protocol examples and practice a prescription.'],
-      ['Patient Positioning','./study-center.html?section=positioning','Work through positioning and coil-selection decisions.'],
-      ['MRI Safety','./study-center.html?section=safety','Work through screening and safety scenarios.'],
+      ['Patient Positioning','./practice.html?focus=positioning','Work through positioning and coil-selection decisions.'],
+      ['MRI Safety','./practice.html?focus=clinical-safety','Work through screening and safety scenarios.'],
       ['Clinical Challenges','./study-center.html?section=rotation','Follow a virtual examination from preparation through review.']
     ],
     physicsTools:[
@@ -33,7 +33,7 @@
     ]
   };
   const regionalGroups=[
-    ['Brain & Head','./atlas/cerebra-preview.webp','Brain MRI available',['brain','face','neck']],
+    ['Brain & Head','./atlas/cerebra-preview.webp','Brain MRI available',['brain','face','neck','iac','inner-ear','orbits','sinus','mrv']],
     ['Spine','./atlas/plates/cervical.webp','Cervical and upper thoracic MRI available',['cervical','thoracic','lumbar','sacrum']],
     ['Upper Extremities','./atlas/plates/hand-bones.webp','Illustrations and references',['shoulder','arm','elbow','forearm','wrist','hand']],
     ['Lower Extremities','./atlas/plates/knee.webp','Knee MRI available',['hip','thigh','knee','leg','ankle','foot']],
@@ -85,15 +85,18 @@
         const [,name,,pack,plate]=rows.get(id);
         const href=pack?'./brain-atlas.html?region='+pack:'./study-center.html?section=body&part='+id;
         const entry=node('li');
-        entry.append(link(name,href),node('small',pack?'Real MRI'+(id==='thoracic'?' · upper coverage':id==='heart'?' · left atrial crop':''):plate?'Illustrated reference':'Text reference · MRI pending'));
+        entry.append(link(name,href),node('small',pack?'Real MRI'+(id==='thoracic'?' · upper coverage':id==='heart'?' · left atrial crop':''):plate?'Illustrated reference · Real MRI not yet available':'Text reference · Real MRI not yet available'));
         if(pack)entry.append(link(name+' regional reference','./study-center.html?section=body&part='+id));
         list.append(entry);
       }
       if(ids.includes('brain')){
         const entry=node('li');
-        entry.append(node('small','Dedicated IAC/CPA, cranial nerve, pituitary, orbit, sinus, MRA, MRV, and skull-base packs pending.'),
+        entry.append(link('Intracranial MRA','./real-scans.html?scan=mra'),
+          node('small','Real MR angiography demonstration. No verified vessel labels.'));list.append(entry);
+        const missing=node('li');
+        missing.append(node('small','Dedicated sellar MRI is unavailable.'),
           link('Pituitary anatomy illustration','./study-center.html?section=systems&structure=4'));
-        list.append(entry);
+        list.append(missing);
       }
       card.append(summary,list);grid.append(card);
     }
@@ -154,8 +157,7 @@
       const n=available.filter(q=>params.has('subject')?StudyReview.subject(q)===params.get('subject'):
         params.has('region')?LowerExtremity.matches(q,params.get('region')):StudyFocus.matches(q,params.get('focus'))).length;
       return tile(label,'./practice.html?'+query,n?n+' available questions':'No dedicated questions available');
-    }),tile('Browse lower-extremity regions','./study-center.html?section=lower','Hip, thigh, knee, lower leg, ankle, and foot'),
-    tile('Physics challenges','./?section=practice&tool=physics','Original interactive parameter practice'));
+    }),tile('Physics challenges','./?section=practice&tool=physics','Original interactive parameter practice'));
   }
   async function physicsProgress(){
     const host=get('physicsProgress');

@@ -1,5 +1,12 @@
 # MRI Study Lab progress
 
+## Content integrity and clinical practice
+
+- Expanded the shared practice bank from 378 to 423 authored active items. Patient Positioning now has 23 cases, MRI Safety has 29 eligible items, and Pathology has 21. Existing timed exam forms retain their content.
+- Lower Extremity has one primary subject card, with per-region counts and direct access to its existing knee MRI and protocol references.
+- The Brain & Head library opens a bundled, attributed MRA teaching volume in the existing NIfTI viewer. Its near-RAS affine is preserved. The source does not include labels or acquisition details. Dedicated IAC, MRV and other missing studies are identified at their entry points.
+- See [CONTENT-AUDIT.md](./CONTENT-AUDIT.md) and run `node scripts/content-audit.cjs` for content inventory. The four study guides were unavailable and contributed zero imports.
+
 ## Four-section interface
 
 - The primary shell now has Anatomy, Clinical, Physics and Study Center. Settings carries personal notes, bookmarks, downloads and backups. The legacy study, flashcard, protocol and anatomy deep links retain their destinations where practical.
