@@ -394,7 +394,7 @@ async function run() {
     await page.locator('#resultScore').waitFor();
     // All new study flows run after the static origin has stopped.
     await page.goto(home+'practice.html');
-    await page.getByText(/346 practice questions/).waitFor();
+    await page.getByText(/378 practice questions/).waitFor();
     await page.locator('#subject').selectOption('Physics');
     await page.locator('#difficulty').selectOption('Beginner');
     await page.locator('#start').click();
@@ -610,6 +610,29 @@ async function run() {
     await reopened.getByText('✕ INCORRECT',{exact:true}).waitFor();
     await reopened.locator('#teachPractice').click();
     await reopened.locator('#practiceCorrection').getByText(/accumulated phase error and distortion/).waitFor();
+    await reopened.goto(home+'parameter-lab.html?parameter=te');
+    await reopened.getByRole('heading',{name:'MRI Parameter Lab',exact:true}).waitFor();
+    assert.equal(await reopened.locator('#parameterChart tbody tr').count(),14);
+    assert.match(await reopened.locator('#parameterEffects').textContent(),/Acquisition time↔ Unchanged/);
+    await reopened.locator('#parameterDirection').selectOption('down');
+    assert.match(await reopened.locator('#parameterEffects').textContent(),/SNR↑ Increase/);
+    await reopened.locator('#fixScenario').selectOption('shift');
+    await reopened.getByLabel('Bandwidth (Hz/pixel)',{exact:true}).fill('440');
+    await reopened.locator('#checkProtocol').click();
+    await reopened.getByText(/Target met/).waitFor();
+    assert.ok(await reopened.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    await reopened.getByRole('link',{name:'Complete this row'}).click();
+    await reopened.getByRole('button',{name:'Start chart challenge'}).click();
+    await reopened.getByText('Question 1 of 2',{exact:true}).waitFor();
+    await reopened.locator('#practiceHint').click();
+    await reopened.locator('#practiceHints').getByText(/Hint 1/).waitFor();
+    await reopened.getByRole('button',{name:'Decrease',exact:true}).click();
+    await reopened.locator('#checkPractice').click();
+    await reopened.getByText(/Correct with Hint 1/).waitFor();
+    await reopened.reload();
+    await reopened.getByText(/Correct with Hint 1/).waitFor();
+    await reopened.locator('#nextPractice').click();
+    await reopened.getByText('Question 2 of 2',{exact:true}).waitFor();
     await reopened.close();
     assert.deepEqual(errors,[]);
     console.log(engine + ' verified navigation, offline MRI, adaptive practice, Academy, and backups.');

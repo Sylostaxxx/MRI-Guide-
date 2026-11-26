@@ -48,7 +48,11 @@
   const topicLesson = Object.hasOwn(lessons,query.get('topic')) ? query.get('topic') : null;
   const quiz = Object.hasOwn(lessons,requestedLesson) ? requestedLesson : null;
   const retry = pool.some(q=>q.id===query.get('retry'))||StudyVariants.variants.some(q=>q.id===query.get('retry')) ? query.get('retry') : null;
-  const recordKey = quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : 'session';
+  const chartRequest=query.get('chart');
+  const chartParameters=ParameterModel.parameters.filter(p=>chartRequest==='all'||chartRequest===p.id);
+  const chartQueue=chartParameters.flatMap(p=>p.quiz.map(index=>ParameterModel.idFor(p,index)));
+  const chart=chartQueue.length>0;
+  const recordKey = chart ? 'session:lesson:parameter-'+chartRequest : quiz ? 'session:lesson:'+quiz : retry ? 'session:retry:'+retry : focus ? 'session:focus:'+focus : 'session';
   let attempts = [], records = new Map(), stats = new Map(), session, response = [], busy = false;
   let shownAt = Date.now(), troubleLimit = 25, incomingPlan = false, clearTopic = false;
   const recalculate = () => {stats = summarize(attempts,records.get('reset')?.value.at);};
@@ -75,8 +79,8 @@
     };
   }
   function fresh(plan = {}) {
-    return {id:crypto.randomUUID(),mode:quiz?'lesson':retry?'retry':'continuous',number:1,
-      recent:[],cycle:[],queue:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
+    return {id:crypto.randomUUID(),mode:quiz||chart?'lesson':retry?'retry':'continuous',number:1,
+      recent:[],cycle:[],queue:chart?[...chartQueue]:quiz?[...lessons[quiz]]:retry?[retry]:[],order:[],current:null,
       result:null,hint:false,hintLevel:0,hintsHidden:false,paused:false,ended:false,elapsed:0,
       subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:topicLesson,weak:false,variants:get('useVariants').checked,...plan};
   }
@@ -174,7 +178,7 @@
     if(!session||session.ended||!session.current||currentView!=='session')return;
     const href=new URL(location.href);
     href.searchParams.set('recover','1');
-    StudyResume.save('Study Center',quiz?'Academy quiz':retry?'Question retry':focus?StudyFocus.titles[focus]:'Continuous practice',
+    StudyResume.save('Study Center',chart?'Parameter chart':quiz?'Academy quiz':retry?'Question retry':focus?StudyFocus.titles[focus]:'Continuous practice',
       catalog.get(session.current)?.topic??session.subject,'Question '+session.number,href.href);
   }
   function correctionRoute(id) {
@@ -201,18 +205,18 @@
     get('pause').hidden = !live;
     get('end').hidden = !live;
     get('start').hidden = live && !session.paused;
-    get('start').textContent = live ? 'Resume' : quiz ? 'Start five-question lesson quiz' : retry ? 'Retry question' : 'Start practice';
+    get('start').textContent = live ? 'Resume' : chart ? 'Start chart challenge' : quiz ? 'Start five-question lesson quiz' : retry ? 'Retry question' : 'Start practice';
     get('pause').hidden = !live || session.paused;
-    for (const id of ['subject','difficulty','useVariants']) get(id).disabled = Boolean(quiz || retry);
+    for (const id of ['subject','difficulty','useVariants']) get(id).disabled = Boolean(quiz || retry || chart);
     const plan = {subject:get('subject').value,lowerRegion:get('lowerRegion').value,difficulty:get('difficulty').value,topic:clearTopic?null:session?.topic??topicLesson,variants:get('useVariants').checked};
-    get('clearFocus').hidden = !plan.topic || Boolean(quiz || retry);
+    get('clearFocus').hidden = !plan.topic || Boolean(quiz || retry || chart);
     const lower=plan.subject==='Lower Extremity';
     get('lowerFilter').hidden=!lower;
-    get('lowerRegion').disabled=Boolean(quiz||retry);
+    get('lowerRegion').disabled=Boolean(quiz||retry||chart);
     get('shortLowerTest').hidden=!lower;
     get('shortLowerTest').href='./registry.html?timed=1&region='+encodeURIComponent(plan.lowerRegion);
     const limit = filtered(plan).length;
-    get('selectionScope').textContent = quiz ? 'Five lesson questions. Results feed Trouble Questions.' : retry
+    get('selectionScope').textContent = chart ? chartQueue.length+' chart cells. Your answers feed Trouble Questions.' : quiz ? 'Five lesson questions. Results feed Trouble Questions.' : retry
       ? 'Focused review of one question.' : (plan.topic ? 'Lesson focus · ' : '')+
       limit+' matching questions. Your new filters take effect when you move to the next question.';
     const sessionAttempts = session ? attempts.filter(a=>a.session===session.id) : [];
@@ -220,7 +224,7 @@
     get('sessionStats').textContent = session ? (session.ended?'Session ended · ':'')+correct+' independent correct of '+sessionAttempts.length+
       ' answered · '+sessionAttempts.filter(a=>a.hint).length+' assisted' : '';
     if (!q) return;
-    get('practiceNumber').textContent = 'Question '+session.number+(quiz?' of 5':'');
+    get('practiceNumber').textContent = 'Question '+session.number+(chart?' of '+chartQueue.length:quiz?' of 5':'');
     get('practiceStem').textContent = q.stem;
     if (focus) get('practiceStem').focus();
     const hintLevel=session.hintLevel??Number(Boolean(session.hint));
@@ -469,7 +473,7 @@
     await next(plan);
   });
   get('weakPractice').onclick = run(async()=>{
-    if (quiz || retry) {location.href='./practice.html?weak=1';return;}
+    if (quiz || retry || chart) {location.href='./practice.html?weak=1';return;}
     const route=correctionRoute(null);route.searchParams.delete('view');
     AppNavigation.navigate(route);show('session');
     get('subject').value = 'Mixed Practice';

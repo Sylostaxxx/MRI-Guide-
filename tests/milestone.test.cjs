@@ -308,8 +308,8 @@ require('../physics-videos.js');
 
 test('academy content is complete for each published lesson and isolated from Exam A', () => {
   const bank=RegistryContent.bank;
-  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone|art)-/.test(q.id)).length,279);
-  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone|art)-/.test(q.id)).length,249);
+  assert.equal(bank.filter(q=>!/^(le|seq|hand|bone|art|param)-/.test(q.id)).length,279);
+  assert.equal(bank.filter(q=>!q.pilot&&!/^(le|seq|hand|bone|art|param)-/.test(q.id)).length,249);
   assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
   const exact = new Set();
   for(const q of bank){
@@ -525,4 +525,40 @@ test('image question validation fails closed for missing images and attribution 
   assert.equal(RegistryImageView.valid(q,{...RegistryImages[q.image],sha256:undefined}),false);
   assert.equal(RegistryImageView.valid(q,{...RegistryImages[q.image],licenseUrl:undefined}),false);
   assert.deepEqual(RegistryContent.bank.filter(question=>!RegistryImageView.valid(question)).map(q=>q.id),[]);
+});
+
+
+require('../parameter-model.js');
+require('../registry-bank-parameters.js');
+test('parameter lab scenarios and questions preserve controlled assumptions and timed forms',()=>{
+  const {parameters,estimate,baseline,idFor,labels}=ParameterModel;
+  assert.equal(new Set(parameters.map(p=>p.id)).size,14);
+  const questions=RegistryContent.bank.filter(q=>q.id.startsWith('param-'));
+  assert.equal(questions.length,32);
+  assert.ok(questions.every(q=>q.studyOnly&&q.hints.length===2));
+  for(const p of parameters){
+    assert.equal(p.effects.length,7);
+    assert.ok(StudyContentMap.lessons[p.lesson]);
+    for(const index of p.quiz){
+      const q=questions.find(q=>q.id===idFor(p,index));
+      assert.equal(q.options[q.key[0]][0],labels[p.effects[index].direction]);
+      assert.match(q.related,new RegExp(p.id+'$'));
+      assert.ok(q.stem.startsWith(p.assumptions));
+    }
+  }
+  const effect=(id,index)=>parameters.find(p=>p.id===id).effects[index].direction;
+  assert.equal(effect('te',1),'=');
+  assert.equal(effect('nex',3),'=');
+  assert.equal(effect('flip',0),'?');
+  assert.equal(effect('slices',1),'?');
+  const current=estimate(baseline);
+  assert.equal(current.time,20);
+  assert.equal(current.pitch,220/160);
+  assert.equal(current.voxel,220/160*220/192*4);
+  assert.equal(estimate({...baseline,nex:4}).snrFactor,2);
+  assert.equal(estimate({...baseline,bandwidth:440}).shift,1);
+  assert.equal(estimate({...baseline,matrix:161}).time,20.5);
+  assert.ok(estimate({...baseline,te:40}).softTissue<current.softTissue);
+  assert.deepEqual(RegistryCore.buildForm(RegistryContent.bank,RegistryBlueprints.arrt),
+    RegistryCore.buildForm(RegistryContent.bank.filter(q=>!questions.includes(q)),RegistryBlueprints.arrt));
 });
